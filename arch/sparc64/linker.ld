@@ -1,9 +1,12 @@
 ENTRY(_start)
 
 SECTIONS {
-  . = 0x00400000;
+  . = 0x00004000;
 
-  .text : { *(.text*) }
+  .text : {
+    KEEP(*(.text.start))
+    *(.text*)
+  }
   .rodata : { *(.rodata*) }
   .data : { *(.data*) }
   .bss : {

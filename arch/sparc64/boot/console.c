@@ -1,29 +1,23 @@
 #include "kernel.h"
 
+typedef unsigned long u64;
 typedef unsigned char u8;
 
-/* TODO: refine sun4u console path; this address works on many OpenBIOS sun4u setups. */
-#define UART_BASE_ADDR 0x1FE02000UL
+/*
+ * OpenBIOS reports /ebus/su reg as 0x3f8.
+ * Use physical ASI bypass store to hit UART THR directly.
+ */
+#define UART_PHYS_BASE 0x1fe020003f8UL
 
-static inline void mmio_write(u8 value, unsigned long offset) {
-  volatile u8 *base = (volatile u8 *)UART_BASE_ADDR;
-  base[offset] = value;
-}
-
-static inline u8 mmio_read(unsigned long offset) {
-  volatile u8 *base = (volatile u8 *)UART_BASE_ADDR;
-  return base[offset];
+static inline void uart_store_asi(u64 addr, u8 value) {
+  asm volatile("stba %0, [%1] 0x14" : : "r"(value), "r"(addr) : "memory");
 }
 
 static void arch_putc(char c) {
   if (c == '\n') {
     arch_putc('\r');
   }
-
-  while ((mmio_read(5) & 0x20u) == 0u) {
-  }
-
-  mmio_write((u8)c, 0);
+  uart_store_asi(UART_PHYS_BASE, (u8)c);
 }
 
 void arch_puts(const char *s) {
