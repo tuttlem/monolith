@@ -5,7 +5,7 @@ arch="${1:-}"
 shift || true
 
 if [[ -z "${arch}" ]]; then
-  echo "usage: $0 <x86_64|arm64> [extra-qemu-flags...]" >&2
+  echo "usage: $0 <x86_64|arm64|riscv64|ppc64|mips|sparc64> [extra-qemu-flags...]" >&2
   exit 1
 fi
 
@@ -84,6 +84,63 @@ case "${arch}" in
       -drive format=raw,file="${img}" \
       -serial "${serial_backend}" -no-reboot \
       "${qemu_ui_flags[@]}" "$@"
+    ;;
+  riscv64)
+    command -v qemu-system-riscv64 >/dev/null 2>&1 || {
+      echo "error: qemu-system-riscv64 not found. Install qemu-system-misc." >&2
+      exit 1
+    }
+    img="build/riscv64/kernel.elf"
+    [[ -f "${img}" ]] || {
+      echo "error: missing kernel ${img}. Run 'make riscv64'." >&2
+      exit 1
+    }
+    exec qemu-system-riscv64 -machine virt -m 512M -bios default \
+      -device loader,file="${img}",cpu-num=0 \
+      -serial stdio -nographic -no-reboot \
+      -monitor none "$@"
+    ;;
+  ppc64)
+    command -v qemu-system-ppc64 >/dev/null 2>&1 || {
+      echo "error: qemu-system-ppc64 not found. Install qemu-system-ppc." >&2
+      exit 1
+    }
+    img="build/ppc64/kernel.elf"
+    [[ -f "${img}" ]] || {
+      echo "error: missing kernel ${img}. Run 'make ppc64'." >&2
+      exit 1
+    }
+    exec qemu-system-ppc64 -machine powernv9 -m 2G \
+      -kernel "${img}" -serial stdio -nographic -no-reboot \
+      -monitor none "$@"
+    ;;
+  mips)
+    command -v qemu-system-mips >/dev/null 2>&1 || {
+      echo "error: qemu-system-mips not found. Install qemu-system-mips." >&2
+      exit 1
+    }
+    img="build/mips/kernel.elf"
+    [[ -f "${img}" ]] || {
+      echo "error: missing kernel ${img}. Run 'make mips'." >&2
+      exit 1
+    }
+    exec qemu-system-mips -machine malta -m 256M \
+      -kernel "${img}" -serial stdio -nographic -no-reboot \
+      -monitor none "$@"
+    ;;
+  sparc64)
+    command -v qemu-system-sparc64 >/dev/null 2>&1 || {
+      echo "error: qemu-system-sparc64 not found. Install qemu-system-sparc." >&2
+      exit 1
+    }
+    img="build/sparc64/kernel.elf"
+    [[ -f "${img}" ]] || {
+      echo "error: missing kernel ${img}. Run 'make sparc64'." >&2
+      exit 1
+    }
+    exec qemu-system-sparc64 -M sun4u -m 256M \
+      -kernel "${img}" -serial stdio -nographic -no-reboot \
+      -monitor none "$@"
     ;;
   *)
     echo "error: unsupported arch '${arch}'" >&2

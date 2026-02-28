@@ -4,7 +4,7 @@ set -euo pipefail
 arch="${1:-}"
 
 if [[ -z "${arch}" ]]; then
-  echo "usage: $0 <x86_64|arm64>" >&2
+  echo "usage: $0 <x86_64|arm64|riscv64|ppc64|mips|sparc64>" >&2
   exit 1
 fi
 
