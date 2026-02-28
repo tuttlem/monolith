@@ -1,0 +1,22 @@
+# Build outputs
+build/*
+!build/.gitkeep
+
+# Common binary/object artifacts
+*.o
+*.obj
+*.elf
+*.efi
+*.so
+*.img
+*.iso
+*.d
+
+# Logs and temp files
+*.log
+*.tmp
+
+# Editor/OS noise
+.DS_Store
+
+.idea
