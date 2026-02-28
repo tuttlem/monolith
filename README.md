@@ -1,43 +1,40 @@
-# Core OS Repository (UEFI-First v1)
+# Core OS Repository
 
-Minimal, reproducible OS core baseline for experiments.
+Minimal, reproducible OS-core baseline for architecture bring-up experiments.
 
-Supported architectures in v1:
-- `x86_64` via UEFI + OVMF
-- `arm64` via UEFI + AAVMF/EDK2
+## Supported Architectures
 
-Each architecture builds a minimal UEFI application in C and prints a sign-of-life:
-- `HELLO FROM CORE KERNEL (UEFI x86_64)`
-- `HELLO FROM CORE KERNEL (UEFI arm64)`
+- `x86_64` (UEFI via OVMF)
+- `arm64` (UEFI via AAVMF/EDK2)
+- `riscv64` (QEMU `virt` + OpenSBI)
+- `mips` (QEMU `malta`)
+- `sparc64` (QEMU `sun4u`)
 
-## Outputs
+Each target boots in QEMU, enters shared `kmain()`, and prints a sign-of-life string.
 
-- `build/x86_64/uefi.img`
-- `build/arm64/uefi.img`
-
-Each image is a FAT ESP containing:
-- `EFI/BOOT/BOOTX64.EFI` for `x86_64`
-- `EFI/BOOT/BOOTAA64.EFI` for `arm64`
-
-## Ubuntu Prerequisites
+## Ubuntu Dependencies
 
 ```bash
 sudo apt update
 sudo apt install -y \
-  build-essential clang lld \
-  qemu-system-x86 qemu-system-arm ovmf qemu-efi-aarch64 \
-  mtools dosfstools gdb
+  build-essential clang lld make \
+  mtools dosfstools gdisk coreutils \
+  qemu-system-x86 qemu-system-arm qemu-system-misc qemu-system-mips qemu-system-sparc \
+  ovmf qemu-efi-aarch64 opensbi openbios-sparc
 ```
 
 Notes:
-- Some distros provide arm64 UEFI firmware under `AAVMF` paths via `edk2` packages instead of `qemu-efi-aarch64`.
-- The scripts auto-detect common firmware paths and print a clear error if missing.
+- Some distros package arm64 firmware under `AAVMF`/`edk2` names instead of `qemu-efi-aarch64`.
+- `scripts/firmware.sh` and `scripts/run-qemu.sh` detect common firmware paths and fail with clear messages.
 
 ## Build Targets
 
 ```bash
 make x86_64-uefi
 make arm64-uefi
+make riscv64
+make mips
+make sparc64
 ```
 
 ## Run Targets
@@ -45,67 +42,65 @@ make arm64-uefi
 ```bash
 make run-x86_64
 make run-arm64
+make run-riscv64
+make run-mips
+make run-sparc64
 ```
 
-By default, run scripts use headless mode (`QEMU_HEADLESS=1`) and print serial output in the terminal.
-For a GUI window, run with `QEMU_HEADLESS=0`.
-
-The run scripts use these QEMU baselines:
-
-`x86_64`:
-```bash
-qemu-system-x86_64 -machine q35 -m 512M \
-  -drive if=pflash,format=raw,readonly=on,file=<OVMF_CODE.fd> \
-  -drive if=pflash,format=raw,file=<OVMF_VARS copy> \
-  -drive format=raw,file=build/x86_64/uefi.img \
-  -serial stdio -no-reboot
-```
-
-`arm64`:
-```bash
-qemu-system-aarch64 -machine virt -cpu cortex-a57 -m 512M \
-  -drive if=pflash,format=raw,readonly=on,file=<AAVMF_CODE.fd> \
-  -drive if=pflash,format=raw,file=<AAVMF_VARS copy> \
-  -drive format=raw,file=build/arm64/uefi.img \
-  -serial stdio -no-reboot
-```
+Default is headless (`QEMU_HEADLESS=1`).
+Set `QEMU_HEADLESS=0` for GUI-capable runs where relevant.
 
 ## GDB Targets
 
 ```bash
 make gdb-x86_64
 make gdb-arm64
+make gdb-riscv64
+make gdb-mips
+make gdb-sparc64
 ```
 
-These launch QEMU with `-S -s` and wait for a debugger on `tcp::1234`.
+QEMU starts halted with `-S -s` and listens on `tcp::1234`.
 
 ## Smoke Tests
 
 ```bash
 make smoke-x86_64
 make smoke-arm64
+make smoke-riscv64
+make smoke-mips
+make smoke-sparc64
 ```
 
-Smoke tests run QEMU briefly in headless mode and grep output for the expected hello string.
+Each smoke test runs QEMU under timeout, captures output, and checks for the expected HELLO string.
+
+## Outputs
+
+- `build/x86_64/uefi.img`
+- `build/arm64/uefi.img`
+- `build/riscv64/kernel.elf`
+- `build/mips/kernel.elf`
+- `build/sparc64/kernel.elf`
 
 ## Troubleshooting
 
-1. Firmware not found
-- `x86_64`: install `ovmf`.
-- `arm64`: install `qemu-efi-aarch64` or distro `AAVMF/EDK2` firmware package.
-- You can inspect detection logic in `scripts/firmware.sh`.
+1. Missing firmware
+- x86_64: install `ovmf`
+- arm64: install `qemu-efi-aarch64` (or distro `AAVMF/edk2` firmware package)
+- sparc64: install `openbios-sparc`
+- riscv64 OpenSBI comes via QEMU/OpenSBI packages (`opensbi` on Ubuntu)
 
-2. Clang/lld missing
-- Install `clang` and `lld` (`lld-link` is used for PE/COFF UEFI linking).
+2. Missing compilers/linker
+- Install `clang` and `lld`
 
-3. FAT image tool errors
-- Install `mtools`. The image builder uses `mformat`, `mmd`, and `mcopy`.
+3. FAT image tooling errors (UEFI targets)
+- Install `mtools`, `dosfstools`, `gdisk`
 
-4. No hello string in smoke tests
-- Retry with `make run-x86_64` or `make run-arm64` to inspect interactive output.
-- On slower machines, increase timeout in `scripts/smoke-*.sh`.
+4. No hello output
+- Re-run with `make run-<arch>` and inspect terminal output directly.
+- On slower hosts, increase timeout in `scripts/smoke-*.sh`.
 
 ## Notes
 
-- `i386` support is intentionally removed in v1.
-- Legacy GRUB/Multiboot flow is removed from default paths to keep the baseline UEFI-first.
+- `i386` and `ppc64` are intentionally not in the active support set.
+- Current focus is deterministic boot + shared C kernel entry (`kmain`) only.

@@ -5,7 +5,7 @@
 #endif
 
 void kmain(void) {
-  arch_puts("HELLO FROM CORE KERNEL (" CORE_ARCH_NAME ")\n");
+  arch_puts("HELLO FROM CORE KERNEL (" CORE_ARCH_NAME ") We good!\n");
 
   for (;;) {
     arch_halt();
