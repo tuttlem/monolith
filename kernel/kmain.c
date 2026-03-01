@@ -40,6 +40,9 @@ static const char *boot_info_arch_name(BOOT_U64 arch_id) {
 
 void kmain(const boot_info_t *boot_info) {
   boot_info_t *mutable_boot_info;
+  status_t mem_status;
+  status_t page_status;
+  status_t heap_status;
 
   arch_puts("HELLO FROM CORE KERNEL (" CORE_ARCH_NAME ") We good!\n");
   if (boot_info == (const boot_info_t *)0) {
@@ -48,9 +51,19 @@ void kmain(const boot_info_t *boot_info) {
   }
 
   mutable_boot_info = (boot_info_t *)boot_info;
-  arch_memory_init(mutable_boot_info);
-  page_alloc_init(mutable_boot_info);
-  kmalloc_init(mutable_boot_info);
+  mem_status = arch_memory_init(mutable_boot_info);
+  page_status = page_alloc_init(mutable_boot_info);
+  heap_status = kmalloc_init(mutable_boot_info);
+
+  if (!status_is_ok(mem_status) && mem_status != STATUS_DEFERRED) {
+    kprintf("arch_memory_init: %s (%d)\n", status_str(mem_status), mem_status);
+  }
+  if (!status_is_ok(page_status) && page_status != STATUS_DEFERRED) {
+    kprintf("page_alloc_init: %s (%d)\n", status_str(page_status), page_status);
+  }
+  if (!status_is_ok(heap_status) && heap_status != STATUS_DEFERRED) {
+    kprintf("kmalloc_init: %s (%d)\n", status_str(heap_status), heap_status);
+  }
 
 #if MONOLITH_KMALLOC_SELFTEST
   if (!kmalloc_self_test()) {

@@ -2,6 +2,7 @@
 #define KERNEL_KERNEL_H
 
 #include "boot_info.h"
+#include "status.h"
 
 void kmain(const boot_info_t *boot_info);
 int kprintf(const char *fmt, ...);

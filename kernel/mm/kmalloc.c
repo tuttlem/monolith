@@ -176,7 +176,7 @@ static void coalesce_forward(kmalloc_page_t *page, kmalloc_block_t *block) {
   page->free_bytes += KMALLOC_BLOCK_HEADER_SIZE;
 }
 
-void kmalloc_init(boot_info_t *boot_info) {
+status_t kmalloc_init(boot_info_t *boot_info) {
   page_alloc_stats_t page_stats;
 
   g_kmalloc.initialized = 1;
@@ -190,19 +190,23 @@ void kmalloc_init(boot_info_t *boot_info) {
   g_kmalloc.double_free_count = 0;
   g_kmalloc.head = (kmalloc_page_t *)0;
 
-  if (boot_info == (boot_info_t *)0 ||
-      (boot_info->arch_id != BOOT_INFO_ARCH_X86_64 && boot_info->arch_id != BOOT_INFO_ARCH_RISCV64 &&
-       boot_info->arch_id != BOOT_INFO_ARCH_ARM64 && boot_info->arch_id != BOOT_INFO_ARCH_MIPS &&
-       boot_info->arch_id != BOOT_INFO_ARCH_SPARC64)) {
-    return;
+  if (boot_info == (boot_info_t *)0) {
+    return STATUS_INVALID_ARG;
+  }
+
+  if (boot_info->arch_id != BOOT_INFO_ARCH_X86_64 && boot_info->arch_id != BOOT_INFO_ARCH_RISCV64 &&
+      boot_info->arch_id != BOOT_INFO_ARCH_ARM64 && boot_info->arch_id != BOOT_INFO_ARCH_MIPS &&
+      boot_info->arch_id != BOOT_INFO_ARCH_SPARC64) {
+    return STATUS_NOT_SUPPORTED;
   }
 
   page_alloc_stats(&page_stats);
   if (page_stats.available == 0 || page_stats.free_pages == 0) {
-    return;
+    return STATUS_DEFERRED;
   }
 
   g_kmalloc.available = 1;
+  return STATUS_OK;
 }
 
 void *kmalloc(BOOT_U64 size) {

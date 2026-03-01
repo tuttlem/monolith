@@ -1,12 +1,12 @@
 #include "memory_init.h"
 #include "arch/x86_64/early_paging.h"
 
-void arch_memory_init(boot_info_t *boot_info) {
+status_t arch_memory_init(boot_info_t *boot_info) {
   x86_64_early_paging_result_t paging_result;
   boot_info_ext_uefi_t *uefi_ext = (boot_info_ext_uefi_t *)0;
 
   if (boot_info == (boot_info_t *)0 || boot_info->arch_id != BOOT_INFO_ARCH_X86_64) {
-    return;
+    return STATUS_INVALID_ARG;
   }
 
   if ((boot_info->valid_mask & BOOT_INFO_HAS_ARCH_DATA) != 0 && boot_info->arch_data_ptr != 0 &&
@@ -25,7 +25,7 @@ void arch_memory_init(boot_info_t *boot_info) {
     if (uefi_ext != (boot_info_ext_uefi_t *)0) {
       uefi_ext->mem_init_status = BOOT_MEM_INIT_STATUS_FAILED;
     }
-    return;
+    return STATUS_INTERNAL;
   }
 
   boot_info->vm_enabled = 1;
@@ -39,4 +39,5 @@ void arch_memory_init(boot_info_t *boot_info) {
     uefi_ext->paging_new_cr3 = paging_result.new_cr3;
     uefi_ext->paging_identity_bytes = paging_result.identity_bytes_mapped;
   }
+  return STATUS_OK;
 }

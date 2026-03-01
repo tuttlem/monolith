@@ -1,7 +1,7 @@
 #ifndef KERNEL_KMALLOC_H
 #define KERNEL_KMALLOC_H
 
-#include "boot_info.h"
+#include "kernel.h"
 
 typedef struct {
   BOOT_U64 available;
@@ -16,7 +16,7 @@ typedef struct {
   BOOT_U64 double_free_count;
 } kmalloc_stats_t;
 
-void kmalloc_init(boot_info_t *boot_info);
+status_t kmalloc_init(boot_info_t *boot_info);
 void *kmalloc(BOOT_U64 size);
 void kfree(void *ptr);
 void kmalloc_stats(kmalloc_stats_t *out_stats);

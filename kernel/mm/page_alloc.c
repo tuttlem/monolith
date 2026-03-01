@@ -92,7 +92,7 @@ static void add_usable_range(BOOT_U64 base, BOOT_U64 size, BOOT_U64 floor, BOOT_
   g_page_alloc.free_pages += page_count;
 }
 
-void page_alloc_init(boot_info_t *boot_info) {
+status_t page_alloc_init(boot_info_t *boot_info) {
   BOOT_U32 i;
   BOOT_U64 floor = ONE_MIB;
   BOOT_U64 bias = 0;
@@ -100,13 +100,13 @@ void page_alloc_init(boot_info_t *boot_info) {
   clear_state();
 
   if (boot_info == (boot_info_t *)0) {
-    return;
+    return STATUS_INVALID_ARG;
   }
 
   if (boot_info->arch_id != BOOT_INFO_ARCH_X86_64 && boot_info->arch_id != BOOT_INFO_ARCH_RISCV64 &&
       boot_info->arch_id != BOOT_INFO_ARCH_ARM64 && boot_info->arch_id != BOOT_INFO_ARCH_MIPS &&
       boot_info->arch_id != BOOT_INFO_ARCH_SPARC64) {
-    return;
+    return STATUS_NOT_SUPPORTED;
   }
   if (boot_info->arch_id == BOOT_INFO_ARCH_RISCV64) {
     floor = RISCV64_ALLOC_FLOOR;
@@ -127,7 +127,9 @@ void page_alloc_init(boot_info_t *boot_info) {
 
   if (g_page_alloc.total_pages > 0) {
     g_page_alloc.available = 1;
+    return STATUS_OK;
   }
+  return STATUS_NO_MEMORY;
 }
 
 BOOT_U64 alloc_page(void) {
