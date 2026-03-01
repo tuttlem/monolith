@@ -5,7 +5,11 @@ typedef unsigned long long UINT64;
 typedef unsigned int UINT32;
 typedef unsigned short UINT16;
 typedef unsigned char UINT8;
+#if defined(__x86_64__) || defined(__aarch64__)
+typedef unsigned long long UINTN;
+#else
 typedef unsigned long UINTN;
+#endif
 typedef UINT16 CHAR16;
 typedef void VOID;
 typedef UINTN EFI_STATUS;
@@ -58,5 +62,17 @@ typedef struct {
   UINTN NumberOfTableEntries;
   VOID *ConfigurationTable;
 } EFI_SYSTEM_TABLE;
+
+typedef struct {
+  UINT32 Data1;
+  UINT16 Data2;
+  UINT16 Data3;
+  UINT8 Data4[8];
+} EFI_GUID;
+
+typedef struct {
+  EFI_GUID VendorGuid;
+  VOID *VendorTable;
+} EFI_CONFIGURATION_TABLE;
 
 #endif

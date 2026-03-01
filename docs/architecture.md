@@ -203,6 +203,8 @@ The contract guarantees:
 - A valid SystemTable
 - Console output available via:
   SystemTable->ConOut->OutputString
+- A single boot input ABI passed into kernel core:
+  `kmain(const boot_info_t *boot_info)`
 
 Monolith does not assume:
 
@@ -211,6 +213,10 @@ Monolith does not assume:
 - Runtime services persistence
 
 This keeps the baseline safe and deterministic.
+
+Detailed field-by-field boot info ABI is documented in:
+
+- `docs/boot-info-abi.md`
 
 ---
 

@@ -10,7 +10,7 @@ Minimal, reproducible OS-core baseline for architecture bring-up experiments.
 - `mips` (QEMU `malta`)
 - `sparc64` (QEMU `sun4u`)
 
-Each target boots in QEMU, enters shared `kmain()`, and prints a sign-of-life string.
+Each target boots in QEMU, enters shared `kmain(const boot_info_t *)`, and prints a sign-of-life string.
 
 ## Ubuntu Dependencies
 

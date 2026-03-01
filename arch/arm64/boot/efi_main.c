@@ -31,6 +31,8 @@ void arch_halt(void) {
 }
 
 EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *system_table) {
+  boot_info_t boot_info;
+
   (void)image_handle;
 
   if (system_table == (VOID *)0 || system_table->ConOut == (VOID *)0 ||
@@ -39,6 +41,24 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *system_tab
   }
 
   g_con_out = system_table->ConOut;
-  kmain();
+  boot_info.abi_version = BOOT_INFO_ABI_VERSION;
+  boot_info.entry_rip = 0;
+  boot_info.entry_rsp = 0;
+  boot_info.paging_enabled = 0;
+  boot_info.current_page_map = 0;
+  boot_info.uefi_system_table = (BOOT_U64)(UINTN)system_table;
+  boot_info.uefi_configuration_table = (BOOT_U64)(UINTN)system_table->ConfigurationTable;
+  boot_info.memory_map = 0;
+  boot_info.memory_map_size = 0;
+  boot_info.memory_map_descriptor_size = 0;
+  boot_info.memory_map_descriptor_version = 0;
+  boot_info.acpi_rsdp = 0;
+  boot_info.framebuffer_base = 0;
+  boot_info.framebuffer_width = 0;
+  boot_info.framebuffer_height = 0;
+  boot_info.framebuffer_pixels_per_scanline = 0;
+  boot_info.framebuffer_format = 0;
+  boot_info.serial_port = 0;
+  kmain(&boot_info);
   return (EFI_STATUS)0;
 }
