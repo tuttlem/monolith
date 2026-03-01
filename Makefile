@@ -53,7 +53,11 @@ $(BUILD_X64)/kernel/print.o: kernel/print.c kernel/include/kernel.h kernel/inclu
 	@mkdir -p $(@D)
 	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_X64)/BOOTX64.EFI: $(BUILD_X64)/boot/efi_main.o $(BUILD_X64)/kernel/kmain.o $(BUILD_X64)/kernel/print.o
+$(BUILD_X64)/kernel/diag/boot_info.o: kernel/diag/boot_info.c kernel/include/kernel.h kernel/include/diag/boot_info.h arch/x86_64/arch.mk
+	@mkdir -p $(@D)
+	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
+
+$(BUILD_X64)/BOOTX64.EFI: $(BUILD_X64)/boot/efi_main.o $(BUILD_X64)/kernel/kmain.o $(BUILD_X64)/kernel/print.o $(BUILD_X64)/kernel/diag/boot_info.o
 	@mkdir -p $(@D)
 	@command -v $(LLD_LINK) >/dev/null 2>&1 || { echo "error: $(LLD_LINK) not found. Install lld."; exit 1; }
 	$(LLD_LINK) $(X64_UEFI_LDFLAGS) /out:$@ $^
@@ -75,7 +79,11 @@ $(BUILD_A64)/kernel/print.o: kernel/print.c kernel/include/kernel.h kernel/inclu
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_A64)/BOOTAA64.EFI: $(BUILD_A64)/boot/efi_main.o $(BUILD_A64)/kernel/kmain.o $(BUILD_A64)/kernel/print.o
+$(BUILD_A64)/kernel/diag/boot_info.o: kernel/diag/boot_info.c kernel/include/kernel.h kernel/include/diag/boot_info.h arch/arm64/arch.mk
+	@mkdir -p $(@D)
+	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
+
+$(BUILD_A64)/BOOTAA64.EFI: $(BUILD_A64)/boot/efi_main.o $(BUILD_A64)/kernel/kmain.o $(BUILD_A64)/kernel/print.o $(BUILD_A64)/kernel/diag/boot_info.o
 	@mkdir -p $(@D)
 	@command -v $(LLD_LINK) >/dev/null 2>&1 || { echo "error: $(LLD_LINK) not found. Install lld."; exit 1; }
 	$(LLD_LINK) $(A64_UEFI_LDFLAGS) /out:$@ $^
@@ -84,13 +92,13 @@ $(BUILD_A64)/uefi.img: $(BUILD_A64)/BOOTAA64.EFI scripts/mk-uefi-image.sh
 	@mkdir -p $(@D)
 	@./scripts/mk-uefi-image.sh arm64 $(BUILD_A64)/BOOTAA64.EFI $@
 
-RISCV64_SRCS := kernel/kmain.c kernel/print.c arch/riscv64/boot/main.c arch/riscv64/boot/console.c lib/memset.c lib/memcpy.c lib/strlen.c
+RISCV64_SRCS := kernel/kmain.c kernel/print.c kernel/diag/boot_info.c arch/riscv64/boot/main.c arch/riscv64/boot/console.c lib/memset.c lib/memcpy.c lib/strlen.c
 RISCV64_OBJS := $(patsubst %.c,$(BUILD_RISCV64)/%.o,$(RISCV64_SRCS)) $(BUILD_RISCV64)/arch/riscv64/start.o
 
-MIPS_SRCS := kernel/kmain.c kernel/print.c arch/mips/boot/main.c arch/mips/boot/console.c lib/memset.c lib/memcpy.c lib/strlen.c
+MIPS_SRCS := kernel/kmain.c kernel/print.c kernel/diag/boot_info.c arch/mips/boot/main.c arch/mips/boot/console.c lib/memset.c lib/memcpy.c lib/strlen.c
 MIPS_OBJS := $(patsubst %.c,$(BUILD_MIPS)/%.o,$(MIPS_SRCS)) $(BUILD_MIPS)/arch/mips/start.o
 
-SPARC64_SRCS := kernel/kmain.c kernel/print.c arch/sparc64/boot/main.c arch/sparc64/boot/console.c lib/memset.c lib/memcpy.c lib/strlen.c
+SPARC64_SRCS := kernel/kmain.c kernel/print.c kernel/diag/boot_info.c arch/sparc64/boot/main.c arch/sparc64/boot/console.c lib/memset.c lib/memcpy.c lib/strlen.c
 SPARC64_OBJS := $(patsubst %.c,$(BUILD_SPARC64)/%.o,$(SPARC64_SRCS)) $(BUILD_SPARC64)/arch/sparc64/start.o
 
 $(BUILD_RISCV64)/kernel.elf: $(RISCV64_OBJS) arch/riscv64/linker.ld
