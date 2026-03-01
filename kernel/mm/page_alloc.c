@@ -99,7 +99,8 @@ void page_alloc_init(boot_info_t *boot_info) {
     return;
   }
 
-  if (boot_info->arch_id != BOOT_INFO_ARCH_X86_64 && boot_info->arch_id != BOOT_INFO_ARCH_RISCV64) {
+  if (boot_info->arch_id != BOOT_INFO_ARCH_X86_64 && boot_info->arch_id != BOOT_INFO_ARCH_RISCV64 &&
+      boot_info->arch_id != BOOT_INFO_ARCH_ARM64) {
     return;
   }
   if (boot_info->arch_id == BOOT_INFO_ARCH_RISCV64) {

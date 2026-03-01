@@ -191,7 +191,8 @@ void kmalloc_init(boot_info_t *boot_info) {
   g_kmalloc.head = (kmalloc_page_t *)0;
 
   if (boot_info == (boot_info_t *)0 ||
-      (boot_info->arch_id != BOOT_INFO_ARCH_X86_64 && boot_info->arch_id != BOOT_INFO_ARCH_RISCV64)) {
+      (boot_info->arch_id != BOOT_INFO_ARCH_X86_64 && boot_info->arch_id != BOOT_INFO_ARCH_RISCV64 &&
+       boot_info->arch_id != BOOT_INFO_ARCH_ARM64)) {
     return;
   }
 
