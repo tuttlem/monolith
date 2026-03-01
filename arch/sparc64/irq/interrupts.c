@@ -10,3 +10,7 @@ status_t arch_interrupts_init(const boot_info_t *boot_info) {
 void arch_interrupts_enable(void) {}
 
 void arch_interrupts_disable(void) {}
+
+void arch_exception_selftest_trigger(void) {
+  kprintf("exception self-test: sparc64 trigger deferred\n");
+}

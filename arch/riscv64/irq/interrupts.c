@@ -34,3 +34,10 @@ BOOT_U64 riscv64_trap_c(BOOT_U64 scause, BOOT_U64 sepc, BOOT_U64 stval, BOOT_U64
   interrupts_dispatch(&frame);
   return sepc;
 }
+
+void arch_exception_selftest_trigger(void) {
+  __asm__ volatile("ebreak");
+  for (;;) {
+    arch_halt();
+  }
+}

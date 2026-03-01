@@ -231,3 +231,10 @@ status_t arch_interrupts_init(const boot_info_t *boot_info) {
 void arch_interrupts_enable(void) { __asm__ volatile("sti" : : : "memory"); }
 
 void arch_interrupts_disable(void) { __asm__ volatile("cli" : : : "memory"); }
+
+void arch_exception_selftest_trigger(void) {
+  __asm__ volatile("ud2");
+  for (;;) {
+    arch_halt();
+  }
+}

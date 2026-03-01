@@ -33,7 +33,7 @@ static void arm64_gic_cpuif_init(void) {
   v |= 1U;
   arm64_mmio_write32(ARM64_GICD_BASE + ARM64_GICD_CTLR, v);
 
-  /* Enable timer PPI 30 in banked ISENABLER0 for this CPU. */
+  /* Enable timer PPI 27 (virtual timer) in banked ISENABLER0 for this CPU. */
   arm64_mmio_write32(ARM64_GICD_BASE + ARM64_GICD_ISENABLER0, (1U << ARM64_GIC_TIMER_PPI));
 
   /* Enable CPU interface and accept all priorities. */
@@ -118,4 +118,11 @@ BOOT_U64 arm64_trap_c(BOOT_U64 trap_kind, BOOT_U64 esr, BOOT_U64 elr, BOOT_U64 s
   frame.flags = spsr;
   interrupts_dispatch(&frame);
   return elr;
+}
+
+void arch_exception_selftest_trigger(void) {
+  __asm__ volatile("brk #0");
+  for (;;) {
+    arch_halt();
+  }
 }

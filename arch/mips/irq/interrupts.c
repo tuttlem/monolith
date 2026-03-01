@@ -70,3 +70,10 @@ BOOT_U32 mips_trap_c(BOOT_U32 cause, BOOT_U32 epc, BOOT_U32 badvaddr, BOOT_U32 s
   interrupts_dispatch(&frame);
   return epc;
 }
+
+void arch_exception_selftest_trigger(void) {
+  __asm__ volatile("break 0");
+  for (;;) {
+    arch_halt();
+  }
+}
