@@ -163,6 +163,13 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *system_tab
   uefi_ext.std_err = (BOOT_U64)(UINTN)system_table->StdErr;
   uefi_ext.firmware_vendor = (BOOT_U64)(UINTN)system_table->FirmwareVendor;
   uefi_ext.firmware_revision = (BOOT_U64)system_table->FirmwareRevision;
+  uefi_ext.mem_init_status = BOOT_MEM_INIT_STATUS_NONE;
+  uefi_ext.mem_old_root = boot_info.vm_root_table;
+  uefi_ext.mem_new_root = boot_info.vm_root_table;
+  uefi_ext.mem_mapped_bytes = 0;
+  uefi_ext.paging_old_cr3 = 0;
+  uefi_ext.paging_new_cr3 = 0;
+  uefi_ext.paging_identity_bytes = 0;
   boot_info.arch_data_ptr = (BOOT_U64)(UINTN)&uefi_ext;
   boot_info.arch_data_size = (BOOT_U64)sizeof(uefi_ext);
   boot_info.framebuffer_base = 0;

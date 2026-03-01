@@ -249,6 +249,10 @@ void arch_main(BOOT_U64 hart_id, BOOT_U64 dtb_ptr) {
   riscv_ext.ram_size = ram_size;
   riscv_ext.entry_a0 = hart_id;
   riscv_ext.entry_a1 = dtb_ptr;
+  riscv_ext.mem_init_status = BOOT_MEM_INIT_STATUS_NONE;
+  riscv_ext.mem_old_root = satp;
+  riscv_ext.mem_new_root = satp;
+  riscv_ext.mem_mapped_bytes = 0;
   boot_info.arch_data_ptr = (BOOT_U64)&riscv_ext;
   boot_info.arch_data_size = (BOOT_U64)sizeof(riscv_ext);
   boot_info.framebuffer_base = 0;

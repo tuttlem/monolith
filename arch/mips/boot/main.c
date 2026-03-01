@@ -53,6 +53,10 @@ void arch_main(BOOT_U64 entry_a0, BOOT_U64 entry_a1, BOOT_U64 entry_a2, BOOT_U64
   mips_ext.uart_base = (BOOT_U64)UART_BASE;
   mips_ext.ram_base = MIPS_RAM_BASE;
   mips_ext.ram_size = MIPS_RAM_SIZE;
+  mips_ext.mem_init_status = BOOT_MEM_INIT_STATUS_NONE;
+  mips_ext.mem_old_root = 0;
+  mips_ext.mem_new_root = 0;
+  mips_ext.mem_mapped_bytes = 0;
   boot_info.arch_data_ptr = (BOOT_U64)&mips_ext;
   boot_info.arch_data_size = (BOOT_U64)sizeof(mips_ext);
   boot_info.framebuffer_base = 0;

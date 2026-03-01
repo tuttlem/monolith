@@ -61,6 +61,10 @@ void arch_main(void) {
   sparc_ext.uart_base = SPARC64_UART_BASE;
   sparc_ext.ram_base = SPARC64_RAM_BASE;
   sparc_ext.ram_size = SPARC64_RAM_SIZE;
+  sparc_ext.mem_init_status = BOOT_MEM_INIT_STATUS_NONE;
+  sparc_ext.mem_old_root = 0;
+  sparc_ext.mem_new_root = 0;
+  sparc_ext.mem_mapped_bytes = 0;
   boot_info.arch_data_ptr = (BOOT_U64)&sparc_ext;
   boot_info.arch_data_size = (BOOT_U64)sizeof(sparc_ext);
   boot_info.framebuffer_base = 0;

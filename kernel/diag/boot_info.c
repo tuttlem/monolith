@@ -1,5 +1,19 @@
 #include "diag/boot_info.h"
 
+static const char *mem_init_status_name(BOOT_U64 status) {
+  switch (status) {
+  case BOOT_MEM_INIT_STATUS_NONE:
+    return "none";
+  case BOOT_MEM_INIT_STATUS_DONE:
+    return "done";
+  case BOOT_MEM_INIT_STATUS_DEFERRED:
+    return "deferred";
+  case BOOT_MEM_INIT_STATUS_FAILED:
+    return "failed";
+  default:
+    return "unknown";
+  }
+}
 
 void diag_boot_info_print(const boot_info_t *boot_info) {
   kprintf(" ================== BOOT INFO ================== \n");
@@ -47,12 +61,20 @@ void diag_boot_info_print(const boot_info_t *boot_info) {
       kprintf("uefi_ext.boot_services=0x%llx runtime_services=0x%llx\n",
               uefi_ext->boot_services, uefi_ext->runtime_services);
       kprintf("uefi_ext.con_out=0x%llx std_err=0x%llx\n", uefi_ext->con_out, uefi_ext->std_err);
+      kprintf("uefi_ext.mem_init=%s(%llu) old_root=0x%llx new_root=0x%llx mapped=0x%llx\n",
+              mem_init_status_name(uefi_ext->mem_init_status), uefi_ext->mem_init_status,
+              uefi_ext->mem_old_root, uefi_ext->mem_new_root, uefi_ext->mem_mapped_bytes);
+      kprintf("uefi_ext.paging_old_cr3=0x%llx new_cr3=0x%llx mapped=0x%llx\n",
+              uefi_ext->paging_old_cr3, uefi_ext->paging_new_cr3, uefi_ext->paging_identity_bytes);
     } else if (boot_info->arch_id == BOOT_INFO_ARCH_RISCV64) {
       const boot_info_ext_riscv64_t *riscv_ext =
           (const boot_info_ext_riscv64_t *)(BOOT_UPTR)boot_info->arch_data_ptr;
       kprintf("riscv_ext.hart_id=0x%llx dtb_ptr=0x%llx\n", riscv_ext->hart_id, riscv_ext->dtb_ptr);
       kprintf("riscv_ext.satp=0x%llx uart=0x%llx ram=[0x%llx..0x%llx)\n", riscv_ext->satp,
               riscv_ext->uart_base, riscv_ext->ram_base, riscv_ext->ram_base + riscv_ext->ram_size);
+      kprintf("riscv_ext.mem_init=%s(%llu) old_root=0x%llx new_root=0x%llx mapped=0x%llx\n",
+              mem_init_status_name(riscv_ext->mem_init_status), riscv_ext->mem_init_status,
+              riscv_ext->mem_old_root, riscv_ext->mem_new_root, riscv_ext->mem_mapped_bytes);
     } else if (boot_info->arch_id == BOOT_INFO_ARCH_MIPS) {
       const boot_info_ext_mips_t *mips_ext =
           (const boot_info_ext_mips_t *)(BOOT_UPTR)boot_info->arch_data_ptr;
@@ -60,6 +82,9 @@ void diag_boot_info_print(const boot_info_t *boot_info) {
               mips_ext->entry_a2, mips_ext->entry_a3);
       kprintf("mips_ext.uart=0x%llx ram=[0x%llx..0x%llx)\n", mips_ext->uart_base, mips_ext->ram_base,
               mips_ext->ram_base + mips_ext->ram_size);
+      kprintf("mips_ext.mem_init=%s(%llu) old_root=0x%llx new_root=0x%llx mapped=0x%llx\n",
+              mem_init_status_name(mips_ext->mem_init_status), mips_ext->mem_init_status,
+              mips_ext->mem_old_root, mips_ext->mem_new_root, mips_ext->mem_mapped_bytes);
     } else if (boot_info->arch_id == BOOT_INFO_ARCH_SPARC64) {
       const boot_info_ext_sparc64_t *sparc_ext =
           (const boot_info_ext_sparc64_t *)(BOOT_UPTR)boot_info->arch_data_ptr;
@@ -67,6 +92,9 @@ void diag_boot_info_print(const boot_info_t *boot_info) {
               sparc_ext->prom_o1, sparc_ext->prom_g7);
       kprintf("sparc_ext.uart=0x%llx ram=[0x%llx..0x%llx)\n", sparc_ext->uart_base, sparc_ext->ram_base,
               sparc_ext->ram_base + sparc_ext->ram_size);
+      kprintf("sparc_ext.mem_init=%s(%llu) old_root=0x%llx new_root=0x%llx mapped=0x%llx\n",
+              mem_init_status_name(sparc_ext->mem_init_status), sparc_ext->mem_init_status,
+              sparc_ext->mem_old_root, sparc_ext->mem_new_root, sparc_ext->mem_mapped_bytes);
     }
   }
 }

@@ -33,6 +33,11 @@ typedef unsigned long BOOT_UPTR;
 
 #define BOOT_INFO_MAX_MEM_REGIONS 64U
 
+#define BOOT_MEM_INIT_STATUS_NONE 0ULL
+#define BOOT_MEM_INIT_STATUS_DONE 1ULL
+#define BOOT_MEM_INIT_STATUS_DEFERRED 2ULL
+#define BOOT_MEM_INIT_STATUS_FAILED 3ULL
+
 #define BOOT_MEM_REGION_USABLE 1U
 #define BOOT_MEM_REGION_RESERVED 2U
 #define BOOT_MEM_REGION_ACPI_RECLAIM 3U
@@ -99,6 +104,13 @@ typedef struct {
   BOOT_U64 std_err;
   BOOT_U64 firmware_vendor;
   BOOT_U64 firmware_revision;
+  BOOT_U64 mem_init_status;
+  BOOT_U64 mem_old_root;
+  BOOT_U64 mem_new_root;
+  BOOT_U64 mem_mapped_bytes;
+  BOOT_U64 paging_old_cr3;
+  BOOT_U64 paging_new_cr3;
+  BOOT_U64 paging_identity_bytes;
 } boot_info_ext_uefi_t;
 
 typedef struct {
@@ -110,6 +122,10 @@ typedef struct {
   BOOT_U64 ram_size;
   BOOT_U64 entry_a0;
   BOOT_U64 entry_a1;
+  BOOT_U64 mem_init_status;
+  BOOT_U64 mem_old_root;
+  BOOT_U64 mem_new_root;
+  BOOT_U64 mem_mapped_bytes;
 } boot_info_ext_riscv64_t;
 
 typedef struct {
@@ -120,6 +136,10 @@ typedef struct {
   BOOT_U64 uart_base;
   BOOT_U64 ram_base;
   BOOT_U64 ram_size;
+  BOOT_U64 mem_init_status;
+  BOOT_U64 mem_old_root;
+  BOOT_U64 mem_new_root;
+  BOOT_U64 mem_mapped_bytes;
 } boot_info_ext_mips_t;
 
 typedef struct {
@@ -133,6 +153,10 @@ typedef struct {
   BOOT_U64 uart_base;
   BOOT_U64 ram_base;
   BOOT_U64 ram_size;
+  BOOT_U64 mem_init_status;
+  BOOT_U64 mem_old_root;
+  BOOT_U64 mem_new_root;
+  BOOT_U64 mem_mapped_bytes;
 } boot_info_ext_sparc64_t;
 
 #endif
