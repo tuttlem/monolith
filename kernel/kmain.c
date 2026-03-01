@@ -1,5 +1,6 @@
 #include "kernel.h"
 #include "diag/boot_info.h"
+#include "interrupts.h"
 #include "kmalloc.h"
 #include "memory_init.h"
 #include "page_alloc.h"
@@ -43,6 +44,7 @@ void kmain(const boot_info_t *boot_info) {
   status_t mem_status;
   status_t page_status;
   status_t heap_status;
+  status_t irq_status;
 
   arch_puts("HELLO FROM CORE KERNEL (" CORE_ARCH_NAME ") We good!\n");
   if (boot_info == (const boot_info_t *)0) {
@@ -54,6 +56,7 @@ void kmain(const boot_info_t *boot_info) {
   mem_status = arch_memory_init(mutable_boot_info);
   page_status = page_alloc_init(mutable_boot_info);
   heap_status = kmalloc_init(mutable_boot_info);
+  irq_status = interrupts_init(boot_info);
 
   if (!status_is_ok(mem_status) && mem_status != STATUS_DEFERRED) {
     kprintf("arch_memory_init: %s (%d)\n", status_str(mem_status), mem_status);
@@ -63,6 +66,9 @@ void kmain(const boot_info_t *boot_info) {
   }
   if (!status_is_ok(heap_status) && heap_status != STATUS_DEFERRED) {
     kprintf("kmalloc_init: %s (%d)\n", status_str(heap_status), heap_status);
+  }
+  if (!status_is_ok(irq_status) && irq_status != STATUS_DEFERRED) {
+    kprintf("interrupts_init: %s (%d)\n", status_str(irq_status), irq_status);
   }
 
 #if MONOLITH_KMALLOC_SELFTEST
