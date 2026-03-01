@@ -3,6 +3,9 @@
 #define PAGE_SIZE 4096ULL
 #define ONE_MIB 0x100000ULL
 #define RISCV64_ALLOC_FLOOR 0x80400000ULL
+#define MIPS_ALLOC_FLOOR 0x01000000ULL
+#define MIPS_KSEG0_BIAS 0x80000000ULL
+#define SPARC64_ALLOC_FLOOR 0x01000000ULL
 #define MAX_USABLE_RANGES 64U
 #define MAX_RECYCLED_PAGES 256U
 
@@ -51,7 +54,7 @@ static void clear_state(void) {
   }
 }
 
-static void add_usable_range(BOOT_U64 base, BOOT_U64 size, BOOT_U64 floor) {
+static void add_usable_range(BOOT_U64 base, BOOT_U64 size, BOOT_U64 floor, BOOT_U64 bias) {
   BOOT_U64 start;
   BOOT_U64 end;
   BOOT_U64 page_count;
@@ -83,7 +86,7 @@ static void add_usable_range(BOOT_U64 base, BOOT_U64 size, BOOT_U64 floor) {
   }
 
   idx = g_page_alloc.range_count++;
-  g_page_alloc.ranges[idx].base = start;
+  g_page_alloc.ranges[idx].base = start + bias;
   g_page_alloc.ranges[idx].page_count = page_count;
   g_page_alloc.total_pages += page_count;
   g_page_alloc.free_pages += page_count;
@@ -92,6 +95,7 @@ static void add_usable_range(BOOT_U64 base, BOOT_U64 size, BOOT_U64 floor) {
 void page_alloc_init(boot_info_t *boot_info) {
   BOOT_U32 i;
   BOOT_U64 floor = ONE_MIB;
+  BOOT_U64 bias = 0;
 
   clear_state();
 
@@ -100,11 +104,17 @@ void page_alloc_init(boot_info_t *boot_info) {
   }
 
   if (boot_info->arch_id != BOOT_INFO_ARCH_X86_64 && boot_info->arch_id != BOOT_INFO_ARCH_RISCV64 &&
-      boot_info->arch_id != BOOT_INFO_ARCH_ARM64) {
+      boot_info->arch_id != BOOT_INFO_ARCH_ARM64 && boot_info->arch_id != BOOT_INFO_ARCH_MIPS &&
+      boot_info->arch_id != BOOT_INFO_ARCH_SPARC64) {
     return;
   }
   if (boot_info->arch_id == BOOT_INFO_ARCH_RISCV64) {
     floor = RISCV64_ALLOC_FLOOR;
+  } else if (boot_info->arch_id == BOOT_INFO_ARCH_MIPS) {
+    floor = MIPS_ALLOC_FLOOR;
+    bias = MIPS_KSEG0_BIAS;
+  } else if (boot_info->arch_id == BOOT_INFO_ARCH_SPARC64) {
+    floor = SPARC64_ALLOC_FLOOR;
   }
 
   for (i = 0; i < boot_info->memory_region_count; ++i) {
@@ -112,7 +122,7 @@ void page_alloc_init(boot_info_t *boot_info) {
     if (region->kind != BOOT_MEM_REGION_USABLE) {
       continue;
     }
-    add_usable_range(region->base, region->size, floor);
+    add_usable_range(region->base, region->size, floor, bias);
   }
 
   if (g_page_alloc.total_pages > 0) {

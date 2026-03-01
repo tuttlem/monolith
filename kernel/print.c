@@ -2,6 +2,7 @@
 #include "print.h"
 
 typedef unsigned long long u64_t;
+typedef long long s64_t;
 #if __SIZEOF_POINTER__ == 8
 typedef unsigned long long uptr_t;
 #else
@@ -36,6 +37,26 @@ static unsigned long append_u32_dec(char *buf, unsigned long size, unsigned long
   while (value != 0 && i < (unsigned)sizeof(tmp)) {
     tmp[i++] = (char)('0' + (value % 10UL));
     value /= 10UL;
+  }
+
+  while (i > 0) {
+    pos = append_char(buf, size, pos, tmp[--i]);
+  }
+
+  return pos;
+}
+
+static unsigned long append_u64_dec(char *buf, unsigned long size, unsigned long pos, u64_t value) {
+  char tmp[32];
+  unsigned i = 0;
+
+  if (value == 0) {
+    return append_char(buf, size, pos, '0');
+  }
+
+  while (value != 0 && i < (unsigned)sizeof(tmp)) {
+    tmp[i++] = (char)('0' + (value % 10ULL));
+    value /= 10ULL;
   }
 
   while (i > 0) {
@@ -127,24 +148,38 @@ int kvsnprintf(char *buf, unsigned long size, const char *fmt, va_list args) {
     }
     case 'd':
     case 'i': {
-      long v;
-      unsigned long mag;
-      if (long_count >= 1) {
-        v = va_arg(args, long);
+      if (long_count >= 2) {
+        s64_t v = va_arg(args, s64_t);
+        u64_t mag;
+        if (v < 0) {
+          pos = append_char(buf, size, pos, '-');
+          mag = (u64_t)(-(v + 1LL)) + 1ULL;
+        } else {
+          mag = (u64_t)v;
+        }
+        pos = append_u64_dec(buf, size, pos, mag);
       } else {
-        v = (long)va_arg(args, int);
+        long v;
+        unsigned long mag;
+        if (long_count >= 1) {
+          v = va_arg(args, long);
+        } else {
+          v = (long)va_arg(args, int);
+        }
+        if (v < 0) {
+          pos = append_char(buf, size, pos, '-');
+          mag = (unsigned long)(-(v + 1L)) + 1UL;
+        } else {
+          mag = (unsigned long)v;
+        }
+        pos = append_u32_dec(buf, size, pos, mag);
       }
-      if (v < 0) {
-        pos = append_char(buf, size, pos, '-');
-        mag = (unsigned long)(-(v + 1L)) + 1UL;
-      } else {
-        mag = (unsigned long)v;
-      }
-      pos = append_u32_dec(buf, size, pos, mag);
       break;
     }
     case 'u':
-      if (long_count >= 1) {
+      if (long_count >= 2) {
+        pos = append_u64_dec(buf, size, pos, va_arg(args, u64_t));
+      } else if (long_count >= 1) {
         pos = append_u32_dec(buf, size, pos, va_arg(args, unsigned long));
       } else {
         pos = append_u32_dec(buf, size, pos, (unsigned long)va_arg(args, unsigned int));
