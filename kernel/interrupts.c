@@ -1,31 +1,73 @@
 #include "interrupts.h"
 #include "arch_interrupts.h"
 
+#ifndef MONOLITH_IRQ_LOG_UNHANDLED
+#define MONOLITH_IRQ_LOG_UNHANDLED 1
+#endif
+
+static const char g_irq_owner_anon[] = "anonymous";
+
 typedef struct {
   interrupt_handler_t fn;
   void *ctx;
+  const char *owner;
 } interrupt_slot_t;
 
 static struct {
   BOOT_U64 initialized;
   BOOT_U64 arch_id;
   interrupt_slot_t slots[INTERRUPT_MAX_VECTORS];
+  BOOT_U64 unhandled_once[INTERRUPT_MAX_VECTORS];
 } g_interrupts;
+
+static int owner_eq(const char *a, const char *b) {
+  if (a == b) {
+    return 1;
+  }
+  if (a == (const char *)0 || b == (const char *)0) {
+    return 0;
+  }
+  while (*a != '\0' && *b != '\0') {
+    if (*a != *b) {
+      return 0;
+    }
+    ++a;
+    ++b;
+  }
+  return *a == *b;
+}
+
+static void interrupts_panic_exception(const interrupt_frame_t *frame, const char *why) {
+  if (frame == (const interrupt_frame_t *)0) {
+    for (;;) {
+      arch_halt();
+    }
+  }
+
+  kprintf("exception: %s vector=%llu err=0x%llx ip=0x%llx sp=0x%llx flags=0x%llx fault=0x%llx\n", why, frame->vector,
+          frame->error_code, frame->ip, frame->sp, frame->flags, frame->fault_addr);
+  interrupts_disable();
+  for (;;) {
+    arch_halt();
+  }
+}
 
 static void default_interrupt_handler(const interrupt_frame_t *frame) {
   if (frame == (const interrupt_frame_t *)0) {
     return;
   }
 
-  kprintf("interrupt: vector=%llu err=0x%llx ip=0x%llx sp=0x%llx flags=0x%llx fault=0x%llx\n", frame->vector,
-          frame->error_code, frame->ip, frame->sp, frame->flags, frame->fault_addr);
-
   if (frame->vector < 32ULL) {
-    kprintf("exception: halting on unhandled exception vector %llu\n", frame->vector);
-    for (;;) {
-      arch_halt();
-    }
+    interrupts_panic_exception(frame, "unhandled");
+    return;
   }
+
+#if MONOLITH_IRQ_LOG_UNHANDLED
+  if (frame->vector < INTERRUPT_MAX_VECTORS && g_interrupts.unhandled_once[frame->vector] == 0ULL) {
+    g_interrupts.unhandled_once[frame->vector] = 1ULL;
+    kprintf("interrupt: unhandled vector=%llu (suppressing repeats)\n", frame->vector);
+  }
+#endif
 }
 
 status_t interrupts_init(const boot_info_t *boot_info) {
@@ -41,6 +83,8 @@ status_t interrupts_init(const boot_info_t *boot_info) {
   for (i = 0; i < INTERRUPT_MAX_VECTORS; ++i) {
     g_interrupts.slots[i].fn = (interrupt_handler_t)0;
     g_interrupts.slots[i].ctx = (void *)0;
+    g_interrupts.slots[i].owner = (const char *)0;
+    g_interrupts.unhandled_once[i] = 0ULL;
   }
 
   st = arch_interrupts_init(boot_info);
@@ -52,7 +96,10 @@ status_t interrupts_init(const boot_info_t *boot_info) {
   return st;
 }
 
-status_t interrupts_register_handler(BOOT_U64 vector, interrupt_handler_t handler, void *ctx) {
+status_t interrupts_register_handler_owned(BOOT_U64 vector, interrupt_handler_t handler, void *ctx, const char *owner) {
+  interrupt_slot_t *slot;
+  const char *new_owner;
+
   if (g_interrupts.initialized == 0) {
     return STATUS_DEFERRED;
   }
@@ -60,9 +107,55 @@ status_t interrupts_register_handler(BOOT_U64 vector, interrupt_handler_t handle
     return STATUS_INVALID_ARG;
   }
 
-  g_interrupts.slots[vector].fn = handler;
-  g_interrupts.slots[vector].ctx = ctx;
+  new_owner = (owner == (const char *)0) ? g_irq_owner_anon : owner;
+  slot = &g_interrupts.slots[vector];
+  if (slot->fn != (interrupt_handler_t)0 && !owner_eq(slot->owner, new_owner)) {
+    return STATUS_BUSY;
+  }
+
+  slot->fn = handler;
+  slot->ctx = ctx;
+  slot->owner = new_owner;
+  g_interrupts.unhandled_once[vector] = 0ULL;
   return STATUS_OK;
+}
+
+status_t interrupts_register_handler(BOOT_U64 vector, interrupt_handler_t handler, void *ctx) {
+  return interrupts_register_handler_owned(vector, handler, ctx, g_irq_owner_anon);
+}
+
+status_t interrupts_unregister_handler(BOOT_U64 vector, const char *owner) {
+  interrupt_slot_t *slot;
+  const char *expected_owner;
+
+  if (g_interrupts.initialized == 0) {
+    return STATUS_DEFERRED;
+  }
+  if (vector >= INTERRUPT_MAX_VECTORS) {
+    return STATUS_INVALID_ARG;
+  }
+
+  slot = &g_interrupts.slots[vector];
+  if (slot->fn == (interrupt_handler_t)0) {
+    return STATUS_NOT_FOUND;
+  }
+
+  expected_owner = (owner == (const char *)0) ? g_irq_owner_anon : owner;
+  if (!owner_eq(slot->owner, expected_owner)) {
+    return STATUS_BUSY;
+  }
+
+  slot->fn = (interrupt_handler_t)0;
+  slot->ctx = (void *)0;
+  slot->owner = (const char *)0;
+  return STATUS_OK;
+}
+
+const char *interrupts_handler_owner(BOOT_U64 vector) {
+  if (g_interrupts.initialized == 0 || vector >= INTERRUPT_MAX_VECTORS) {
+    return (const char *)0;
+  }
+  return g_interrupts.slots[vector].owner;
 }
 
 void interrupts_dispatch(const interrupt_frame_t *frame) {
@@ -72,7 +165,7 @@ void interrupts_dispatch(const interrupt_frame_t *frame) {
     return;
   }
   if (frame->vector >= INTERRUPT_MAX_VECTORS) {
-    default_interrupt_handler(frame);
+    interrupts_panic_exception(frame, "invalid_vector");
     return;
   }
 

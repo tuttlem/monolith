@@ -4,6 +4,7 @@
 #include "kmalloc.h"
 #include "memory_init.h"
 #include "page_alloc.h"
+#include "timer.h"
 
 #ifndef CORE_ARCH_NAME
 #define CORE_ARCH_NAME "unknown"
@@ -19,6 +20,14 @@
 
 #ifndef MONOLITH_KMALLOC_DEBUG_EXERCISE
 #define MONOLITH_KMALLOC_DEBUG_EXERCISE 1
+#endif
+
+#ifndef MONOLITH_TIMER_SELFTEST
+#define MONOLITH_TIMER_SELFTEST 1
+#endif
+
+#ifndef MONOLITH_TIMER_SELFTEST_SPINS
+#define MONOLITH_TIMER_SELFTEST_SPINS 200000000ULL
 #endif
 
 static const char *boot_info_arch_name(BOOT_U64 arch_id) {
@@ -38,6 +47,28 @@ static const char *boot_info_arch_name(BOOT_U64 arch_id) {
   }
 }
 
+static BOOT_U64 timer_selftest_spins_for_arch(BOOT_U64 arch_id) {
+  if (arch_id == BOOT_INFO_ARCH_X86_64) {
+    return MONOLITH_TIMER_SELFTEST_SPINS;
+  }
+  return 20000000ULL;
+}
+
+static int timer_progress_selftest(BOOT_U64 spins) {
+  BOOT_U64 start = timer_ticks();
+  BOOT_U64 last = start;
+  BOOT_U64 i;
+
+  for (i = 0; i < spins; ++i) {
+    last = timer_ticks();
+    if (last != start) {
+      return 1;
+    }
+    __asm__ volatile("" : : : "memory");
+  }
+  return 0;
+}
+
 
 void kmain(const boot_info_t *boot_info) {
   boot_info_t *mutable_boot_info;
@@ -45,6 +76,7 @@ void kmain(const boot_info_t *boot_info) {
   status_t page_status;
   status_t heap_status;
   status_t irq_status;
+  status_t timer_status;
 
   arch_puts("HELLO FROM CORE KERNEL (" CORE_ARCH_NAME ") We good!\n");
   if (boot_info == (const boot_info_t *)0) {
@@ -57,6 +89,7 @@ void kmain(const boot_info_t *boot_info) {
   page_status = page_alloc_init(mutable_boot_info);
   heap_status = kmalloc_init(mutable_boot_info);
   irq_status = interrupts_init(boot_info);
+  timer_status = timer_init(boot_info);
 
   if (!status_is_ok(mem_status) && mem_status != STATUS_DEFERRED) {
     kprintf("arch_memory_init: %s (%d)\n", status_str(mem_status), mem_status);
@@ -70,6 +103,22 @@ void kmain(const boot_info_t *boot_info) {
   if (!status_is_ok(irq_status) && irq_status != STATUS_DEFERRED) {
     kprintf("interrupts_init: %s (%d)\n", status_str(irq_status), irq_status);
   }
+  if (!status_is_ok(timer_status) && timer_status != STATUS_DEFERRED) {
+    kprintf("timer_init: %s (%d)\n", status_str(timer_status), timer_status);
+  }
+
+#if MONOLITH_TIMER_SELFTEST
+  if (timer_status == STATUS_OK) {
+    BOOT_U64 spins = timer_selftest_spins_for_arch(boot_info->arch_id);
+    if (timer_progress_selftest(spins)) {
+      kprintf("timer self-test: PASS (hz=%llu ticks=%llu)\n", timer_hz(), timer_ticks());
+    } else {
+      kprintf("timer self-test: FAILED (ticks did not advance)\n");
+    }
+  } else if (timer_status == STATUS_DEFERRED) {
+    kprintf("timer self-test: SKIP (deferred)\n");
+  }
+#endif
 
 #if MONOLITH_KMALLOC_SELFTEST
   if (!kmalloc_self_test()) {

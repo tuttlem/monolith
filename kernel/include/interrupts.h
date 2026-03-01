@@ -19,6 +19,9 @@ typedef void (*interrupt_handler_t)(const interrupt_frame_t *frame, void *ctx);
 
 status_t interrupts_init(const boot_info_t *boot_info);
 status_t interrupts_register_handler(BOOT_U64 vector, interrupt_handler_t handler, void *ctx);
+status_t interrupts_register_handler_owned(BOOT_U64 vector, interrupt_handler_t handler, void *ctx, const char *owner);
+status_t interrupts_unregister_handler(BOOT_U64 vector, const char *owner);
+const char *interrupts_handler_owner(BOOT_U64 vector);
 void interrupts_dispatch(const interrupt_frame_t *frame);
 void interrupts_enable(void);
 void interrupts_disable(void);

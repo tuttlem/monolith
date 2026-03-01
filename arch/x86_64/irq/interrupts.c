@@ -65,8 +65,10 @@ __attribute__((used)) static void x86_64_exception_fatal(BOOT_U64 vector) {
 
 #define X86_64_EXCEPTION_STUB(v)                                                                        \
   __attribute__((naked)) static void x86_64_exc_##v(void) {                                            \
-    __asm__ volatile("movq $" #v ", %rdi\n\t"                                                          \
+    __asm__ volatile("movq $" #v ", %rcx\n\t"                                                          \
+                     "subq $32, %rsp\n\t"                                                              \
                      "callq x86_64_exception_fatal\n\t"                                                \
+                     "addq $32, %rsp\n\t"                                                              \
                      "1:\n\t"                                                                          \
                      "cli\n\t"                                                                         \
                      "hlt\n\t"                                                                         \
@@ -120,24 +122,76 @@ __attribute__((used)) static void x86_64_irq_dispatch_common(BOOT_U64 vector) {
 
 __attribute__((naked)) static void x86_64_irq_common_stub(void) {
   __asm__ volatile("pushq %rax\n\t"
+                   "pushq %rbx\n\t"
                    "pushq %rcx\n\t"
                    "pushq %rdx\n\t"
                    "pushq %rsi\n\t"
                    "pushq %rdi\n\t"
+                   "pushq %rbp\n\t"
                    "pushq %r8\n\t"
                    "pushq %r9\n\t"
                    "pushq %r10\n\t"
                    "pushq %r11\n\t"
-                   "movq $255, %rdi\n\t"
+                   "pushq %r12\n\t"
+                   "pushq %r13\n\t"
+                   "pushq %r14\n\t"
+                   "pushq %r15\n\t"
+                   "movq $255, %rcx\n\t"
+                   "subq $32, %rsp\n\t"
                    "callq x86_64_irq_dispatch_common\n\t"
+                   "addq $32, %rsp\n\t"
+                   "popq %r15\n\t"
+                   "popq %r14\n\t"
+                   "popq %r13\n\t"
+                   "popq %r12\n\t"
                    "popq %r11\n\t"
                    "popq %r10\n\t"
                    "popq %r9\n\t"
                    "popq %r8\n\t"
+                   "popq %rbp\n\t"
                    "popq %rdi\n\t"
                    "popq %rsi\n\t"
                    "popq %rdx\n\t"
                    "popq %rcx\n\t"
+                   "popq %rbx\n\t"
+                   "popq %rax\n\t"
+                   "iretq\n\t");
+}
+
+__attribute__((naked)) static void x86_64_irq_stub_32(void) {
+  __asm__ volatile("pushq %rax\n\t"
+                   "pushq %rbx\n\t"
+                   "pushq %rcx\n\t"
+                   "pushq %rdx\n\t"
+                   "pushq %rsi\n\t"
+                   "pushq %rdi\n\t"
+                   "pushq %rbp\n\t"
+                   "pushq %r8\n\t"
+                   "pushq %r9\n\t"
+                   "pushq %r10\n\t"
+                   "pushq %r11\n\t"
+                   "pushq %r12\n\t"
+                   "pushq %r13\n\t"
+                   "pushq %r14\n\t"
+                   "pushq %r15\n\t"
+                   "movq $32, %rcx\n\t"
+                   "subq $32, %rsp\n\t"
+                   "callq x86_64_irq_dispatch_common\n\t"
+                   "addq $32, %rsp\n\t"
+                   "popq %r15\n\t"
+                   "popq %r14\n\t"
+                   "popq %r13\n\t"
+                   "popq %r12\n\t"
+                   "popq %r11\n\t"
+                   "popq %r10\n\t"
+                   "popq %r9\n\t"
+                   "popq %r8\n\t"
+                   "popq %rbp\n\t"
+                   "popq %rdi\n\t"
+                   "popq %rsi\n\t"
+                   "popq %rdx\n\t"
+                   "popq %rcx\n\t"
+                   "popq %rbx\n\t"
                    "popq %rax\n\t"
                    "iretq\n\t");
 }
@@ -165,10 +219,12 @@ status_t arch_interrupts_init(const boot_info_t *boot_info) {
   for (i = 0; i < 32ULL; ++i) {
     set_gate(i, g_exceptions[i], cs);
   }
+  set_gate(32ULL, x86_64_irq_stub_32, cs);
 
   g_idtr.limit = (unsigned short)(sizeof(g_idt) - 1U);
   g_idtr.base = (BOOT_U64)(BOOT_UPTR)&g_idt[0];
   lidt(&g_idtr);
+  __asm__ volatile("cli" : : : "memory");
   return STATUS_OK;
 }
 
