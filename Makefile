@@ -145,7 +145,7 @@ $(BUILD_A64)/uefi.img: $(BUILD_A64)/BOOTAA64.EFI scripts/mk-uefi-image.sh
 	@./scripts/mk-uefi-image.sh arm64 $(BUILD_A64)/BOOTAA64.EFI $@
 
 RISCV64_SRCS := kernel/kmain.c kernel/print.c kernel/status.c kernel/interrupts.c kernel/diag/boot_info.c kernel/mm/page_alloc.c kernel/mm/kmalloc.c arch/riscv64/mm/memory_init.c arch/riscv64/irq/interrupts.c arch/riscv64/boot/main.c arch/riscv64/boot/console.c lib/memset.c lib/memcpy.c lib/strlen.c
-RISCV64_OBJS := $(patsubst %.c,$(BUILD_RISCV64)/%.o,$(RISCV64_SRCS)) $(BUILD_RISCV64)/arch/riscv64/start.o
+RISCV64_OBJS := $(patsubst %.c,$(BUILD_RISCV64)/%.o,$(RISCV64_SRCS)) $(BUILD_RISCV64)/arch/riscv64/start.o $(BUILD_RISCV64)/arch/riscv64/irq/entry.o
 
 MIPS_SRCS := kernel/kmain.c kernel/print.c kernel/status.c kernel/interrupts.c kernel/diag/boot_info.c kernel/mm/page_alloc.c kernel/mm/kmalloc.c arch/mips/mm/memory_init.c arch/mips/irq/interrupts.c arch/mips/boot/main.c arch/mips/boot/console.c lib/memset.c lib/memcpy.c lib/strlen.c
 MIPS_OBJS := $(patsubst %.c,$(BUILD_MIPS)/%.o,$(MIPS_SRCS)) $(BUILD_MIPS)/arch/mips/start.o
@@ -184,6 +184,10 @@ $(BUILD_SPARC64)/%.o: %.c
 	$(SPARC64_CC) $(SPARC64_CFLAGS) -c $< -o $@
 
 $(BUILD_RISCV64)/arch/riscv64/start.o: arch/riscv64/start.S
+	@mkdir -p $(@D)
+	$(RISCV64_CC) $(RISCV64_ASFLAGS) -c $< -o $@
+
+$(BUILD_RISCV64)/arch/riscv64/irq/entry.o: arch/riscv64/irq/entry.S
 	@mkdir -p $(@D)
 	$(RISCV64_CC) $(RISCV64_ASFLAGS) -c $< -o $@
 

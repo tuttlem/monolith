@@ -1,12 +1,36 @@
 #include "arch_interrupts.h"
+#include "interrupts.h"
 
 status_t arch_interrupts_init(const boot_info_t *boot_info) {
+  extern void riscv64_trap_entry(void);
+  BOOT_U64 stvec_base;
+
   if (boot_info == (const boot_info_t *)0 || boot_info->arch_id != BOOT_INFO_ARCH_RISCV64) {
     return STATUS_INVALID_ARG;
   }
-  return STATUS_DEFERRED;
+
+  stvec_base = (BOOT_U64)(BOOT_UPTR)&riscv64_trap_entry;
+  __asm__ volatile("csrw stvec, %0" : : "r"(stvec_base) : "memory");
+  return STATUS_OK;
 }
 
-void arch_interrupts_enable(void) {}
+void arch_interrupts_enable(void) { __asm__ volatile("csrsi sstatus, 2" : : : "memory"); }
 
-void arch_interrupts_disable(void) {}
+void arch_interrupts_disable(void) { __asm__ volatile("csrci sstatus, 2" : : : "memory"); }
+
+BOOT_U64 riscv64_trap_c(BOOT_U64 scause, BOOT_U64 sepc, BOOT_U64 stval, BOOT_U64 sstatus,
+                        BOOT_U64 sp_at_trap) {
+  interrupt_frame_t frame;
+  BOOT_U64 is_interrupt = (scause >> 63) & 1ULL;
+  BOOT_U64 cause_code = scause & ((1ULL << 63) - 1ULL);
+
+  frame.arch_id = BOOT_INFO_ARCH_RISCV64;
+  frame.vector = is_interrupt ? (32ULL + cause_code) : cause_code;
+  frame.error_code = scause;
+  frame.fault_addr = stval;
+  frame.ip = sepc;
+  frame.sp = sp_at_trap;
+  frame.flags = sstatus;
+  interrupts_dispatch(&frame);
+  return sepc;
+}
