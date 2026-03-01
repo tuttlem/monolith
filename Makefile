@@ -152,7 +152,7 @@ RISCV64_SRCS := kernel/kmain.c kernel/print.c kernel/status.c kernel/interrupts.
 RISCV64_OBJS := $(patsubst %.c,$(BUILD_RISCV64)/%.o,$(RISCV64_SRCS)) $(BUILD_RISCV64)/arch/riscv64/start.o $(BUILD_RISCV64)/arch/riscv64/irq/entry.o
 
 MIPS_SRCS := kernel/kmain.c kernel/print.c kernel/status.c kernel/interrupts.c kernel/diag/boot_info.c kernel/mm/page_alloc.c kernel/mm/kmalloc.c arch/mips/mm/memory_init.c arch/mips/irq/interrupts.c arch/mips/boot/main.c arch/mips/boot/console.c lib/memset.c lib/memcpy.c lib/strlen.c
-MIPS_OBJS := $(patsubst %.c,$(BUILD_MIPS)/%.o,$(MIPS_SRCS)) $(BUILD_MIPS)/arch/mips/start.o
+MIPS_OBJS := $(patsubst %.c,$(BUILD_MIPS)/%.o,$(MIPS_SRCS)) $(BUILD_MIPS)/arch/mips/start.o $(BUILD_MIPS)/arch/mips/irq/entry.o
 
 SPARC64_SRCS := kernel/kmain.c kernel/print.c kernel/status.c kernel/interrupts.c kernel/diag/boot_info.c kernel/mm/page_alloc.c kernel/mm/kmalloc.c arch/sparc64/mm/memory_init.c arch/sparc64/irq/interrupts.c arch/sparc64/boot/main.c arch/sparc64/boot/console.c lib/memset.c lib/memcpy.c lib/strlen.c
 SPARC64_OBJS := $(patsubst %.c,$(BUILD_SPARC64)/%.o,$(SPARC64_SRCS)) $(BUILD_SPARC64)/arch/sparc64/start.o
@@ -196,6 +196,10 @@ $(BUILD_RISCV64)/arch/riscv64/irq/entry.o: arch/riscv64/irq/entry.S
 	$(RISCV64_CC) $(RISCV64_ASFLAGS) -c $< -o $@
 
 $(BUILD_MIPS)/arch/mips/start.o: arch/mips/start.S
+	@mkdir -p $(@D)
+	$(MIPS_CC) $(MIPS_ASFLAGS) -c $< -o $@
+
+$(BUILD_MIPS)/arch/mips/irq/entry.o: arch/mips/irq/entry.S
 	@mkdir -p $(@D)
 	$(MIPS_CC) $(MIPS_ASFLAGS) -c $< -o $@
 
