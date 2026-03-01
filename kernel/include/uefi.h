@@ -75,4 +75,103 @@ typedef struct {
   VOID *VendorTable;
 } EFI_CONFIGURATION_TABLE;
 
+typedef struct {
+  UINT32 Type;
+  UINT32 Pad;
+  UINT64 PhysicalStart;
+  UINT64 VirtualStart;
+  UINT64 NumberOfPages;
+  UINT64 Attribute;
+} EFI_MEMORY_DESCRIPTOR;
+
+typedef struct {
+  UINT32 RedMask;
+  UINT32 GreenMask;
+  UINT32 BlueMask;
+  UINT32 ReservedMask;
+} EFI_PIXEL_BITMASK;
+
+typedef struct {
+  UINT32 Version;
+  UINT32 HorizontalResolution;
+  UINT32 VerticalResolution;
+  UINT32 PixelFormat;
+  EFI_PIXEL_BITMASK PixelInformation;
+  UINT32 PixelsPerScanLine;
+} EFI_GRAPHICS_OUTPUT_MODE_INFORMATION;
+
+typedef struct {
+  UINT32 MaxMode;
+  UINT32 Mode;
+  EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info;
+  UINTN SizeOfInfo;
+  UINT64 FrameBufferBase;
+  UINTN FrameBufferSize;
+} EFI_GRAPHICS_OUTPUT_PROTOCOL_MODE;
+
+struct EFI_GRAPHICS_OUTPUT_PROTOCOL;
+
+typedef struct EFI_GRAPHICS_OUTPUT_PROTOCOL {
+  VOID *QueryMode;
+  VOID *SetMode;
+  VOID *Blt;
+  EFI_GRAPHICS_OUTPUT_PROTOCOL_MODE *Mode;
+} EFI_GRAPHICS_OUTPUT_PROTOCOL;
+
+typedef EFI_STATUS(EFIAPI *EFI_GET_MEMORY_MAP)(UINTN *, EFI_MEMORY_DESCRIPTOR *, UINTN *, UINTN *,
+                                                UINT32 *);
+typedef EFI_STATUS(EFIAPI *EFI_LOCATE_PROTOCOL)(EFI_GUID *, VOID *, VOID **);
+
+typedef struct {
+  EFI_TABLE_HEADER Hdr;
+  VOID *RaiseTPL;
+  VOID *RestoreTPL;
+  VOID *AllocatePages;
+  VOID *FreePages;
+  EFI_GET_MEMORY_MAP GetMemoryMap;
+  VOID *AllocatePool;
+  VOID *FreePool;
+  VOID *CreateEvent;
+  VOID *SetTimer;
+  VOID *WaitForEvent;
+  VOID *SignalEvent;
+  VOID *CloseEvent;
+  VOID *CheckEvent;
+  VOID *InstallProtocolInterface;
+  VOID *ReinstallProtocolInterface;
+  VOID *UninstallProtocolInterface;
+  VOID *HandleProtocol;
+  VOID *Reserved;
+  VOID *RegisterProtocolNotify;
+  VOID *LocateHandle;
+  VOID *LocateDevicePath;
+  VOID *InstallConfigurationTable;
+  VOID *LoadImage;
+  VOID *StartImage;
+  VOID *Exit;
+  VOID *UnloadImage;
+  VOID *ExitBootServices;
+  VOID *GetNextMonotonicCount;
+  VOID *Stall;
+  VOID *SetWatchdogTimer;
+  VOID *ConnectController;
+  VOID *DisconnectController;
+  VOID *OpenProtocol;
+  VOID *CloseProtocol;
+  VOID *OpenProtocolInformation;
+  VOID *ProtocolsPerHandle;
+  VOID *LocateHandleBuffer;
+  EFI_LOCATE_PROTOCOL LocateProtocol;
+  VOID *InstallMultipleProtocolInterfaces;
+  VOID *UninstallMultipleProtocolInterfaces;
+  VOID *CalculateCrc32;
+  VOID *CopyMem;
+  VOID *SetMem;
+  VOID *CreateEventEx;
+} EFI_BOOT_SERVICES;
+
+#define EFI_SUCCESS ((EFI_STATUS)0)
+#define EFI_ERROR_MASK ((EFI_STATUS)(1ULL << ((sizeof(EFI_STATUS) * 8) - 1)))
+#define EFI_ERROR(Status) (((Status) & EFI_ERROR_MASK) != 0)
+
 #endif
