@@ -44,6 +44,19 @@ void kmain(const boot_info_t *boot_info) {
     kprintf("boot_info.memory_map=0x%llx size=0x%llx desc_size=0x%llx desc_ver=0x%llx\n",
             boot_info->memory_map, boot_info->memory_map_size,
             boot_info->memory_map_descriptor_size, boot_info->memory_map_descriptor_version);
+    kprintf("boot_info.memory_regions=%u/%u\n", boot_info->memory_region_count,
+            boot_info->memory_region_capacity);
+    if (boot_info->memory_region_count > 0) {
+      BOOT_U32 i;
+      BOOT_U32 show = boot_info->memory_region_count;
+      if (show > 6U) {
+        show = 6U;
+      }
+      for (i = 0; i < show; ++i) {
+        const boot_mem_region_t *r = &boot_info->memory_regions[i];
+        kprintf("  region[%u]: base=0x%llx size=0x%llx kind=%u\n", i, r->base, r->size, r->kind);
+      }
+    }
     kprintf("boot_info.framebuffer=0x%llx %ux%u ppsl=%u fmt=%u\n",
             boot_info->framebuffer_base, boot_info->framebuffer_width,
             boot_info->framebuffer_height, boot_info->framebuffer_pixels_per_scanline,

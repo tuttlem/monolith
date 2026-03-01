@@ -25,6 +25,9 @@ The struct is defined in `kernel/include/boot_info.h`.
 - `memory_map_size`: Total bytes at `memory_map`.
 - `memory_map_descriptor_size`: Size of one memory descriptor.
 - `memory_map_descriptor_version`: Descriptor format version.
+- `memory_region_count`: Number of normalized entries in `memory_regions`.
+- `memory_region_capacity`: Capacity of `memory_regions` (`BOOT_INFO_MAX_MEM_REGIONS`).
+- `memory_regions[]`: Fixed-capacity normalized memory-region array (`boot_mem_region_t`).
 - `acpi_rsdp`: Pointer to ACPI RSDP if present, else `0`.
 - `dtb_ptr`: Pointer to Device Tree Blob if present, else `0`.
 - `boot_cpu_id`: Boot CPU/hart id if known, else `0`.
@@ -60,6 +63,7 @@ In `arch/x86_64/boot/efi_main.c`, these fields are actively populated:
 - `memory_map_size`
 - `memory_map_descriptor_size`
 - `memory_map_descriptor_version`
+- `memory_regions[]` normalized from UEFI descriptors
 - `acpi_rsdp` (searched from UEFI config table via ACPI 2.0/1.0 GUIDs)
 - `framebuffer_*` (from GOP, when present)
 
@@ -75,6 +79,7 @@ Fields not currently populated are set to `0` and left clear in `valid_mask`.
   - `BOOT_INFO_HAS_ENTRY_STATE`
   - `BOOT_INFO_HAS_VM_STATE` when `satp != 0`
   - `BOOT_INFO_HAS_ARCH_DATA`
+  - `BOOT_INFO_HAS_MEM_REGIONS`
   - `BOOT_INFO_HAS_BOOT_CPU_ID`
   - `BOOT_INFO_HAS_DTB` when `dtb_ptr != 0`
   - `BOOT_INFO_HAS_SERIAL`
@@ -82,6 +87,7 @@ Fields not currently populated are set to `0` and left clear in `valid_mask`.
 - `dtb_ptr` from entry register `a1`
 - `serial_port = 0x10000000` (QEMU virt UART)
 - extension data includes `satp`, UART base, and QEMU RAM profile
+- `memory_regions[0]` populated from DTB `/memory/reg` when available, otherwise fallback profile
 
 `mips` and `sparc64` currently provide:
 
@@ -90,6 +96,7 @@ Fields not currently populated are set to `0` and left clear in `valid_mask`.
 - `valid_mask` includes:
   - `BOOT_INFO_HAS_ENTRY_STATE`
   - `BOOT_INFO_HAS_ARCH_DATA`
+  - `BOOT_INFO_HAS_MEM_REGIONS`
   - `BOOT_INFO_HAS_SERIAL`
 - `serial_port` from architecture console backend base
 - extension data includes captured firmware/entry register context and QEMU RAM profile
@@ -100,8 +107,8 @@ All other fields are currently zero until architecture-specific entry capture is
 
 - UEFI path (`x86_64`/`arm64`): `boot_info_ext_uefi_t`
 - `riscv64`: `boot_info_ext_riscv64_t`
-- `mips`: `boot_info_ext_mips_t` (placeholder)
-- `sparc64`: `boot_info_ext_sparc64_t` (placeholder)
+- `mips`: `boot_info_ext_mips_t`
+- `sparc64`: `boot_info_ext_sparc64_t`
 
 ## Rule
 

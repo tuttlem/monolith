@@ -29,6 +29,22 @@ typedef unsigned long BOOT_UPTR;
 #define BOOT_INFO_HAS_DTB (1ULL << 8)
 #define BOOT_INFO_HAS_BOOT_CPU_ID (1ULL << 9)
 #define BOOT_INFO_HAS_ARCH_DATA (1ULL << 10)
+#define BOOT_INFO_HAS_MEM_REGIONS (1ULL << 11)
+
+#define BOOT_INFO_MAX_MEM_REGIONS 64U
+
+#define BOOT_MEM_REGION_USABLE 1U
+#define BOOT_MEM_REGION_RESERVED 2U
+#define BOOT_MEM_REGION_ACPI_RECLAIM 3U
+#define BOOT_MEM_REGION_ACPI_NVS 4U
+#define BOOT_MEM_REGION_MMIO 5U
+
+typedef struct {
+  BOOT_U64 base;
+  BOOT_U64 size;
+  BOOT_U32 kind;
+  BOOT_U32 reserved;
+} boot_mem_region_t;
 
 struct boot_info {
   /* ABI identity/versioning */
@@ -51,6 +67,9 @@ struct boot_info {
   BOOT_U64 memory_map_size;
   BOOT_U64 memory_map_descriptor_size;
   BOOT_U64 memory_map_descriptor_version;
+  BOOT_U32 memory_region_count;
+  BOOT_U32 memory_region_capacity;
+  boot_mem_region_t memory_regions[BOOT_INFO_MAX_MEM_REGIONS];
 
   /* Platform tables */
   BOOT_U64 acpi_rsdp;

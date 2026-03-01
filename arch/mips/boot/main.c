@@ -36,6 +36,13 @@ void arch_main(BOOT_U64 entry_a0, BOOT_U64 entry_a1, BOOT_U64 entry_a2, BOOT_U64
   boot_info.memory_map_size = 0;
   boot_info.memory_map_descriptor_size = 0;
   boot_info.memory_map_descriptor_version = 0;
+  boot_info.memory_region_count = 1;
+  boot_info.memory_region_capacity = BOOT_INFO_MAX_MEM_REGIONS;
+  boot_info.memory_regions[0].base = MIPS_RAM_BASE;
+  boot_info.memory_regions[0].size = MIPS_RAM_SIZE;
+  boot_info.memory_regions[0].kind = BOOT_MEM_REGION_USABLE;
+  boot_info.memory_regions[0].reserved = 0;
+  boot_info.valid_mask |= BOOT_INFO_HAS_MEM_REGIONS;
   boot_info.acpi_rsdp = 0;
   boot_info.dtb_ptr = 0;
   boot_info.boot_cpu_id = 0;

@@ -2,7 +2,6 @@
 #include "kernel.h"
 
 static EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *g_con_out;
-static EFI_MEMORY_DESCRIPTOR g_memory_map[512];
 
 static const EFI_GUID k_gop_guid = {
     0x9042a9deU, 0x23dcU, 0x4a38U, {0x96U, 0xfbU, 0x7aU, 0xdeU, 0xd0U, 0x80U, 0x51U, 0x6aU}};
@@ -71,6 +70,92 @@ static BOOT_U64 read_cr3(void) {
   return cr3;
 }
 
+static BOOT_U32 uefi_memory_kind(UINT32 uefi_type) {
+  switch (uefi_type) {
+  case 7U:
+    return BOOT_MEM_REGION_USABLE;
+  case 9U:
+    return BOOT_MEM_REGION_ACPI_RECLAIM;
+  case 10U:
+    return BOOT_MEM_REGION_ACPI_NVS;
+  case 11U:
+  case 12U:
+    return BOOT_MEM_REGION_MMIO;
+  default:
+    return BOOT_MEM_REGION_RESERVED;
+  }
+}
+
+static void add_memory_region(boot_info_t *boot_info, BOOT_U64 base, BOOT_U64 size, BOOT_U32 kind) {
+  BOOT_U32 idx;
+
+  if (size == 0 || boot_info->memory_region_count >= boot_info->memory_region_capacity) {
+    return;
+  }
+
+  idx = boot_info->memory_region_count++;
+  boot_info->memory_regions[idx].base = base;
+  boot_info->memory_regions[idx].size = size;
+  boot_info->memory_regions[idx].kind = kind;
+  boot_info->memory_regions[idx].reserved = 0;
+}
+
+static void capture_uefi_memory_map(boot_info_t *boot_info, EFI_BOOT_SERVICES *boot_services) {
+  EFI_MEMORY_DESCRIPTOR *map = (EFI_MEMORY_DESCRIPTOR *)0;
+  EFI_STATUS status;
+  UINTN map_size = 0;
+  UINTN map_key = 0;
+  UINTN descriptor_size = 0;
+  UINT32 descriptor_version = 0;
+  UINTN i;
+  UINTN descriptor_count;
+  UINT8 *cursor;
+
+  if (boot_services == (VOID *)0 || boot_services->GetMemoryMap == (VOID *)0 ||
+      boot_services->AllocatePool == (VOID *)0) {
+    return;
+  }
+
+  status = boot_services->GetMemoryMap(&map_size, map, &map_key, &descriptor_size, &descriptor_version);
+  if (status != EFI_BUFFER_TOO_SMALL || descriptor_size == 0) {
+    return;
+  }
+
+  map_size += 2 * descriptor_size;
+  status = boot_services->AllocatePool(EfiLoaderData, map_size, (VOID **)&map);
+  if (EFI_ERROR(status) || map == (VOID *)0) {
+    return;
+  }
+
+  status = boot_services->GetMemoryMap(&map_size, map, &map_key, &descriptor_size, &descriptor_version);
+  if (EFI_ERROR(status)) {
+    if (boot_services->FreePool != (VOID *)0) {
+      boot_services->FreePool((VOID *)map);
+    }
+    return;
+  }
+
+  boot_info->memory_map = (BOOT_U64)(UINTN)map;
+  boot_info->memory_map_size = (BOOT_U64)map_size;
+  boot_info->memory_map_descriptor_size = (BOOT_U64)descriptor_size;
+  boot_info->memory_map_descriptor_version = (BOOT_U64)descriptor_version;
+  boot_info->valid_mask |= BOOT_INFO_HAS_MEMMAP;
+
+  descriptor_count = map_size / descriptor_size;
+  cursor = (UINT8 *)map;
+  for (i = 0; i < descriptor_count; ++i) {
+    EFI_MEMORY_DESCRIPTOR *d = (EFI_MEMORY_DESCRIPTOR *)(VOID *)cursor;
+    BOOT_U64 base = (BOOT_U64)d->PhysicalStart;
+    BOOT_U64 size = (BOOT_U64)d->NumberOfPages * 4096ULL;
+    add_memory_region(boot_info, base, size, uefi_memory_kind(d->Type));
+    cursor += descriptor_size;
+  }
+
+  if (boot_info->memory_region_count > 0) {
+    boot_info->valid_mask |= BOOT_INFO_HAS_MEM_REGIONS;
+  }
+}
+
 static void uefi_putc(char c) {
   CHAR16 buf[2];
 
@@ -131,22 +216,9 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *system_tab
   boot_info.memory_map_size = 0;
   boot_info.memory_map_descriptor_size = 0;
   boot_info.memory_map_descriptor_version = 0;
-  if (boot_services != (VOID *)0 && boot_services->GetMemoryMap != (VOID *)0) {
-    UINTN map_size = (UINTN)sizeof(g_memory_map);
-    UINTN map_key = 0;
-    UINTN descriptor_size = 0;
-    UINT32 descriptor_version = 0;
-
-    status = boot_services->GetMemoryMap(&map_size, g_memory_map, &map_key, &descriptor_size,
-                                         &descriptor_version);
-    if (!EFI_ERROR(status)) {
-      boot_info.memory_map = (BOOT_U64)(UINTN)g_memory_map;
-      boot_info.memory_map_size = (BOOT_U64)map_size;
-      boot_info.memory_map_descriptor_size = (BOOT_U64)descriptor_size;
-      boot_info.memory_map_descriptor_version = (BOOT_U64)descriptor_version;
-      boot_info.valid_mask |= BOOT_INFO_HAS_MEMMAP;
-    }
-  }
+  boot_info.memory_region_count = 0;
+  boot_info.memory_region_capacity = BOOT_INFO_MAX_MEM_REGIONS;
+  capture_uefi_memory_map(&boot_info, boot_services);
   boot_info.acpi_rsdp = find_acpi_rsdp(system_table);
   if (boot_info.acpi_rsdp != 0) {
     boot_info.valid_mask |= BOOT_INFO_HAS_ACPI_RSDP;

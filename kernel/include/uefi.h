@@ -121,6 +121,8 @@ typedef struct EFI_GRAPHICS_OUTPUT_PROTOCOL {
 typedef EFI_STATUS(EFIAPI *EFI_GET_MEMORY_MAP)(UINTN *, EFI_MEMORY_DESCRIPTOR *, UINTN *, UINTN *,
                                                 UINT32 *);
 typedef EFI_STATUS(EFIAPI *EFI_LOCATE_PROTOCOL)(EFI_GUID *, VOID *, VOID **);
+typedef EFI_STATUS(EFIAPI *EFI_ALLOCATE_POOL)(UINT32, UINTN, VOID **);
+typedef EFI_STATUS(EFIAPI *EFI_FREE_POOL)(VOID *);
 
 typedef struct {
   EFI_TABLE_HEADER Hdr;
@@ -129,8 +131,8 @@ typedef struct {
   VOID *AllocatePages;
   VOID *FreePages;
   EFI_GET_MEMORY_MAP GetMemoryMap;
-  VOID *AllocatePool;
-  VOID *FreePool;
+  EFI_ALLOCATE_POOL AllocatePool;
+  EFI_FREE_POOL FreePool;
   VOID *CreateEvent;
   VOID *SetTimer;
   VOID *WaitForEvent;
@@ -173,5 +175,8 @@ typedef struct {
 #define EFI_SUCCESS ((EFI_STATUS)0)
 #define EFI_ERROR_MASK ((EFI_STATUS)(1ULL << ((sizeof(EFI_STATUS) * 8) - 1)))
 #define EFI_ERROR(Status) (((Status) & EFI_ERROR_MASK) != 0)
+#define EFI_BUFFER_TOO_SMALL ((EFI_STATUS)(EFI_ERROR_MASK | 5ULL))
+
+#define EfiLoaderData 4U
 
 #endif
