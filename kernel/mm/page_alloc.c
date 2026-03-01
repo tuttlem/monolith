@@ -2,6 +2,7 @@
 
 #define PAGE_SIZE 4096ULL
 #define ONE_MIB 0x100000ULL
+#define RISCV64_ALLOC_FLOOR 0x80400000ULL
 #define MAX_USABLE_RANGES 64U
 #define MAX_RECYCLED_PAGES 256U
 
@@ -50,7 +51,7 @@ static void clear_state(void) {
   }
 }
 
-static void add_usable_range(BOOT_U64 base, BOOT_U64 size) {
+static void add_usable_range(BOOT_U64 base, BOOT_U64 size, BOOT_U64 floor) {
   BOOT_U64 start;
   BOOT_U64 end;
   BOOT_U64 page_count;
@@ -66,11 +67,11 @@ static void add_usable_range(BOOT_U64 base, BOOT_U64 size) {
     return;
   }
 
-  if (end <= ONE_MIB) {
+  if (end <= floor) {
     return;
   }
-  if (start < ONE_MIB) {
-    start = ONE_MIB;
+  if (start < floor) {
+    start = floor;
   }
   if (end <= start) {
     return;
@@ -90,6 +91,7 @@ static void add_usable_range(BOOT_U64 base, BOOT_U64 size) {
 
 void page_alloc_init(boot_info_t *boot_info) {
   BOOT_U32 i;
+  BOOT_U64 floor = ONE_MIB;
 
   clear_state();
 
@@ -97,8 +99,11 @@ void page_alloc_init(boot_info_t *boot_info) {
     return;
   }
 
-  if (boot_info->arch_id != BOOT_INFO_ARCH_X86_64) {
+  if (boot_info->arch_id != BOOT_INFO_ARCH_X86_64 && boot_info->arch_id != BOOT_INFO_ARCH_RISCV64) {
     return;
+  }
+  if (boot_info->arch_id == BOOT_INFO_ARCH_RISCV64) {
+    floor = RISCV64_ALLOC_FLOOR;
   }
 
   for (i = 0; i < boot_info->memory_region_count; ++i) {
@@ -106,7 +111,7 @@ void page_alloc_init(boot_info_t *boot_info) {
     if (region->kind != BOOT_MEM_REGION_USABLE) {
       continue;
     }
-    add_usable_range(region->base, region->size);
+    add_usable_range(region->base, region->size, floor);
   }
 
   if (g_page_alloc.total_pages > 0) {
