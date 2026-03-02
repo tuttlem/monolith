@@ -101,6 +101,13 @@
 - `BOOT_U64 usb_host_count(void)`
 - `BOOT_U64 usb_device_count(void)`
 
+## Device Domains
+
+- `status_t device_domains_enumerate(const boot_info_t *boot_info)`
+- `BOOT_U64 block_device_count(void)`
+- `BOOT_U64 input_device_count(void)`
+- `BOOT_U64 display_device_count(void)`
+
 ## Interrupts
 
 - `status_t arch_irq_init(const boot_info_t *boot_info)`

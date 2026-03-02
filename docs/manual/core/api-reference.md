@@ -473,6 +473,19 @@ if (d != 0) {
 ### `BOOT_U64 usb_device_count(void)`
 - Purpose: return counts from last USB enumeration pass.
 
+## Device Domains (`device_domains.h`)
+
+### `status_t device_domains_enumerate(const boot_info_t *boot_info)`
+- Purpose: classify enumerated devices into baseline block/input/display domains.
+- Parameters:
+  - `boot_info`: handoff context.
+- Returns: `STATUS_OK` when at least one domain device is created, else `STATUS_DEFERRED`.
+
+### `BOOT_U64 block_device_count(void)`
+### `BOOT_U64 input_device_count(void)`
+### `BOOT_U64 display_device_count(void)`
+- Purpose: report baseline domain counts from latest pass.
+
 ## Device Model (`device_model.h`)
 
 ### `status_t driver_set_boot_info(const boot_info_t *boot_info)`
