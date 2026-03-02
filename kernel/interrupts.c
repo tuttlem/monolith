@@ -204,12 +204,25 @@ static void interrupts_panic_exception(const interrupt_frame_t *frame, const cha
 }
 
 static void default_interrupt_handler(const interrupt_frame_t *frame) {
+  BOOT_U64 irq = 0;
+
   if (frame == (const interrupt_frame_t *)0) {
     return;
   }
 
   if (frame->vector < 32ULL) {
     interrupts_panic_exception(frame, exception_reason_from_frame(frame));
+    return;
+  }
+
+  /*
+   * x86_64 can observe one legacy PIT tick during bootstrap transition.
+   * Before timer handler registration, treat vector 32 as a benign early tick.
+   */
+  if (frame->arch_id == BOOT_INFO_ARCH_X86_64 && frame->vector == 32ULL) {
+    if (irq_controller_vector_to_irq(frame->vector, &irq) == STATUS_OK) {
+      irq_controller_eoi(irq);
+    }
     return;
   }
 

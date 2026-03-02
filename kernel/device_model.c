@@ -182,7 +182,7 @@ static status_t probe_class(const char *class_name, const hw_desc_t *hw) {
       for (j = 0; j < g_driver_count; ++j) {
         const driver_t *drv = g_drivers[j];
         status_t st;
-        if (!str_eq(drv->class_name, CLASS_IRQC)) {
+        if (!str_eq(drv->class_name, class_name)) {
           continue;
         }
         st = run_driver_on_node(drv, &node);

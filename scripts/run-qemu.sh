@@ -96,10 +96,15 @@ case "${arch}" in
       echo "error: missing kernel ${img}. Run 'make riscv64'." >&2
       exit 1
     }
+    serial_backend="${QEMU_SERIAL:-stdio}"
+    if [[ "${headless}" == "1" ]]; then
+      exec qemu-system-riscv64 -machine virt -m 512M -smp "${qemu_smp}" -bios default \
+        -device loader,file="${img}",cpu-num=0 \
+        -serial "${serial_backend}" -display none -monitor none -no-reboot "$@"
+    fi
     exec qemu-system-riscv64 -machine virt -m 512M -smp "${qemu_smp}" -bios default \
       -device loader,file="${img}",cpu-num=0 \
-      -serial stdio -nographic -no-reboot \
-      -monitor none "$@"
+      -serial "${serial_backend}" -monitor none -no-reboot "$@"
     ;;
   *)
     echo "error: unsupported arch '${arch}'" >&2

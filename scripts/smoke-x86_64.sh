@@ -23,6 +23,16 @@ if [[ ${rc} -ne 0 && ${rc} -ne 124 ]]; then
 fi
 
 if tr -d '\r' <"${log}" | grep -Fq "${hello}"; then
+  if ! tr -d '\r' <"${log}" | grep -Fq "device: init class=timer"; then
+    echo "smoke-x86_64: FAIL (timer init missing)" >&2
+    tail -n 140 "${log}" >&2 || true
+    exit 1
+  fi
+  if tr -d '\r' <"${log}" | grep -Eq "interrupt: unhandled|exception: "; then
+    echo "smoke-x86_64: FAIL (unexpected interrupt/exception)" >&2
+    tail -n 140 "${log}" >&2 || true
+    exit 1
+  fi
   echo "smoke-x86_64: PASS"
   exit 0
 fi
