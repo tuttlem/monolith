@@ -61,6 +61,12 @@
 - `void smp_secondary_entry(BOOT_U64 cpu_id)`
 - `status_t arch_smp_bootstrap(const boot_info_t *boot_info, BOOT_U64 *out_possible_cpus, BOOT_U64 *out_started_cpus)`
 
+## Device Discovery
+
+- `status_t hw_discovery_init(const boot_info_t *boot_info)`
+- `const hw_desc_t *hw_desc_get(void)`
+- `BOOT_U64 hw_desc_cpu_count_hint(void)`
+
 ## Interrupts
 
 - `status_t arch_irq_init(const boot_info_t *boot_info)`

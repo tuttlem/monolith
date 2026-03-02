@@ -1,6 +1,7 @@
 #include "interrupts.h"
 #include "arch_irq.h"
 #include "config.h"
+#include "hw_desc.h"
 #include "irq_controller.h"
 #include "panic.h"
 #include "percpu.h"
@@ -223,6 +224,7 @@ static void default_interrupt_handler(const interrupt_frame_t *frame) {
 status_t interrupts_init(const boot_info_t *boot_info) {
   BOOT_U64 i;
   status_t st;
+  const hw_desc_t *hw;
 
   if (boot_info == (const boot_info_t *)0) {
     return STATUS_INVALID_ARG;
@@ -230,6 +232,10 @@ status_t interrupts_init(const boot_info_t *boot_info) {
 
   g_interrupts.initialized = 0;
   g_interrupts.arch_id = boot_info->arch_id;
+  hw = hw_desc_get();
+  if (hw != (const hw_desc_t *)0 && hw->irq_controller_count == 0ULL) {
+    return STATUS_DEFERRED;
+  }
   irq_controller_reset();
   for (i = 0; i < INTERRUPT_MAX_VECTORS; ++i) {
     g_interrupts.slots[i].fn = (interrupt_handler_t)0;

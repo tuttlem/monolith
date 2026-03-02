@@ -1,4 +1,4 @@
-# Spec Coverage Matrix (010-101)
+# Spec Coverage Matrix (010-110)
 
 This matrix links each implemented foundation spec to the manual sections that define its operational contract.
 
@@ -55,6 +55,11 @@ This matrix links each implemented foundation spec to the manual sections that d
   - `core/smp-bootstrap.md`
   - `core/api-cheatsheet.md`
 
+- `110-device-discovery`
+  - `core/device-discovery.md`
+  - `core/api-cheatsheet.md`
+  - `core/boot-sequence.md`
+
 ## Reader Usage
 
 Use this order for a complete foundation pass:
@@ -68,4 +73,5 @@ Use this order for a complete foundation pass:
 8. `core/memory.md`
 9. `core/percpu.md`
 10. `core/smp-bootstrap.md`
-11. architecture memory and interrupt chapters
+11. `core/device-discovery.md`
+12. architecture memory and interrupt chapters

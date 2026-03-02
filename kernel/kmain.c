@@ -2,6 +2,7 @@
 #include "arch_cpu.h"
 #include "config.h"
 #include "diag/boot_info.h"
+#include "hw_desc.h"
 #include "interrupts.h"
 #include "kmalloc.h"
 #include "arch_mm.h"
@@ -61,6 +62,7 @@ void kmain(const boot_info_t *boot_info) {
   status_t page_status;
   status_t heap_status;
   status_t percpu_status;
+  status_t discovery_status;
   status_t smp_status;
   status_t irq_status;
   status_t timer_status;
@@ -75,6 +77,7 @@ void kmain(const boot_info_t *boot_info) {
   mutable_boot_info = (boot_info_t *)boot_info;
   cpu_status = arch_cpu_early_init(boot_info);
   percpu_status = percpu_init_boot_cpu(boot_info);
+  discovery_status = hw_discovery_init(boot_info);
   smp_status = smp_init(boot_info);
   mem_status = arch_mm_early_init(mutable_boot_info);
   page_status = page_alloc_init(mutable_boot_info);
@@ -91,6 +94,9 @@ void kmain(const boot_info_t *boot_info) {
   }
   if (!status_is_ok(percpu_status) && percpu_status != STATUS_DEFERRED) {
     kprintf("percpu_init_boot_cpu: %s (%d)\n", status_str(percpu_status), percpu_status);
+  }
+  if (!status_is_ok(discovery_status) && discovery_status != STATUS_DEFERRED) {
+    kprintf("hw_discovery_init: %s (%d)\n", status_str(discovery_status), discovery_status);
   }
   if (!status_is_ok(smp_status) && smp_status != STATUS_DEFERRED) {
     kprintf("smp_init: %s (%d)\n", status_str(smp_status), smp_status);
@@ -172,6 +178,13 @@ void kmain(const boot_info_t *boot_info) {
 
   kprintf("Starting Monolith (%s) . . . \n", boot_info_arch_name(boot_info->arch_id));
   kprintf("smp: possible=%llu online=%llu\n", smp_cpu_count_possible(), smp_cpu_count_online());
+  {
+    const hw_desc_t *hw = hw_desc_get();
+    if (hw != (const hw_desc_t *)0) {
+      kprintf("hw: source=0x%llx cpus=%llu irqc=%llu timers=%llu mmio=%llu uarts=%llu\n", hw->source_mask,
+              hw->cpu_count, hw->irq_controller_count, hw->timer_count, hw->mmio_region_count, hw->uart_count);
+    }
+  }
 
 #if MONOLITH_BOOTINFO_DEBUG
   diag_boot_info_print(boot_info);
