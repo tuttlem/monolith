@@ -1,5 +1,6 @@
 #include "kernel.h"
 #include "arch_cpu.h"
+#include "config.h"
 #include "diag/boot_info.h"
 #include "interrupts.h"
 #include "kmalloc.h"
@@ -10,30 +11,6 @@
 
 #ifndef CORE_ARCH_NAME
 #define CORE_ARCH_NAME "unknown"
-#endif
-
-#ifndef MONOLITH_BOOTINFO_DEBUG
-#define MONOLITH_BOOTINFO_DEBUG 1
-#endif
-
-#ifndef MONOLITH_KMALLOC_SELFTEST
-#define MONOLITH_KMALLOC_SELFTEST 1
-#endif
-
-#ifndef MONOLITH_KMALLOC_DEBUG_EXERCISE
-#define MONOLITH_KMALLOC_DEBUG_EXERCISE 1
-#endif
-
-#ifndef MONOLITH_TIMER_SELFTEST
-#define MONOLITH_TIMER_SELFTEST 0
-#endif
-
-#ifndef MONOLITH_TIMER_SELFTEST_SPINS
-#define MONOLITH_TIMER_SELFTEST_SPINS 200000000ULL
-#endif
-
-#ifndef MONOLITH_EXCEPTION_SELFTEST
-#define MONOLITH_EXCEPTION_SELFTEST 0
 #endif
 
 static const char *boot_info_arch_name(BOOT_U64 arch_id) {

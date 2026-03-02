@@ -44,3 +44,16 @@ Replace ad-hoc compile switches with a coherent, documented configuration surfac
 - all existing `MONOLITH_*` style toggles are centralized
 - no raw feature `#ifdef` spread in unrelated modules
 - documented default profile for CI and local bring-up
+
+## Implementation Notes (Current Repository)
+
+`030-config-feature-flags` is implemented by:
+- adding `kernel/include/config.h` as the central config root
+- moving existing `MONOLITH_*` defaults out of local source files
+- wiring modules to consume shared config:
+  - `kernel/kmain.c`
+  - `kernel/interrupts.c`
+  - `kernel/include/assert.h`
+- adding `make print-config` to surface current default toggles
+
+Default profile remains behavior-compatible with existing bring-up flow.
