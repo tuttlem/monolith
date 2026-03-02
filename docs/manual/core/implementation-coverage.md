@@ -86,6 +86,7 @@ This page tells readers where each implemented hardware substrate area is docume
 
 - Common model and API:
   - `core/device-model.md`
+  - `core/device-bus.md`
   - `core/api-reference.md`
   - `core/data-structures.md`
 - Boot integration:

@@ -76,6 +76,20 @@
 - `status_t driver_class_last_status(const char *class_name)`
 - `status_t device_model_register_builtin_drivers(void)`
 
+## Device Bus
+
+- `status_t device_bus_init(const boot_info_t *boot_info, const hw_desc_t *hw)`
+- `void device_bus_reset(void)`
+- `status_t device_bus_register_bus(const bus_t *bus_template, BOOT_U64 *out_bus_id)`
+- `status_t device_bus_register_device(const device_t *dev_template, BOOT_U64 *out_device_id)`
+- `const bus_t *device_bus_get_bus(BOOT_U64 bus_id)`
+- `const device_t *device_bus_get_device(BOOT_U64 device_id)`
+- `BOOT_U64 device_bus_count(void)`
+- `const device_t *device_bus_device_at(BOOT_U64 index)`
+- `BOOT_U64 device_bus_find_first_by_class(device_class_t class_id)`
+- `BOOT_U64 device_bus_find_next_by_class(device_class_t class_id, BOOT_U64 after_id)`
+- `void device_bus_dump(void)`
+
 ## Interrupts
 
 - `status_t arch_irq_init(const boot_info_t *boot_info)`
