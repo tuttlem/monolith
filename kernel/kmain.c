@@ -11,15 +11,15 @@
 #endif
 
 #ifndef MONOLITH_BOOTINFO_DEBUG
-#define MONOLITH_BOOTINFO_DEBUG 0
+#define MONOLITH_BOOTINFO_DEBUG 1
 #endif
 
 #ifndef MONOLITH_KMALLOC_SELFTEST
-#define MONOLITH_KMALLOC_SELFTEST 0
+#define MONOLITH_KMALLOC_SELFTEST 1
 #endif
 
 #ifndef MONOLITH_KMALLOC_DEBUG_EXERCISE
-#define MONOLITH_KMALLOC_DEBUG_EXERCISE 0
+#define MONOLITH_KMALLOC_DEBUG_EXERCISE 1
 #endif
 
 #ifndef MONOLITH_TIMER_SELFTEST
@@ -51,6 +51,7 @@ static const char *boot_info_arch_name(BOOT_U64 arch_id) {
   }
 }
 
+#if MONOLITH_TIMER_SELFTEST
 static BOOT_U64 timer_selftest_spins_for_arch(BOOT_U64 arch_id) {
   if (arch_id == BOOT_INFO_ARCH_X86_64) {
     return MONOLITH_TIMER_SELFTEST_SPINS;
@@ -72,6 +73,7 @@ static int timer_progress_selftest(BOOT_U64 spins) {
   }
   return 0;
 }
+#endif
 
 
 void kmain(const boot_info_t *boot_info) {

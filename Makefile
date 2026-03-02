@@ -131,7 +131,11 @@ $(BUILD_A64)/kernel/diag/boot_info.o: kernel/diag/boot_info.c kernel/include/ker
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_A64)/arch/arm64/mm/memory_init.o: arch/arm64/mm/memory_init.c kernel/include/memory_init.h arch/arm64/arch.mk
+$(BUILD_A64)/arch/arm64/mm/memory_init.o: arch/arm64/mm/memory_init.c kernel/include/memory_init.h kernel/include/arch/arm64/early_paging.h arch/arm64/arch.mk
+	@mkdir -p $(@D)
+	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
+
+$(BUILD_A64)/arch/arm64/mm/early_paging.o: arch/arm64/mm/early_paging.c kernel/include/arch/arm64/early_paging.h kernel/include/boot_info.h arch/arm64/arch.mk
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
 
@@ -155,7 +159,7 @@ $(BUILD_A64)/arch/arm64/timer/timer.o: arch/arm64/timer/timer.c kernel/include/a
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_A64)/BOOTAA64.EFI: $(BUILD_A64)/boot/efi_main.o $(BUILD_A64)/kernel/kmain.o $(BUILD_A64)/kernel/print.o $(BUILD_A64)/kernel/status.o $(BUILD_A64)/kernel/interrupts.o $(BUILD_A64)/kernel/timer.o $(BUILD_A64)/kernel/diag/boot_info.o $(BUILD_A64)/kernel/mm/page_alloc.o $(BUILD_A64)/kernel/mm/kmalloc.o $(BUILD_A64)/arch/arm64/mm/memory_init.o $(BUILD_A64)/arch/arm64/irq/interrupts.o $(BUILD_A64)/arch/arm64/irq/entry.o $(BUILD_A64)/arch/arm64/timer/timer.o
+$(BUILD_A64)/BOOTAA64.EFI: $(BUILD_A64)/boot/efi_main.o $(BUILD_A64)/kernel/kmain.o $(BUILD_A64)/kernel/print.o $(BUILD_A64)/kernel/status.o $(BUILD_A64)/kernel/interrupts.o $(BUILD_A64)/kernel/timer.o $(BUILD_A64)/kernel/diag/boot_info.o $(BUILD_A64)/kernel/mm/page_alloc.o $(BUILD_A64)/kernel/mm/kmalloc.o $(BUILD_A64)/arch/arm64/mm/memory_init.o $(BUILD_A64)/arch/arm64/mm/early_paging.o $(BUILD_A64)/arch/arm64/irq/interrupts.o $(BUILD_A64)/arch/arm64/irq/entry.o $(BUILD_A64)/arch/arm64/timer/timer.o
 	@mkdir -p $(@D)
 	@command -v $(LLD_LINK) >/dev/null 2>&1 || { echo "error: $(LLD_LINK) not found. Install lld."; exit 1; }
 	$(LLD_LINK) $(A64_UEFI_LDFLAGS) /out:$@ $^
@@ -164,7 +168,7 @@ $(BUILD_A64)/uefi.img: $(BUILD_A64)/BOOTAA64.EFI scripts/mk-uefi-image.sh
 	@mkdir -p $(@D)
 	@./scripts/mk-uefi-image.sh arm64 $(BUILD_A64)/BOOTAA64.EFI $@
 
-RISCV64_SRCS := kernel/kmain.c kernel/print.c kernel/status.c kernel/interrupts.c kernel/timer.c kernel/diag/boot_info.c kernel/mm/page_alloc.c kernel/mm/kmalloc.c arch/riscv64/mm/memory_init.c arch/riscv64/irq/interrupts.c arch/riscv64/timer/timer.c arch/riscv64/boot/main.c arch/riscv64/boot/console.c lib/memset.c lib/memcpy.c lib/strlen.c
+RISCV64_SRCS := kernel/kmain.c kernel/print.c kernel/status.c kernel/interrupts.c kernel/timer.c kernel/diag/boot_info.c kernel/mm/page_alloc.c kernel/mm/kmalloc.c arch/riscv64/mm/memory_init.c arch/riscv64/mm/early_paging.c arch/riscv64/irq/interrupts.c arch/riscv64/timer/timer.c arch/riscv64/boot/main.c arch/riscv64/boot/console.c lib/memset.c lib/memcpy.c lib/strlen.c
 RISCV64_OBJS := $(patsubst %.c,$(BUILD_RISCV64)/%.o,$(RISCV64_SRCS)) $(BUILD_RISCV64)/arch/riscv64/start.o $(BUILD_RISCV64)/arch/riscv64/irq/entry.o
 
 MIPS_SRCS := kernel/kmain.c kernel/print.c kernel/status.c kernel/interrupts.c kernel/timer.c kernel/diag/boot_info.c kernel/mm/page_alloc.c kernel/mm/kmalloc.c arch/mips/mm/memory_init.c arch/mips/irq/interrupts.c arch/mips/timer/timer.c arch/mips/boot/main.c arch/mips/boot/console.c lib/memset.c lib/memcpy.c lib/strlen.c
