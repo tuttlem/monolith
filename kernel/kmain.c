@@ -11,6 +11,7 @@
 #include "kmalloc.h"
 #include "arch_mm.h"
 #include "device_report.h"
+#include "net.h"
 #include "panic.h"
 #include "page_alloc.h"
 #include "pci.h"
@@ -77,6 +78,7 @@ void kmain(const boot_info_t *boot_info) {
   status_t pci_status;
   status_t usb_status;
   status_t domain_status;
+  status_t net_status;
   status_t irq_status;
   status_t timer_status;
   status_t console_status;
@@ -99,6 +101,7 @@ void kmain(const boot_info_t *boot_info) {
   pci_status = pci_enumerate(boot_info);
   usb_status = usb_enumerate(boot_info);
   domain_status = device_domains_enumerate(boot_info);
+  net_status = net_enumerate(boot_info);
   smp_status = smp_init(boot_info);
   mem_status = arch_mm_early_init(mutable_boot_info);
   page_status = page_alloc_init(mutable_boot_info);
@@ -135,6 +138,9 @@ void kmain(const boot_info_t *boot_info) {
   }
   if (!status_is_ok(domain_status) && domain_status != STATUS_DEFERRED) {
     kprintf("device_domains_enumerate: %s (%d)\n", status_str(domain_status), domain_status);
+  }
+  if (!status_is_ok(net_status) && net_status != STATUS_DEFERRED) {
+    kprintf("net_enumerate: %s (%d)\n", status_str(net_status), net_status);
   }
   if (!status_is_ok(smp_status) && smp_status != STATUS_DEFERRED) {
     kprintf("smp_init: %s (%d)\n", status_str(smp_status), smp_status);
@@ -236,10 +242,13 @@ void kmain(const boot_info_t *boot_info) {
   device_report_dump_class(DEVICE_CLASS_BLOCK);
   device_report_dump_class(DEVICE_CLASS_INPUT);
   device_report_dump_class(DEVICE_CLASS_DISPLAY);
+  device_report_dump_class(DEVICE_CLASS_NET);
   kprintf("pci: devices=%llu\n", pci_device_count());
   kprintf("usb: hosts=%llu devices=%llu\n", usb_host_count(), usb_device_count());
   kprintf("domains: block=%llu input=%llu display=%llu\n", block_device_count(), input_device_count(),
           display_device_count());
+  kprintf("net: devices=%llu\n", net_device_count());
+  net_dump_diagnostics();
 
 #if MONOLITH_BOOTINFO_DEBUG
   diag_boot_info_print(boot_info);

@@ -121,6 +121,13 @@
 - `int capability_domain_enabled(device_class_t class_id)`
 - `void capability_profile_print(void)`
 
+## Network Domain
+
+- `status_t net_enumerate(const boot_info_t *boot_info)`
+- `BOOT_U64 net_device_count(void)`
+- `status_t net_device_info_at(BOOT_U64 index, net_device_info_t *out_info)`
+- `void net_dump_diagnostics(void)`
+
 ## Interrupts
 
 - `status_t arch_irq_init(const boot_info_t *boot_info)`
