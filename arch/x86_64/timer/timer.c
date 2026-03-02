@@ -51,3 +51,10 @@ void arch_timer_ack(BOOT_U64 vector) {
   }
   irq_controller_eoi(irq);
 }
+
+BOOT_U64 arch_timer_clocksource_hz(const boot_info_t *boot_info) {
+  if (boot_info == (const boot_info_t *)0 || boot_info->arch_id != BOOT_INFO_ARCH_X86_64) {
+    return 0ULL;
+  }
+  return 0ULL;
+}

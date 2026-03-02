@@ -56,3 +56,27 @@ BOOT_U64 time_ticks(void);
 - `time_now_ns()` returns increasing values on all architectures
 - timer interrupt path is validated by self-test when backend exists
 - riscv64 leaves deferred state only if platform truly lacks timer support
+
+## Implementation Notes (Current Repository)
+
+`070-time-system` is implemented with a new generic timebase layer:
+- `kernel/include/timebase.h`
+- `kernel/timebase.c`
+
+Provided APIs:
+- `time_init(const boot_info_t *boot_info)`
+- `time_now_ns(void)`
+- `time_ticks(void)`
+- `time_hz(void)`
+- clocksource/clockevent descriptors via `time_clocksource()` / `time_clockevent()`
+
+Compatibility:
+- existing `timer_*` API is preserved in `kernel/timer.c` as a shim to `timebase`
+
+Clocksource model:
+- preferred: architecture cycle counter + `arch_timer_clocksource_hz()`
+- fallback: tick-derived monotonic nanoseconds when cycle frequency is unavailable
+- monotonic clamp prevents backwards time progression
+
+Architecture hook:
+- `arch_timer_clocksource_hz(const boot_info_t *)` added to `arch_timer` API
