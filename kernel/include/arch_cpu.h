@@ -8,20 +8,25 @@
 
 /*
  * Stable CPU HAL interface.
- * 010-core-interfaces freezes this contract; 040-arch-cpu will provide
- * architecture-specific implementations behind it.
+ * Contract version 1.0 is frozen by spec 040.
  */
-static inline status_t arch_cpu_early_init(const boot_info_t *boot_info) {
-  (void)boot_info;
-  return STATUS_OK;
-}
+status_t arch_cpu_early_init(const boot_info_t *boot_info);
+status_t arch_cpu_late_init(void);
 
-static inline status_t arch_cpu_late_init(void) { return STATUS_OK; }
+BOOT_U64 arch_cpu_id(void);
+BOOT_U64 arch_cpu_count_hint(void);
 
-static inline BOOT_U64 arch_cpu_id(void) { return 0ULL; }
+void arch_cpu_relax(void);
+void arch_cpu_halt(void);
+void arch_cpu_reboot(void);
 
-static inline void arch_cpu_relax(void) { __asm__ volatile("" : : : "memory"); }
+BOOT_U64 arch_cycle_counter(void);
 
-static inline void arch_cpu_halt(void) { arch_halt(); }
+void arch_barrier_full(void);
+void arch_barrier_read(void);
+void arch_barrier_write(void);
+
+void arch_tlb_sync_local(void);
+void arch_icache_sync_range(BOOT_U64 addr, BOOT_U64 size);
 
 #endif
