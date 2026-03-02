@@ -115,6 +115,12 @@
 - `void device_report_dump_all(void)`
 - `void device_report_dump_class(device_class_t class_id)`
 
+## Capability Profiles
+
+- `const char *capability_profile_name(void)`
+- `int capability_domain_enabled(device_class_t class_id)`
+- `void capability_profile_print(void)`
+
 ## Interrupts
 
 - `status_t arch_irq_init(const boot_info_t *boot_info)`

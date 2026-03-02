@@ -501,6 +501,17 @@ if (d != 0) {
 ### `void device_report_dump_class(device_class_t class_id)`
 - Purpose: print report dump for all devices or selected class.
 
+## Capability Profile (`capability_profile.h`)
+
+### `const char *capability_profile_name(void)`
+- Purpose: return active build-time profile name.
+
+### `int capability_domain_enabled(device_class_t class_id)`
+- Purpose: query whether a domain class is enabled by current feature gates.
+
+### `void capability_profile_print(void)`
+- Purpose: print active profile and domain gate states.
+
 ## Device Model (`device_model.h`)
 
 ### `status_t driver_set_boot_info(const boot_info_t *boot_info)`

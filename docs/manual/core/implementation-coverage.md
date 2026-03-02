@@ -91,6 +91,7 @@ This page tells readers where each implemented hardware substrate area is docume
   - `core/usb-enumeration.md`
   - `core/device-domains.md`
   - `core/device-reporting.md`
+  - `core/capability-profiles.md`
   - `core/api-reference.md`
   - `core/data-structures.md`
 - Boot integration:

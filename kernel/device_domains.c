@@ -1,4 +1,5 @@
 #include "device_domains.h"
+#include "capability_profile.h"
 #include "print.h"
 
 static BOOT_U64 g_block_count;
@@ -62,6 +63,9 @@ status_t device_domains_enumerate(const boot_info_t *boot_info) {
     }
 
     if (src->class_id == DEVICE_CLASS_PCI_DEVICE && src->class_code == 0x01ULL) {
+      if (!capability_domain_enabled(DEVICE_CLASS_BLOCK)) {
+        continue;
+      }
       if (add_domain_device(src, DEVICE_CLASS_BLOCK, "block-device") == STATUS_OK) {
         g_block_count += 1ULL;
         st = STATUS_OK;
@@ -71,6 +75,9 @@ status_t device_domains_enumerate(const boot_info_t *boot_info) {
 
     if ((src->class_id == DEVICE_CLASS_PCI_DEVICE && src->class_code == 0x03ULL) ||
         src->class_id == DEVICE_CLASS_FRAMEBUFFER) {
+      if (!capability_domain_enabled(DEVICE_CLASS_DISPLAY)) {
+        continue;
+      }
       if (add_domain_device(src, DEVICE_CLASS_DISPLAY, "display-device") == STATUS_OK) {
         g_display_count += 1ULL;
         st = STATUS_OK;
@@ -80,6 +87,9 @@ status_t device_domains_enumerate(const boot_info_t *boot_info) {
 
     if ((src->class_id == DEVICE_CLASS_PCI_DEVICE && src->class_code == 0x09ULL) ||
         (src->class_id == DEVICE_CLASS_USB_DEVICE && src->class_code == 0x03ULL)) {
+      if (!capability_domain_enabled(DEVICE_CLASS_INPUT)) {
+        continue;
+      }
       if (add_domain_device(src, DEVICE_CLASS_INPUT, "input-device") == STATUS_OK) {
         g_input_count += 1ULL;
         st = STATUS_OK;
