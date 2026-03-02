@@ -1,6 +1,23 @@
 #include "capability_profile.h"
 #include "print.h"
 
+const char *capability_domain_name(device_class_t class_id) {
+  switch (class_id) {
+  case DEVICE_CLASS_BLOCK:
+    return "storage";
+  case DEVICE_CLASS_NET:
+    return "network";
+  case DEVICE_CLASS_INPUT:
+    return "input";
+  case DEVICE_CLASS_DISPLAY:
+    return "display";
+  case DEVICE_CLASS_AUDIO:
+    return "audio";
+  default:
+    return "core";
+  }
+}
+
 const char *capability_profile_name(void) {
 #if MONOLITH_CAP_PROFILE == MONOLITH_CAP_PROFILE_MINIMAL
   return "minimal";
@@ -27,6 +44,22 @@ int capability_domain_enabled(device_class_t class_id) {
     return MONOLITH_CAP_AUDIO;
   default:
     return 1;
+  }
+}
+
+status_t capability_domain_state(device_class_t class_id) {
+  return capability_domain_enabled(class_id) ? STATUS_OK : STATUS_DEFERRED;
+}
+
+void capability_domain_dump_matrix(void) {
+  static const device_class_t domains[] = {DEVICE_CLASS_BLOCK, DEVICE_CLASS_NET, DEVICE_CLASS_INPUT,
+                                           DEVICE_CLASS_DISPLAY, DEVICE_CLASS_AUDIO};
+  BOOT_U64 i;
+  kprintf("caps: matrix profile=%s\n", capability_profile_name());
+  kprintf("  core: cpu=on mmu=on interrupts=on timer=on discovery=on reporting=on\n");
+  for (i = 0; i < (BOOT_U64)(sizeof(domains) / sizeof(domains[0])); ++i) {
+    status_t st = capability_domain_state(domains[i]);
+    kprintf("  opt:%s=%s\n", capability_domain_name(domains[i]), status_str(st));
   }
 }
 

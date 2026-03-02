@@ -88,6 +88,7 @@ void kmain(const boot_info_t *boot_info) {
 
   arch_puts("HELLO FROM CORE KERNEL (" CORE_ARCH_NAME ") We good!\n");
   capability_profile_print();
+  capability_domain_dump_matrix();
   if (boot_info == (const boot_info_t *)0) {
     arch_puts("boot_info: null\n");
     goto spin;

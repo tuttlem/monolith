@@ -103,6 +103,7 @@ This page tells readers where each implemented hardware substrate area is docume
 
 - Config and flags:
   - `core/config-flags.md`
+  - `core/standard-capability-domains.md`
 - Status/panic policy:
   - `core/status-system.md`
 - Boot diagnostics output:

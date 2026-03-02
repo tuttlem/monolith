@@ -47,6 +47,8 @@ Capability profile and domain gates:
 - `MONOLITH_CAP_DISPLAY`
 - `MONOLITH_CAP_AUDIO`
 
+See `core/standard-capability-domains.md` for profile/domain matrix behavior and disabled-domain contract.
+
 ## Operational Rule
 
 Default settings should boot cleanly across x86_64, arm64, and riscv64.
