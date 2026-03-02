@@ -108,6 +108,13 @@
 - `BOOT_U64 input_device_count(void)`
 - `BOOT_U64 display_device_count(void)`
 
+## Device Reporting
+
+- `BOOT_U64 device_report_count(void)`
+- `status_t device_report_get(BOOT_U64 index, device_report_entry_t *out_entry)`
+- `void device_report_dump_all(void)`
+- `void device_report_dump_class(device_class_t class_id)`
+
 ## Interrupts
 
 - `status_t arch_irq_init(const boot_info_t *boot_info)`

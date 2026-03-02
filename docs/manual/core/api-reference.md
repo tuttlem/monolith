@@ -486,6 +486,21 @@ if (d != 0) {
 ### `BOOT_U64 display_device_count(void)`
 - Purpose: report baseline domain counts from latest pass.
 
+## Device Reporting (`device_report.h`)
+
+### `BOOT_U64 device_report_count(void)`
+- Purpose: return total number of device graph nodes currently reportable.
+
+### `status_t device_report_get(BOOT_U64 index, device_report_entry_t *out_entry)`
+- Purpose: fetch one report entry by index.
+- Parameters:
+  - `index`: index in current device graph order.
+  - `out_entry`: output record pointer.
+
+### `void device_report_dump_all(void)`
+### `void device_report_dump_class(device_class_t class_id)`
+- Purpose: print report dump for all devices or selected class.
+
 ## Device Model (`device_model.h`)
 
 ### `status_t driver_set_boot_info(const boot_info_t *boot_info)`
