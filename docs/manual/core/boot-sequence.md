@@ -11,23 +11,24 @@ Bootloader/firmware glue is architecture-specific and must construct `boot_info_
 ## Current Startup Order (Inside `kmain`)
 
 Initialization order is fixed and intentional:
-1. `arch_cpu_early_init(boot_info)`
-2. `percpu_init_boot_cpu(boot_info)`
-3. `hw_discovery_init(boot_info)`
-4. `smp_init(boot_info)`
-5. `arch_mm_early_init(boot_info_mut)` (wrapper over `arch_memory_init`)
-6. `page_alloc_init(boot_info_mut)`
-7. `kmalloc_init(boot_info_mut)`
-8. `driver_registry_reset()`
-9. `driver_set_boot_info(boot_info)`
-10. `device_model_register_builtin_drivers()`
-11. `device_bus_init(boot_info, hw_desc_get())`
-12. `pci_enumerate(boot_info)` (architecture-dependent backend)
-13. `usb_enumerate(boot_info)` (host-controller discovery skeleton)
-14. `device_domains_enumerate(boot_info)` (block/input/display baseline)
-15. `net_enumerate(boot_info)` (network baseline classification)
-16. `audio_enumerate(boot_info)` (audio baseline classification)
-17. `driver_probe_all(hw_desc_get())` in class order:
+1. `capability_profile_print()` + `capability_domain_dump_matrix()`
+2. `arch_cpu_early_init(boot_info)`
+3. `percpu_init_boot_cpu(boot_info)`
+4. `hw_discovery_init(boot_info)`
+5. `smp_init(boot_info)`
+6. `arch_mm_early_init(boot_info_mut)` (wrapper over `arch_memory_init`)
+7. `page_alloc_init(boot_info_mut)`
+8. `kmalloc_init(boot_info_mut)`
+9. `driver_registry_reset()`
+10. `driver_set_boot_info(boot_info)`
+11. `device_model_register_builtin_drivers()`
+12. `device_bus_init(boot_info, hw_desc_get())`
+13. `pci_enumerate(boot_info)` (architecture-dependent backend)
+14. `usb_enumerate(boot_info)` (host-controller discovery skeleton)
+15. `device_domains_enumerate(boot_info)` (block/input/display baseline)
+16. `net_enumerate(boot_info)` (network baseline classification)
+17. `audio_enumerate(boot_info)` (audio baseline classification)
+18. `driver_probe_all(hw_desc_get())` in class order:
     - `irqc` (calls IRQ backend init)
     - `timer` (calls timer backend init)
     - `console`

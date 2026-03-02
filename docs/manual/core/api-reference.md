@@ -509,6 +509,15 @@ if (d != 0) {
 ### `int capability_domain_enabled(device_class_t class_id)`
 - Purpose: query whether a domain class is enabled by current feature gates.
 
+### `const char *capability_domain_name(device_class_t class_id)`
+- Purpose: convert domain class to normalized capability-domain name.
+
+### `status_t capability_domain_state(device_class_t class_id)`
+- Purpose: convert gate state into status contract (`STATUS_OK` or `STATUS_DEFERRED`).
+
+### `void capability_domain_dump_matrix(void)`
+- Purpose: print standardized core/optional capability matrix in boot diagnostics.
+
 ### `void capability_profile_print(void)`
 - Purpose: print active profile and domain gate states.
 
