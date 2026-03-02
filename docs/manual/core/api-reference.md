@@ -414,6 +414,47 @@ if (d != 0) {
 }
 ```
 
+## Device Model (`device_model.h`)
+
+### `status_t driver_set_boot_info(const boot_info_t *boot_info)`
+- Purpose: bind the active boot handoff used by driver init callbacks.
+- Parameters:
+  - `boot_info`: handoff pointer from architecture entry.
+- Returns: status.
+
+### `void driver_registry_reset(void)`
+- Purpose: clear static driver registry and class-status tracking.
+- Returns: none.
+
+### `status_t driver_register(const driver_t *drv)`
+- Purpose: register one static driver descriptor.
+- Parameters:
+  - `drv`: immutable driver descriptor.
+- Returns: status.
+
+### `status_t driver_probe_all(const hw_desc_t *hw)`
+- Purpose: probe/init all drivers in deterministic class order (`irqc` -> `timer` -> `console` -> `early`).
+- Parameters:
+  - `hw`: normalized hardware discovery descriptor.
+- Returns: status.
+
+### `status_t driver_class_last_status(const char *class_name)`
+- Purpose: query last status for a class.
+- Parameters:
+  - `class_name`: class name string.
+- Returns: status value for class, or `STATUS_NOT_FOUND`.
+
+### `status_t device_model_register_builtin_drivers(void)`
+- Purpose: register built-in baseline driver hooks for IRQ, timer, and early console.
+- Returns: status.
+- Example:
+```c
+driver_registry_reset();
+driver_set_boot_info(boot_info);
+device_model_register_builtin_drivers();
+driver_probe_all(hw_desc_get());
+```
+
 ## Boot Diagnostics (`diag/boot_info.h`)
 
 ### `void diag_boot_info_print(const boot_info_t *boot_info)`

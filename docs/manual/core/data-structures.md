@@ -274,6 +274,26 @@ typedef struct boot_info boot_info_t;
   - `map_irq`: map hardware IRQ to CPU vector.
   - `vector_to_irq`: reverse mapping vector -> IRQ.
 
+## Device Model Types (`device_model.h`)
+
+### `driver_probe_fn`
+- Signature:
+  - `typedef status_t (*driver_probe_fn)(const void *hw_node);`
+- Purpose: probe callback used to claim or reject candidate hardware nodes.
+
+### `driver_init_fn`
+- Signature:
+  - `typedef status_t (*driver_init_fn)(void *dev);`
+- Purpose: init callback invoked after probe success.
+
+### `driver_t`
+- Struct purpose: static driver descriptor registered in the early device model.
+- Members:
+  - `name`: driver label used in diagnostics.
+  - `class_name`: initialization class (`irqc`, `timer`, `console`, `early`).
+  - `probe`: probe callback.
+  - `init`: initialization callback.
+
 ## Hardware Discovery Structures (`hw_desc.h`)
 
 ### `hw_cpu_desc_t`
