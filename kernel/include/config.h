@@ -50,7 +50,7 @@
 
 /* Substrate feature toggles (reserved for upcoming specs) */
 #ifndef MONOLITH_FEATURE_SMP
-#define MONOLITH_FEATURE_SMP 0
+#define MONOLITH_FEATURE_SMP 1
 #endif
 
 #ifndef MONOLITH_FEATURE_MMU_STRICT
