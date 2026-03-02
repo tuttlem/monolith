@@ -512,6 +512,29 @@ if (d != 0) {
 ### `void capability_profile_print(void)`
 - Purpose: print active profile and domain gate states.
 
+## Network Domain (`net.h`)
+
+### `status_t net_enumerate(const boot_info_t *boot_info)`
+- Purpose: classify discovered bus devices into network-domain devices.
+- Parameters:
+  - `boot_info`: handoff context.
+- Returns:
+  - `STATUS_OK` when at least one network device is discovered.
+  - `STATUS_DEFERRED` when no network devices are available or gate is disabled.
+
+### `BOOT_U64 net_device_count(void)`
+- Purpose: return number of network-domain devices from the latest pass.
+
+### `status_t net_device_info_at(BOOT_U64 index, net_device_info_t *out_info)`
+- Purpose: return one stable network descriptor for OS bring-up code.
+- Parameters:
+  - `index`: zero-based network entry index.
+  - `out_info`: output descriptor pointer.
+- Returns: `STATUS_OK`, `STATUS_INVALID_ARG`, or `STATUS_NOT_FOUND`.
+
+### `void net_dump_diagnostics(void)`
+- Purpose: print per-device network capability summary for early diagnostics.
+
 ## Device Model (`device_model.h`)
 
 ### `status_t driver_set_boot_info(const boot_info_t *boot_info)`

@@ -55,6 +55,13 @@ This page highlights where execution paths diverge between `x86_64`, `arm64`, an
 - USB hosts are derived from enumerated PCI USB controller class codes.
 - Full controller operation and class drivers are deferred.
 
+## Network Domain Baseline
+
+- Network domain classification is common across architectures.
+- Practical discovery currently follows PCI class code `0x02`.
+- `x86_64` has active PCI enumeration and therefore can expose network-domain devices.
+- `arm64`/`riscv64` network discovery becomes active when their PCI backend paths are enabled.
+
 ## SMP Bootstrap Behavior
 
 - `x86_64`: UEFI MP Services enumeration and AP startup.

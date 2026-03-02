@@ -347,6 +347,21 @@ typedef struct boot_info boot_info_t;
   - `class_code`, `subclass_code`, `prog_if`: bus-specific class tuple values.
   - `resource_count`: number of resources attached to source device.
 
+## Network Baseline Types (`net.h`)
+
+### `net_device_info_t`
+- Struct purpose: compact, stable descriptor for network-domain device discovery output.
+- Members:
+  - `device_id`: network device graph ID.
+  - `parent_id`: source device ID.
+  - `vendor_id`: copied vendor identifier.
+  - `pci_device_id`: copied PCI device identifier.
+  - `class_code`, `subclass_code`, `prog_if`: copied class tuple.
+  - `resource_count`: copied resource descriptor count.
+  - `mac_hi`, `mac_lo`: MAC placeholder fields.
+  - `link_up`: link state placeholder (`0/1`).
+  - `tx_queue_count`, `rx_queue_count`: queue-capability summary placeholders.
+
 ## Hardware Discovery Structures (`hw_desc.h`)
 
 ### `hw_cpu_desc_t`
