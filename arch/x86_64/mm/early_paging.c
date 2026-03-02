@@ -8,9 +8,9 @@
 #define X64_IDENTITY_GIB 4ULL
 #define X64_PDPT_ENTRIES ((X64_IDENTITY_GIB))
 
-static BOOT_U64 g_pml4[512] __attribute__((aligned(4096)));
-static BOOT_U64 g_pdpt[512] __attribute__((aligned(4096)));
-static BOOT_U64 g_pd[X64_PDPT_ENTRIES][512] __attribute__((aligned(4096)));
+BOOT_U64 g_pml4[512] __attribute__((aligned(4096)));
+BOOT_U64 g_pdpt[512] __attribute__((aligned(4096)));
+BOOT_U64 g_pd[X64_PDPT_ENTRIES][512] __attribute__((aligned(4096)));
 
 static BOOT_U64 read_cr3(void) {
   BOOT_U64 cr3;
