@@ -93,6 +93,7 @@ This page tells readers where each implemented hardware substrate area is docume
   - `core/device-reporting.md`
   - `core/capability-profiles.md`
   - `core/network-baseline.md`
+  - `core/audio-baseline.md`
   - `core/api-reference.md`
   - `core/data-structures.md`
 - Boot integration:

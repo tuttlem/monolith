@@ -535,6 +535,29 @@ if (d != 0) {
 ### `void net_dump_diagnostics(void)`
 - Purpose: print per-device network capability summary for early diagnostics.
 
+## Audio Domain (`audio.h`)
+
+### `status_t audio_enumerate(const boot_info_t *boot_info)`
+- Purpose: classify discovered bus devices into audio-domain devices.
+- Parameters:
+  - `boot_info`: handoff context.
+- Returns:
+  - `STATUS_OK` when at least one audio device is discovered.
+  - `STATUS_DEFERRED` when no audio devices are available or gate is disabled.
+
+### `BOOT_U64 audio_device_count(void)`
+- Purpose: return number of audio-domain devices from the latest pass.
+
+### `status_t audio_device_info_at(BOOT_U64 index, audio_device_info_t *out_info)`
+- Purpose: return one stable audio descriptor for early OS initialization.
+- Parameters:
+  - `index`: zero-based audio entry index.
+  - `out_info`: output descriptor pointer.
+- Returns: `STATUS_OK`, `STATUS_INVALID_ARG`, or `STATUS_NOT_FOUND`.
+
+### `void audio_dump_diagnostics(void)`
+- Purpose: print per-device audio capability summary for diagnostics.
+
 ## Device Model (`device_model.h`)
 
 ### `status_t driver_set_boot_info(const boot_info_t *boot_info)`

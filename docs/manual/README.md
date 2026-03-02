@@ -28,13 +28,14 @@ Use this as the reference for boot handoff, memory initialization, MMU mapping, 
 17. [Device Reporting and Introspection](core/device-reporting.md)
 18. [Capability Profiles and Feature Gating](core/capability-profiles.md)
 19. [Network Baseline (Optional Domain)](core/network-baseline.md)
-20. [Core Boot Sequence](core/boot-sequence.md)
-21. [Boot ABI (`boot_info_t`)](core/boot-info-abi.md)
-22. [Core API Reference](core/api-reference.md)
-23. [Core Data Structures and Enums](core/data-structures.md)
-24. [Architecture Divergence Guide](core/architecture-divergence.md)
-25. [Implementation Coverage](core/implementation-coverage.md)
-26. [API Cheatsheet](core/api-cheatsheet.md)
+20. [Audio Baseline (Optional Domain)](core/audio-baseline.md)
+21. [Core Boot Sequence](core/boot-sequence.md)
+22. [Boot ABI (`boot_info_t`)](core/boot-info-abi.md)
+23. [Core API Reference](core/api-reference.md)
+24. [Core Data Structures and Enums](core/data-structures.md)
+25. [Architecture Divergence Guide](core/architecture-divergence.md)
+26. [Implementation Coverage](core/implementation-coverage.md)
+27. [API Cheatsheet](core/api-cheatsheet.md)
 
 ## Architecture-Specific Manuals
 

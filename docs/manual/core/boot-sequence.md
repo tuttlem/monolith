@@ -26,7 +26,8 @@ Initialization order is fixed and intentional:
 13. `usb_enumerate(boot_info)` (host-controller discovery skeleton)
 14. `device_domains_enumerate(boot_info)` (block/input/display baseline)
 15. `net_enumerate(boot_info)` (network baseline classification)
-16. `driver_probe_all(hw_desc_get())` in class order:
+16. `audio_enumerate(boot_info)` (audio baseline classification)
+17. `driver_probe_all(hw_desc_get())` in class order:
     - `irqc` (calls IRQ backend init)
     - `timer` (calls timer backend init)
     - `console`
