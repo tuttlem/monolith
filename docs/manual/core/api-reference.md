@@ -414,6 +414,38 @@ if (d != 0) {
 }
 ```
 
+## Device Bus (`device_bus.h`)
+
+### `status_t device_bus_init(const boot_info_t *boot_info, const hw_desc_t *hw)`
+- Purpose: initialize the bus/device graph from normalized hardware discovery data.
+- Parameters:
+  - `boot_info`: handoff context.
+  - `hw`: normalized hardware descriptor (`hw_desc_t`).
+- Returns: status.
+
+### `void device_bus_reset(void)`
+- Purpose: clear all buses/devices and reset bus graph state.
+
+### `status_t device_bus_register_bus(const bus_t *bus_template, BOOT_U64 *out_bus_id)`
+### `status_t device_bus_register_device(const device_t *dev_template, BOOT_U64 *out_device_id)`
+- Purpose: append bus or device nodes to graph.
+- Parameters:
+  - `bus_template` / `dev_template`: source descriptor.
+  - `out_bus_id` / `out_device_id`: optional output assigned ID.
+
+### `const bus_t *device_bus_get_bus(BOOT_U64 bus_id)`
+### `const device_t *device_bus_get_device(BOOT_U64 device_id)`
+### `BOOT_U64 device_bus_count(void)`
+### `const device_t *device_bus_device_at(BOOT_U64 index)`
+- Purpose: query bus/device entries.
+
+### `BOOT_U64 device_bus_find_first_by_class(device_class_t class_id)`
+### `BOOT_U64 device_bus_find_next_by_class(device_class_t class_id, BOOT_U64 after_id)`
+- Purpose: iterate devices by class.
+
+### `void device_bus_dump(void)`
+- Purpose: print full bus/device inventory for diagnostics.
+
 ## Device Model (`device_model.h`)
 
 ### `status_t driver_set_boot_info(const boot_info_t *boot_info)`

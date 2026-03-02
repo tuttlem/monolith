@@ -1,4 +1,5 @@
 #include "device_model.h"
+#include "device_bus.h"
 #include "interrupts.h"
 #include "print.h"
 #include "timer.h"
@@ -10,21 +11,12 @@
 #define CLASS_CONSOLE "console"
 #define CLASS_EARLY "early"
 
-typedef enum {
-  DEV_NODE_KIND_UNKNOWN = 0,
-  DEV_NODE_KIND_IRQC,
-  DEV_NODE_KIND_TIMER,
-  DEV_NODE_KIND_UART,
-  DEV_NODE_KIND_FRAMEBUFFER,
-  DEV_NODE_KIND_MMIO
-} dev_node_kind_t;
-
 typedef struct {
   const char *class_name;
-  dev_node_kind_t kind;
   BOOT_U64 index;
   const boot_info_t *boot_info;
   const hw_desc_t *hw;
+  BOOT_U64 device_id;
   const void *desc;
 } device_node_t;
 
@@ -151,127 +143,46 @@ static status_t run_driver_on_node(const driver_t *drv, const device_node_t *nod
 
 static status_t probe_class(const char *class_name, const hw_desc_t *hw) {
   BOOT_U64 i;
+  device_class_t want = DEVICE_CLASS_UNKNOWN;
   status_t class_st = STATUS_DEFERRED;
 
-  if (str_eq(class_name, CLASS_IRQC)) {
-    for (i = 0; i < hw->irq_controller_count; ++i) {
-      device_node_t node;
-      BOOT_U64 j;
+  (void)hw;
 
-      node.class_name = CLASS_IRQC;
-      node.kind = DEV_NODE_KIND_IRQC;
+  if (str_eq(class_name, CLASS_IRQC)) {
+    want = DEVICE_CLASS_IRQC;
+  } else if (str_eq(class_name, CLASS_TIMER)) {
+    want = DEVICE_CLASS_TIMER;
+  } else if (str_eq(class_name, CLASS_CONSOLE)) {
+    want = DEVICE_CLASS_CONSOLE;
+  } else if (str_eq(class_name, CLASS_EARLY)) {
+    want = DEVICE_CLASS_MMIO;
+  } else {
+    class_status_set(class_name, STATUS_NOT_FOUND);
+    return STATUS_NOT_FOUND;
+  }
+
+  for (i = 0; i < device_bus_count(); ++i) {
+    const device_t *dev = device_bus_device_at(i);
+    BOOT_U64 j;
+
+    if (dev == (const device_t *)0 || dev->class_id != want) {
+      continue;
+    }
+
+    {
+      device_node_t node;
+
+      node.class_name = class_name;
       node.index = i;
       node.boot_info = g_boot_info;
-      node.hw = hw;
-      node.desc = (const void *)&hw->irq_controllers[i];
+      node.hw = (const hw_desc_t *)0;
+      node.device_id = dev->id;
+      node.desc = (const void *)dev;
 
       for (j = 0; j < g_driver_count; ++j) {
         const driver_t *drv = g_drivers[j];
         status_t st;
         if (!str_eq(drv->class_name, CLASS_IRQC)) {
-          continue;
-        }
-        st = run_driver_on_node(drv, &node);
-        if (st == STATUS_OK || st == STATUS_DEFERRED) {
-          class_st = st;
-          break;
-        }
-      }
-    }
-  } else if (str_eq(class_name, CLASS_TIMER)) {
-    for (i = 0; i < hw->timer_count; ++i) {
-      device_node_t node;
-      BOOT_U64 j;
-
-      node.class_name = CLASS_TIMER;
-      node.kind = DEV_NODE_KIND_TIMER;
-      node.index = i;
-      node.boot_info = g_boot_info;
-      node.hw = hw;
-      node.desc = (const void *)&hw->timers[i];
-
-      for (j = 0; j < g_driver_count; ++j) {
-        const driver_t *drv = g_drivers[j];
-        status_t st;
-        if (!str_eq(drv->class_name, CLASS_TIMER)) {
-          continue;
-        }
-        st = run_driver_on_node(drv, &node);
-        if (st == STATUS_OK || st == STATUS_DEFERRED) {
-          class_st = st;
-          break;
-        }
-      }
-    }
-  } else if (str_eq(class_name, CLASS_CONSOLE)) {
-    BOOT_U64 index = 0;
-
-    for (i = 0; i < hw->uart_count; ++i) {
-      device_node_t node;
-      BOOT_U64 j;
-
-      node.class_name = CLASS_CONSOLE;
-      node.kind = DEV_NODE_KIND_UART;
-      node.index = index;
-      node.boot_info = g_boot_info;
-      node.hw = hw;
-      node.desc = (const void *)&hw->uarts[i];
-      index += 1ULL;
-
-      for (j = 0; j < g_driver_count; ++j) {
-        const driver_t *drv = g_drivers[j];
-        status_t st;
-        if (!str_eq(drv->class_name, CLASS_CONSOLE)) {
-          continue;
-        }
-        st = run_driver_on_node(drv, &node);
-        if (st == STATUS_OK || st == STATUS_DEFERRED) {
-          class_st = st;
-          break;
-        }
-      }
-    }
-
-    if (g_boot_info != (const boot_info_t *)0 && (g_boot_info->valid_mask & BOOT_INFO_HAS_FRAMEBUFFER) != 0ULL) {
-      device_node_t node;
-      BOOT_U64 j;
-
-      node.class_name = CLASS_CONSOLE;
-      node.kind = DEV_NODE_KIND_FRAMEBUFFER;
-      node.index = index;
-      node.boot_info = g_boot_info;
-      node.hw = hw;
-      node.desc = (const void *)0;
-
-      for (j = 0; j < g_driver_count; ++j) {
-        const driver_t *drv = g_drivers[j];
-        status_t st;
-        if (!str_eq(drv->class_name, CLASS_CONSOLE)) {
-          continue;
-        }
-        st = run_driver_on_node(drv, &node);
-        if (st == STATUS_OK || st == STATUS_DEFERRED) {
-          class_st = st;
-          break;
-        }
-      }
-    }
-  } else if (str_eq(class_name, CLASS_EARLY)) {
-    for (i = 0; i < hw->mmio_region_count; ++i) {
-      device_node_t node;
-      BOOT_U64 j;
-
-      node.class_name = CLASS_EARLY;
-      node.kind = DEV_NODE_KIND_MMIO;
-      node.index = i;
-      node.boot_info = g_boot_info;
-      node.hw = hw;
-      node.desc = (const void *)&hw->mmio_regions[i];
-
-      for (j = 0; j < g_driver_count; ++j) {
-        const driver_t *drv = g_drivers[j];
-        status_t st;
-        if (!str_eq(drv->class_name, CLASS_EARLY)) {
           continue;
         }
         st = run_driver_on_node(drv, &node);
@@ -308,7 +219,12 @@ status_t driver_probe_all(const hw_desc_t *hw) {
 
 static status_t irq_driver_probe(const void *hw_node) {
   const device_node_t *node = (const device_node_t *)hw_node;
-  if (node == (const device_node_t *)0 || node->kind != DEV_NODE_KIND_IRQC) {
+  const device_t *dev;
+  if (node == (const device_node_t *)0) {
+    return STATUS_NOT_FOUND;
+  }
+  dev = (const device_t *)node->desc;
+  if (dev == (const device_t *)0 || dev->class_id != DEVICE_CLASS_IRQC) {
     return STATUS_NOT_FOUND;
   }
   return STATUS_OK;
@@ -328,7 +244,12 @@ static status_t irq_driver_init(void *dev) {
 
 static status_t timer_driver_probe(const void *hw_node) {
   const device_node_t *node = (const device_node_t *)hw_node;
-  if (node == (const device_node_t *)0 || node->kind != DEV_NODE_KIND_TIMER) {
+  const device_t *dev;
+  if (node == (const device_node_t *)0) {
+    return STATUS_NOT_FOUND;
+  }
+  dev = (const device_t *)node->desc;
+  if (dev == (const device_t *)0 || dev->class_id != DEVICE_CLASS_TIMER) {
     return STATUS_NOT_FOUND;
   }
   return STATUS_OK;
@@ -348,10 +269,12 @@ static status_t timer_driver_init(void *dev) {
 
 static status_t console_driver_probe(const void *hw_node) {
   const device_node_t *node = (const device_node_t *)hw_node;
+  const device_t *dev;
   if (node == (const device_node_t *)0) {
     return STATUS_INVALID_ARG;
   }
-  if (node->kind == DEV_NODE_KIND_UART || node->kind == DEV_NODE_KIND_FRAMEBUFFER) {
+  dev = (const device_t *)node->desc;
+  if (dev != (const device_t *)0 && (dev->class_id == DEVICE_CLASS_CONSOLE || dev->class_id == DEVICE_CLASS_FRAMEBUFFER)) {
     return STATUS_OK;
   }
   return STATUS_NOT_FOUND;

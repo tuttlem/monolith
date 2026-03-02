@@ -1,6 +1,7 @@
 #include "kernel.h"
 #include "arch_cpu.h"
 #include "config.h"
+#include "device_bus.h"
 #include "device_model.h"
 #include "diag/boot_info.h"
 #include "hw_desc.h"
@@ -64,6 +65,7 @@ void kmain(const boot_info_t *boot_info) {
   status_t heap_status;
   status_t percpu_status;
   status_t discovery_status;
+  status_t bus_status;
   status_t device_status;
   status_t driver_reg_status;
   status_t smp_status;
@@ -83,6 +85,8 @@ void kmain(const boot_info_t *boot_info) {
   cpu_status = arch_cpu_early_init(boot_info);
   percpu_status = percpu_init_boot_cpu(boot_info);
   discovery_status = hw_discovery_init(boot_info);
+  hw = hw_desc_get();
+  bus_status = device_bus_init(boot_info, hw);
   smp_status = smp_init(boot_info);
   mem_status = arch_mm_early_init(mutable_boot_info);
   page_status = page_alloc_init(mutable_boot_info);
@@ -90,7 +94,6 @@ void kmain(const boot_info_t *boot_info) {
   driver_registry_reset();
   driver_set_boot_info(boot_info);
   driver_reg_status = device_model_register_builtin_drivers();
-  hw = hw_desc_get();
   device_status = driver_probe_all(hw);
   irq_status = driver_class_last_status("irqc");
   timer_status = driver_class_last_status("timer");
@@ -108,6 +111,9 @@ void kmain(const boot_info_t *boot_info) {
   }
   if (!status_is_ok(discovery_status) && discovery_status != STATUS_DEFERRED) {
     kprintf("hw_discovery_init: %s (%d)\n", status_str(discovery_status), discovery_status);
+  }
+  if (!status_is_ok(bus_status) && bus_status != STATUS_DEFERRED) {
+    kprintf("device_bus_init: %s (%d)\n", status_str(bus_status), bus_status);
   }
   if (!status_is_ok(smp_status) && smp_status != STATUS_DEFERRED) {
     kprintf("smp_init: %s (%d)\n", status_str(smp_status), smp_status);
@@ -204,6 +210,7 @@ void kmain(const boot_info_t *boot_info) {
               hw->cpu_count, hw->irq_controller_count, hw->timer_count, hw->mmio_region_count, hw->uart_count);
     }
   }
+  device_bus_dump();
 
 #if MONOLITH_BOOTINFO_DEBUG
   diag_boot_info_print(boot_info);

@@ -21,7 +21,8 @@ Initialization order is fixed and intentional:
 8. `driver_registry_reset()`
 9. `driver_set_boot_info(boot_info)`
 10. `device_model_register_builtin_drivers()`
-11. `driver_probe_all(hw_desc_get())` in class order:
+11. `device_bus_init(boot_info, hw_desc_get())`
+12. `driver_probe_all(hw_desc_get())` in class order:
     - `irqc` (calls IRQ backend init)
     - `timer` (calls timer backend init)
     - `console`
@@ -39,6 +40,7 @@ Then optional self-tests/diagnostics run (macro-controlled), then the kernel idl
 - `page_alloc_init` depends on usable memory regions in `boot_info.memory_regions`.
 - `kmalloc_init` depends on page allocator availability.
 - Device model setup provides deterministic static-driver registration before probing.
+- Device bus setup converts normalized discovery data into a stable bus/device graph.
 - `irqc` class init sets the CPU interrupt backend and handler table; dispatch updates per-CPU IRQ nesting.
 - `timer` class init registers a timer IRQ handler and enables interrupts when successful; timer IRQ updates per-CPU local tick count.
 

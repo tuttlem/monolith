@@ -294,6 +294,47 @@ typedef struct boot_info boot_info_t;
   - `probe`: probe callback.
   - `init`: initialization callback.
 
+## Device Bus Types (`device_bus.h`)
+
+### `bus_type_t`
+- Purpose: classifies bus nodes (`root`, `platform`, `pci`, `usb`).
+
+### `device_class_t`
+- Purpose: classifies device nodes for generic matching/reporting.
+- Includes classes such as `IRQC`, `TIMER`, `CONSOLE`, `MMIO`, `FRAMEBUFFER`, `PCI_DEVICE`, `USB_HOST`, `USB_DEVICE`, `BLOCK`, `NET`, `INPUT`, `DISPLAY`, `AUDIO`.
+
+### `device_resource_kind_t`
+- Purpose: classifies resource descriptors (`MMIO`, `IRQ`, `IOPORT`, `DMA`).
+
+### `device_resource_t`
+- Members:
+  - `kind`: resource type.
+  - `base`: base address/value.
+  - `size`: span/count.
+  - `flags`: resource-specific flags.
+
+### `device_t`
+- Struct purpose: normalized graph node describing one hardware device instance.
+- Members:
+  - `id`: unique device ID in graph.
+  - `parent_id`: parent device ID or `DEVICE_BUS_ID_NONE`.
+  - `bus_id`: owning bus ID.
+  - `name`: device label.
+  - `class_id`: generic class for matching.
+  - `vendor_id`, `device_id`, `revision`: identity fields (if known).
+  - `class_code`, `subclass_code`, `prog_if`: bus-specific classification fields.
+  - `resource_count`: valid entries in `resources`.
+  - `resources`: fixed array of resource descriptors.
+  - `driver_data`: backend-owned pointer for bound driver state.
+
+### `bus_t`
+- Struct purpose: bus node metadata.
+- Members:
+  - `id`: unique bus ID.
+  - `parent_bus_id`: parent bus linkage.
+  - `type`: bus type enum.
+  - `name`: bus label.
+
 ## Hardware Discovery Structures (`hw_desc.h`)
 
 ### `hw_cpu_desc_t`
