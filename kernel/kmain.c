@@ -10,6 +10,7 @@
 #include "arch_mm.h"
 #include "panic.h"
 #include "page_alloc.h"
+#include "pci.h"
 #include "percpu.h"
 #include "smp.h"
 #include "timebase.h"
@@ -69,6 +70,7 @@ void kmain(const boot_info_t *boot_info) {
   status_t device_status;
   status_t driver_reg_status;
   status_t smp_status;
+  status_t pci_status;
   status_t irq_status;
   status_t timer_status;
   status_t console_status;
@@ -87,6 +89,7 @@ void kmain(const boot_info_t *boot_info) {
   discovery_status = hw_discovery_init(boot_info);
   hw = hw_desc_get();
   bus_status = device_bus_init(boot_info, hw);
+  pci_status = pci_enumerate(boot_info);
   smp_status = smp_init(boot_info);
   mem_status = arch_mm_early_init(mutable_boot_info);
   page_status = page_alloc_init(mutable_boot_info);
@@ -114,6 +117,9 @@ void kmain(const boot_info_t *boot_info) {
   }
   if (!status_is_ok(bus_status) && bus_status != STATUS_DEFERRED) {
     kprintf("device_bus_init: %s (%d)\n", status_str(bus_status), bus_status);
+  }
+  if (!status_is_ok(pci_status) && pci_status != STATUS_DEFERRED) {
+    kprintf("pci_enumerate: %s (%d)\n", status_str(pci_status), pci_status);
   }
   if (!status_is_ok(smp_status) && smp_status != STATUS_DEFERRED) {
     kprintf("smp_init: %s (%d)\n", status_str(smp_status), smp_status);
@@ -211,6 +217,7 @@ void kmain(const boot_info_t *boot_info) {
     }
   }
   device_bus_dump();
+  kprintf("pci: devices=%llu\n", pci_device_count());
 
 #if MONOLITH_BOOTINFO_DEBUG
   diag_boot_info_print(boot_info);
