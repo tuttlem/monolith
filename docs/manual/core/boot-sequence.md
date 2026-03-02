@@ -13,12 +13,13 @@ Bootloader/firmware glue is architecture-specific and must construct `boot_info_
 Initialization order is fixed and intentional:
 1. `arch_cpu_early_init(boot_info)`
 2. `percpu_init_boot_cpu(boot_info)`
-3. `smp_init(boot_info)`
-4. `arch_mm_early_init(boot_info_mut)` (wrapper over `arch_memory_init`)
-5. `page_alloc_init(boot_info_mut)`
-6. `kmalloc_init(boot_info_mut)`
-7. `interrupts_init(boot_info)`
-8. `timer_init(boot_info)`
+3. `hw_discovery_init(boot_info)`
+4. `smp_init(boot_info)`
+5. `arch_mm_early_init(boot_info_mut)` (wrapper over `arch_memory_init`)
+6. `page_alloc_init(boot_info_mut)`
+7. `kmalloc_init(boot_info_mut)`
+8. `interrupts_init(boot_info)`
+9. `timer_init(boot_info)`
 
 Then optional self-tests/diagnostics run (macro-controlled), then the kernel idles in `arch_halt()` loop.
 
@@ -26,6 +27,7 @@ Then optional self-tests/diagnostics run (macro-controlled), then the kernel idl
 
 - `arch_cpu_early_init` provides stable CPU identity and architecture CPU state.
 - `percpu_init_boot_cpu` installs a lockless current-CPU pointer before IRQ/timer activity.
+- `hw_discovery_init` normalizes ACPI/DT/fallback hardware description for generic consumers.
 - `smp_init` defines possible/online CPU topology and runs architecture SMP bootstrap when enabled.
 - `arch_mm_early_init` may change page table root and records final VM state in `boot_info`.
 - `page_alloc_init` depends on usable memory regions in `boot_info.memory_regions`.

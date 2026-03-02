@@ -1,6 +1,7 @@
 #include "timebase.h"
 #include "arch_cpu.h"
 #include "arch_timer.h"
+#include "hw_desc.h"
 #include "interrupts.h"
 #include "irq_controller.h"
 #include "percpu.h"
@@ -92,9 +93,15 @@ status_t time_init(const boot_info_t *boot_info) {
   BOOT_U64 irq = 0;
   BOOT_U64 cycle_hz = 0;
   status_t st;
+  const hw_desc_t *hw;
 
   if (boot_info == (const boot_info_t *)0) {
     return STATUS_INVALID_ARG;
+  }
+
+  hw = hw_desc_get();
+  if (hw != (const hw_desc_t *)0 && hw->timer_count == 0ULL) {
+    return STATUS_DEFERRED;
   }
 
   g_time.initialized = 0;

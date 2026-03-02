@@ -2,6 +2,7 @@
 #include "arch_cpu.h"
 #include "arch_smp.h"
 #include "config.h"
+#include "hw_desc.h"
 #include "percpu.h"
 #include "print.h"
 
@@ -44,7 +45,10 @@ status_t smp_init(const boot_info_t *boot_info) {
     return STATUS_OK;
   }
 
-  possible = arch_cpu_count_hint();
+  possible = hw_desc_cpu_count_hint();
+  if (possible == 0ULL) {
+    possible = arch_cpu_count_hint();
+  }
   if (possible == 0ULL) {
     possible = 1ULL;
   }
