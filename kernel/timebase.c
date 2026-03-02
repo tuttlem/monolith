@@ -2,6 +2,7 @@
 #include "arch_cpu.h"
 #include "arch_timer.h"
 #include "interrupts.h"
+#include "irq_controller.h"
 
 typedef struct {
   BOOT_U64 initialized;
@@ -41,6 +42,17 @@ static BOOT_U64 saturating_muldiv_u64(BOOT_U64 value, BOOT_U64 mul, BOOT_U64 div
   return hi + lo;
 }
 
+static void refresh_ticks_from_ns(BOOT_U64 ns) {
+  BOOT_U64 derived;
+  if (g_time.hz == 0ULL) {
+    return;
+  }
+  derived = saturating_muldiv_u64(ns, g_time.hz, 1000000000ULL);
+  if (derived > g_time.ticks) {
+    g_time.ticks = derived;
+  }
+}
+
 static status_t clockevent_set_periodic_compat(BOOT_U64 hz) {
   if (hz == g_time.hz) {
     return STATUS_OK;
@@ -70,6 +82,7 @@ static void time_irq_handler(const interrupt_frame_t *frame, void *ctx) {
 status_t time_init(const boot_info_t *boot_info) {
   BOOT_U64 hz = 0;
   BOOT_U64 vector = 0;
+  BOOT_U64 irq = 0;
   BOOT_U64 cycle_hz = 0;
   status_t st;
 
@@ -104,6 +117,16 @@ status_t time_init(const boot_info_t *boot_info) {
 
   st = interrupts_register_handler_owned(vector, time_irq_handler, (void *)0, "timer");
   if (st != STATUS_OK) {
+    return st;
+  }
+
+  st = irq_controller_vector_to_irq(vector, &irq);
+  if (st == STATUS_OK) {
+    st = irq_controller_enable(irq);
+    if (st != STATUS_OK && st != STATUS_DEFERRED) {
+      return st;
+    }
+  } else if (st != STATUS_DEFERRED) {
     return st;
   }
 
@@ -156,13 +179,18 @@ BOOT_U64 time_now_ns(void) {
   }
 
   if (ns < g_time.ns_last) {
-    return g_time.ns_last;
+    ns = g_time.ns_last;
+  } else {
+    g_time.ns_last = ns;
   }
-  g_time.ns_last = ns;
+  refresh_ticks_from_ns(ns);
   return ns;
 }
 
-BOOT_U64 time_ticks(void) { return g_time.ticks; }
+BOOT_U64 time_ticks(void) {
+  (void)time_now_ns();
+  return g_time.ticks;
+}
 
 BOOT_U64 time_hz(void) { return g_time.hz; }
 
