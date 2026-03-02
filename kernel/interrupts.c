@@ -3,6 +3,7 @@
 #include "config.h"
 #include "irq_controller.h"
 #include "panic.h"
+#include "percpu.h"
 
 static const char g_irq_owner_anon[] = "anonymous";
 
@@ -314,22 +315,32 @@ const char *interrupts_handler_owner(BOOT_U64 vector) {
 
 void interrupts_dispatch(const interrupt_frame_t *frame) {
   interrupt_slot_t slot;
+  percpu_t *cpu;
 
   if (g_interrupts.initialized == 0 || frame == (const interrupt_frame_t *)0) {
     return;
   }
+
+  cpu = percpu_current();
+  if (cpu != (percpu_t *)0) {
+    cpu->irq_nesting += 1ULL;
+  }
   if (frame->vector >= INTERRUPT_MAX_VECTORS) {
     interrupts_panic_exception(frame, "invalid_vector");
-    return;
+    goto out;
   }
 
   slot = g_interrupts.slots[frame->vector];
   if (slot.fn == (interrupt_handler_t)0) {
     default_interrupt_handler(frame);
-    return;
+  } else {
+    slot.fn(frame, slot.ctx);
   }
 
-  slot.fn(frame, slot.ctx);
+out:
+  if (cpu != (percpu_t *)0 && cpu->irq_nesting != 0ULL) {
+    cpu->irq_nesting -= 1ULL;
+  }
 }
 
 void interrupts_enable(void) {

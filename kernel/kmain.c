@@ -7,6 +7,7 @@
 #include "arch_mm.h"
 #include "panic.h"
 #include "page_alloc.h"
+#include "percpu.h"
 #include "timebase.h"
 #include "timer.h"
 
@@ -58,6 +59,7 @@ void kmain(const boot_info_t *boot_info) {
   status_t cpu_status;
   status_t page_status;
   status_t heap_status;
+  status_t percpu_status;
   status_t irq_status;
   status_t timer_status;
 
@@ -70,6 +72,7 @@ void kmain(const boot_info_t *boot_info) {
   panic_set_context(boot_info);
   mutable_boot_info = (boot_info_t *)boot_info;
   cpu_status = arch_cpu_early_init(boot_info);
+  percpu_status = percpu_init_boot_cpu(boot_info);
   mem_status = arch_mm_early_init(mutable_boot_info);
   page_status = page_alloc_init(mutable_boot_info);
   heap_status = kmalloc_init(mutable_boot_info);
@@ -82,6 +85,9 @@ void kmain(const boot_info_t *boot_info) {
   }
   if (!status_is_ok(mem_status) && mem_status != STATUS_DEFERRED) {
     kprintf("arch_mm_early_init: %s (%d)\n", status_str(mem_status), mem_status);
+  }
+  if (!status_is_ok(percpu_status) && percpu_status != STATUS_DEFERRED) {
+    kprintf("percpu_init_boot_cpu: %s (%d)\n", status_str(percpu_status), percpu_status);
   }
   if (!status_is_ok(page_status) && page_status != STATUS_DEFERRED) {
     kprintf("page_alloc_init: %s (%d)\n", status_str(page_status), page_status);

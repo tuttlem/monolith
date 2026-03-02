@@ -3,6 +3,7 @@
 #include "arch_timer.h"
 #include "interrupts.h"
 #include "irq_controller.h"
+#include "percpu.h"
 
 typedef struct {
   BOOT_U64 initialized;
@@ -68,11 +69,17 @@ static status_t clockevent_set_oneshot_compat(BOOT_U64 delta_ns) {
 static void clockevent_ack_compat(BOOT_U64 vector) { arch_timer_ack(vector); }
 
 static void time_irq_handler(const interrupt_frame_t *frame, void *ctx) {
+  percpu_t *cpu;
+
   (void)ctx;
   if (frame == (const interrupt_frame_t *)0) {
     return;
   }
 
+  cpu = percpu_current();
+  if (cpu != (percpu_t *)0) {
+    cpu->local_tick_count += 1ULL;
+  }
   g_time.ticks += 1ULL;
   if (g_time.clockevent.ack != (void (*)(BOOT_U64))0) {
     g_time.clockevent.ack(frame->vector);

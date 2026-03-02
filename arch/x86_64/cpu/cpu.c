@@ -3,6 +3,8 @@
 static BOOT_U64 g_x86_cpu_id = 0;
 static BOOT_U64 g_x86_initialized = 0;
 
+#define X86_64_MSR_GS_BASE 0xC0000101U
+
 static void x86_cpuid(BOOT_U32 leaf, BOOT_U32 *eax, BOOT_U32 *ebx, BOOT_U32 *ecx, BOOT_U32 *edx) {
   BOOT_U32 a, b, c, d;
   __asm__ volatile("cpuid" : "=a"(a), "=b"(b), "=c"(c), "=d"(d) : "a"(leaf));
@@ -18,6 +20,19 @@ static void x86_cpuid(BOOT_U32 leaf, BOOT_U32 *eax, BOOT_U32 *ebx, BOOT_U32 *ecx
   if (edx != (BOOT_U32 *)0) {
     *edx = d;
   }
+}
+
+static void x86_write_msr(BOOT_U32 msr, BOOT_U64 value) {
+  BOOT_U32 lo = (BOOT_U32)(value & 0xFFFFFFFFULL);
+  BOOT_U32 hi = (BOOT_U32)(value >> 32);
+  __asm__ volatile("wrmsr" : : "c"(msr), "a"(lo), "d"(hi) : "memory");
+}
+
+static BOOT_U64 x86_read_msr(BOOT_U32 msr) {
+  BOOT_U32 lo;
+  BOOT_U32 hi;
+  __asm__ volatile("rdmsr" : "=a"(lo), "=d"(hi) : "c"(msr));
+  return ((BOOT_U64)hi << 32) | (BOOT_U64)lo;
 }
 
 status_t arch_cpu_early_init(const boot_info_t *boot_info) {
@@ -62,6 +77,13 @@ BOOT_U64 arch_cycle_counter(void) {
   __asm__ volatile("rdtsc" : "=a"(lo), "=d"(hi));
   return ((BOOT_U64)hi << 32) | (BOOT_U64)lo;
 }
+
+status_t arch_cpu_set_local_base(BOOT_U64 base) {
+  x86_write_msr(X86_64_MSR_GS_BASE, base);
+  return STATUS_OK;
+}
+
+BOOT_U64 arch_cpu_get_local_base(void) { return x86_read_msr(X86_64_MSR_GS_BASE); }
 
 void arch_barrier_full(void) { __asm__ volatile("mfence" : : : "memory"); }
 
