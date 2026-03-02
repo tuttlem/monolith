@@ -48,8 +48,17 @@
 ## Per-CPU
 
 - `status_t percpu_init_boot_cpu(const boot_info_t *boot_info)`
+- `status_t percpu_register_current_cpu(BOOT_U64 cpu_id)`
 - `percpu_t *percpu_current(void)`
 - `percpu_t *percpu_by_id(BOOT_U64 cpu_id)`
+- `BOOT_U64 percpu_online_count(void)`
+
+## SMP
+
+- `status_t smp_init(const boot_info_t *boot_info)`
+- `BOOT_U64 smp_cpu_count_online(void)`
+- `BOOT_U64 smp_cpu_count_possible(void)`
+- `void smp_secondary_entry(BOOT_U64 cpu_id)`
 
 ## Interrupts
 

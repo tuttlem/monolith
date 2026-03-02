@@ -53,6 +53,10 @@ $(BUILD_X64)/kernel/percpu.o: kernel/percpu.c kernel/include/percpu.h kernel/inc
 	@mkdir -p $(@D)
 	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
 
+$(BUILD_X64)/kernel/smp.o: kernel/smp.c kernel/include/smp.h kernel/include/arch_smp.h kernel/include/percpu.h arch/x86_64/arch.mk
+	@mkdir -p $(@D)
+	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
+
 $(BUILD_X64)/kernel/panic.o: kernel/panic.c kernel/include/panic.h kernel/include/arch_cpu.h kernel/include/arch_irq.h arch/x86_64/arch.mk
 	@mkdir -p $(@D)
 	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
@@ -66,6 +70,10 @@ $(BUILD_X64)/kernel/irq_controller.o: kernel/irq_controller.c kernel/include/irq
 	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
 
 $(BUILD_X64)/arch/x86_64/cpu/cpu.o: arch/x86_64/cpu/cpu.c kernel/include/arch_cpu.h arch/x86_64/arch.mk
+	@mkdir -p $(@D)
+	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
+
+$(BUILD_X64)/arch/x86_64/cpu/smp.o: arch/x86_64/cpu/smp.c kernel/include/arch_smp.h arch/x86_64/arch.mk
 	@mkdir -p $(@D)
 	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
 
@@ -117,7 +125,7 @@ $(BUILD_X64)/arch/x86_64/mm/mmu_backend.o: arch/x86_64/mm/mmu_backend.c kernel/i
 	@mkdir -p $(@D)
 	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_X64)/BOOTX64.EFI: $(BUILD_X64)/boot/efi_main.o $(BUILD_X64)/kernel/kmain.o $(BUILD_X64)/kernel/print.o $(BUILD_X64)/kernel/status.o $(BUILD_X64)/kernel/percpu.o $(BUILD_X64)/kernel/panic.o $(BUILD_X64)/kernel/timebase.o $(BUILD_X64)/kernel/irq_controller.o $(BUILD_X64)/kernel/interrupts.o $(BUILD_X64)/kernel/timer.o $(BUILD_X64)/kernel/diag/boot_info.o $(BUILD_X64)/kernel/mm/page_alloc.o $(BUILD_X64)/kernel/mm/kmalloc.o $(BUILD_X64)/kernel/mm/mmu.o $(BUILD_X64)/arch/x86_64/cpu/cpu.o $(BUILD_X64)/arch/x86_64/mm/memory_init.o $(BUILD_X64)/arch/x86_64/mm/early_paging.o $(BUILD_X64)/arch/x86_64/mm/mmu_backend.o $(BUILD_X64)/arch/x86_64/irq/interrupts.o $(BUILD_X64)/arch/x86_64/irq/pic.o $(BUILD_X64)/arch/x86_64/timer/timer.o
+$(BUILD_X64)/BOOTX64.EFI: $(BUILD_X64)/boot/efi_main.o $(BUILD_X64)/kernel/kmain.o $(BUILD_X64)/kernel/print.o $(BUILD_X64)/kernel/status.o $(BUILD_X64)/kernel/percpu.o $(BUILD_X64)/kernel/smp.o $(BUILD_X64)/kernel/panic.o $(BUILD_X64)/kernel/timebase.o $(BUILD_X64)/kernel/irq_controller.o $(BUILD_X64)/kernel/interrupts.o $(BUILD_X64)/kernel/timer.o $(BUILD_X64)/kernel/diag/boot_info.o $(BUILD_X64)/kernel/mm/page_alloc.o $(BUILD_X64)/kernel/mm/kmalloc.o $(BUILD_X64)/kernel/mm/mmu.o $(BUILD_X64)/arch/x86_64/cpu/cpu.o $(BUILD_X64)/arch/x86_64/cpu/smp.o $(BUILD_X64)/arch/x86_64/mm/memory_init.o $(BUILD_X64)/arch/x86_64/mm/early_paging.o $(BUILD_X64)/arch/x86_64/mm/mmu_backend.o $(BUILD_X64)/arch/x86_64/irq/interrupts.o $(BUILD_X64)/arch/x86_64/irq/pic.o $(BUILD_X64)/arch/x86_64/timer/timer.o
 	@mkdir -p $(@D)
 	@command -v $(LLD_LINK) >/dev/null 2>&1 || { echo "error: $(LLD_LINK) not found. Install lld."; exit 1; }
 	$(LLD_LINK) $(X64_UEFI_LDFLAGS) /out:$@ $^
@@ -147,6 +155,10 @@ $(BUILD_A64)/kernel/percpu.o: kernel/percpu.c kernel/include/percpu.h kernel/inc
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
 
+$(BUILD_A64)/kernel/smp.o: kernel/smp.c kernel/include/smp.h kernel/include/arch_smp.h kernel/include/percpu.h arch/arm64/arch.mk
+	@mkdir -p $(@D)
+	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
+
 $(BUILD_A64)/kernel/panic.o: kernel/panic.c kernel/include/panic.h kernel/include/arch_cpu.h kernel/include/arch_irq.h arch/arm64/arch.mk
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
@@ -160,6 +172,10 @@ $(BUILD_A64)/kernel/irq_controller.o: kernel/irq_controller.c kernel/include/irq
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
 
 $(BUILD_A64)/arch/arm64/cpu/cpu.o: arch/arm64/cpu/cpu.c kernel/include/arch_cpu.h arch/arm64/arch.mk
+	@mkdir -p $(@D)
+	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
+
+$(BUILD_A64)/arch/arm64/cpu/smp.o: arch/arm64/cpu/smp.c kernel/include/arch_smp.h arch/arm64/arch.mk
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
 
@@ -215,7 +231,7 @@ $(BUILD_A64)/arch/arm64/mm/mmu_backend.o: arch/arm64/mm/mmu_backend.c kernel/inc
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_A64)/BOOTAA64.EFI: $(BUILD_A64)/boot/efi_main.o $(BUILD_A64)/kernel/kmain.o $(BUILD_A64)/kernel/print.o $(BUILD_A64)/kernel/status.o $(BUILD_A64)/kernel/percpu.o $(BUILD_A64)/kernel/panic.o $(BUILD_A64)/kernel/timebase.o $(BUILD_A64)/kernel/irq_controller.o $(BUILD_A64)/kernel/interrupts.o $(BUILD_A64)/kernel/timer.o $(BUILD_A64)/kernel/diag/boot_info.o $(BUILD_A64)/kernel/mm/page_alloc.o $(BUILD_A64)/kernel/mm/kmalloc.o $(BUILD_A64)/kernel/mm/mmu.o $(BUILD_A64)/arch/arm64/cpu/cpu.o $(BUILD_A64)/arch/arm64/mm/memory_init.o $(BUILD_A64)/arch/arm64/mm/early_paging.o $(BUILD_A64)/arch/arm64/mm/mmu_backend.o $(BUILD_A64)/arch/arm64/irq/interrupts.o $(BUILD_A64)/arch/arm64/irq/gicv2.o $(BUILD_A64)/arch/arm64/irq/entry.o $(BUILD_A64)/arch/arm64/timer/timer.o
+$(BUILD_A64)/BOOTAA64.EFI: $(BUILD_A64)/boot/efi_main.o $(BUILD_A64)/kernel/kmain.o $(BUILD_A64)/kernel/print.o $(BUILD_A64)/kernel/status.o $(BUILD_A64)/kernel/percpu.o $(BUILD_A64)/kernel/smp.o $(BUILD_A64)/kernel/panic.o $(BUILD_A64)/kernel/timebase.o $(BUILD_A64)/kernel/irq_controller.o $(BUILD_A64)/kernel/interrupts.o $(BUILD_A64)/kernel/timer.o $(BUILD_A64)/kernel/diag/boot_info.o $(BUILD_A64)/kernel/mm/page_alloc.o $(BUILD_A64)/kernel/mm/kmalloc.o $(BUILD_A64)/kernel/mm/mmu.o $(BUILD_A64)/arch/arm64/cpu/cpu.o $(BUILD_A64)/arch/arm64/cpu/smp.o $(BUILD_A64)/arch/arm64/mm/memory_init.o $(BUILD_A64)/arch/arm64/mm/early_paging.o $(BUILD_A64)/arch/arm64/mm/mmu_backend.o $(BUILD_A64)/arch/arm64/irq/interrupts.o $(BUILD_A64)/arch/arm64/irq/gicv2.o $(BUILD_A64)/arch/arm64/irq/entry.o $(BUILD_A64)/arch/arm64/timer/timer.o
 	@mkdir -p $(@D)
 	@command -v $(LLD_LINK) >/dev/null 2>&1 || { echo "error: $(LLD_LINK) not found. Install lld."; exit 1; }
 	$(LLD_LINK) $(A64_UEFI_LDFLAGS) /out:$@ $^
@@ -224,7 +240,7 @@ $(BUILD_A64)/uefi.img: $(BUILD_A64)/BOOTAA64.EFI scripts/mk-uefi-image.sh
 	@mkdir -p $(@D)
 	@./scripts/mk-uefi-image.sh arm64 $(BUILD_A64)/BOOTAA64.EFI $@
 
-RISCV64_SRCS := kernel/kmain.c kernel/print.c kernel/status.c kernel/percpu.c kernel/panic.c kernel/timebase.c kernel/irq_controller.c kernel/interrupts.c kernel/timer.c kernel/diag/boot_info.c kernel/mm/page_alloc.c kernel/mm/kmalloc.c kernel/mm/mmu.c arch/riscv64/cpu/cpu.c arch/riscv64/mm/memory_init.c arch/riscv64/mm/early_paging.c arch/riscv64/mm/mmu_backend.c arch/riscv64/irq/interrupts.c arch/riscv64/irq/controller_stub.c arch/riscv64/timer/timer.c arch/riscv64/boot/main.c arch/riscv64/boot/console.c lib/memset.c lib/memcpy.c lib/strlen.c
+RISCV64_SRCS := kernel/kmain.c kernel/print.c kernel/status.c kernel/percpu.c kernel/smp.c kernel/panic.c kernel/timebase.c kernel/irq_controller.c kernel/interrupts.c kernel/timer.c kernel/diag/boot_info.c kernel/mm/page_alloc.c kernel/mm/kmalloc.c kernel/mm/mmu.c arch/riscv64/cpu/cpu.c arch/riscv64/cpu/smp.c arch/riscv64/mm/memory_init.c arch/riscv64/mm/early_paging.c arch/riscv64/mm/mmu_backend.c arch/riscv64/irq/interrupts.c arch/riscv64/irq/controller_stub.c arch/riscv64/timer/timer.c arch/riscv64/boot/main.c arch/riscv64/boot/console.c lib/memset.c lib/memcpy.c lib/strlen.c
 RISCV64_OBJS := $(patsubst %.c,$(BUILD_RISCV64)/%.o,$(RISCV64_SRCS)) $(BUILD_RISCV64)/arch/riscv64/start.o $(BUILD_RISCV64)/arch/riscv64/irq/entry.o
 
 $(BUILD_RISCV64)/kernel.elf: $(RISCV64_OBJS) arch/riscv64/linker.ld
