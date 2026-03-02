@@ -1,4 +1,5 @@
 #include "arch_interrupts.h"
+#include "arch/riscv64/irq_controller.h"
 #include "interrupts.h"
 #include "panic.h"
 
@@ -12,7 +13,7 @@ status_t arch_interrupts_init(const boot_info_t *boot_info) {
 
   stvec_base = (BOOT_U64)(BOOT_UPTR)&riscv64_trap_entry;
   __asm__ volatile("csrw stvec, %0" : : "r"(stvec_base) : "memory");
-  return STATUS_OK;
+  return riscv64_irq_controller_init(boot_info);
 }
 
 void arch_interrupts_enable(void) { __asm__ volatile("csrsi sstatus, 2" : : : "memory"); }
