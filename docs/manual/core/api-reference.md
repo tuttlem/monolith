@@ -446,6 +446,19 @@ if (d != 0) {
 ### `void device_bus_dump(void)`
 - Purpose: print full bus/device inventory for diagnostics.
 
+## PCI (`pci.h`)
+
+### `status_t pci_enumerate(const boot_info_t *boot_info)`
+- Purpose: discover PCI devices and add them into bus graph.
+- Parameters:
+  - `boot_info`: handoff context, used for architecture selection.
+- Returns:
+  - `STATUS_OK` when enumeration backend ran successfully.
+  - `STATUS_DEFERRED` when backend is not implemented on this architecture.
+
+### `BOOT_U64 pci_device_count(void)`
+- Purpose: report number of PCI functions discovered in last enumeration pass.
+
 ## Device Model (`device_model.h`)
 
 ### `status_t driver_set_boot_info(const boot_info_t *boot_info)`

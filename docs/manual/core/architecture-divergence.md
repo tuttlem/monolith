@@ -43,6 +43,12 @@ This page highlights where execution paths diverge between `x86_64`, `arm64`, an
 - `arm64`: L2 block mapping granule in current implementation.
 - `riscv64`: simplified large-granule Sv39 path in current implementation.
 
+## PCI Enumeration Backend
+
+- `x86_64`: implemented via legacy config I/O scanning.
+- `arm64`: deferred in current phase.
+- `riscv64`: deferred in current phase.
+
 ## SMP Bootstrap Behavior
 
 - `x86_64`: UEFI MP Services enumeration and AP startup.
