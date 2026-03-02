@@ -1,6 +1,7 @@
 SHELL := /usr/bin/env bash
 
 .PHONY: all \
+  print-config \
   x86_64-uefi run-x86_64 gdb-x86_64 smoke-x86_64 \
   arm64-uefi run-arm64 gdb-arm64 smoke-arm64 \
   riscv64 run-riscv64 gdb-riscv64 smoke-riscv64 \
@@ -22,6 +23,10 @@ include arch/arm64/arch.mk
 include arch/riscv64/arch.mk
 
 all: x86_64-uefi
+
+print-config:
+	@echo "Monolith config defaults (kernel/include/config.h):"
+	@rg -n "^[[:space:]]*#define[[:space:]]+MONOLITH_" kernel/include/config.h | sed 's/^/  /'
 
 x86_64-uefi: $(BUILD_X64)/uefi.img
 arm64-uefi: $(BUILD_A64)/uefi.img

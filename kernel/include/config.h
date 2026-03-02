@@ -1,0 +1,68 @@
+#ifndef KERNEL_CONFIG_H
+#define KERNEL_CONFIG_H
+
+/*
+ * Central feature/configuration toggles for kernel bring-up.
+ * Keep all MONOLITH_* policy defines here to avoid local ad-hoc defaults.
+ */
+
+#define MONOLITH_CONFIG_API_VERSION_MAJOR 1U
+#define MONOLITH_CONFIG_API_VERSION_MINOR 0U
+
+/* Diagnostics */
+#ifndef MONOLITH_BOOTINFO_DEBUG
+#define MONOLITH_BOOTINFO_DEBUG 1
+#endif
+
+#ifndef MONOLITH_IRQ_LOG_UNHANDLED
+#define MONOLITH_IRQ_LOG_UNHANDLED 1
+#endif
+
+/* Self-tests */
+#ifndef MONOLITH_KMALLOC_SELFTEST
+#define MONOLITH_KMALLOC_SELFTEST 1
+#endif
+
+#ifndef MONOLITH_KMALLOC_DEBUG_EXERCISE
+#define MONOLITH_KMALLOC_DEBUG_EXERCISE 1
+#endif
+
+#ifndef MONOLITH_TIMER_SELFTEST
+#define MONOLITH_TIMER_SELFTEST 0
+#endif
+
+#ifndef MONOLITH_TIMER_SELFTEST_SPINS
+#define MONOLITH_TIMER_SELFTEST_SPINS 200000000ULL
+#endif
+
+#ifndef MONOLITH_EXCEPTION_SELFTEST
+#define MONOLITH_EXCEPTION_SELFTEST 0
+#endif
+
+/* Assert policy */
+#ifndef MONOLITH_ASSERT_ENABLE
+#define MONOLITH_ASSERT_ENABLE 1
+#endif
+
+#ifndef MONOLITH_ASSERT_PANIC
+#define MONOLITH_ASSERT_PANIC 1
+#endif
+
+/* Substrate feature toggles (reserved for upcoming specs) */
+#ifndef MONOLITH_FEATURE_SMP
+#define MONOLITH_FEATURE_SMP 0
+#endif
+
+#ifndef MONOLITH_FEATURE_MMU_STRICT
+#define MONOLITH_FEATURE_MMU_STRICT 0
+#endif
+
+#ifndef MONOLITH_FEATURE_DISCOVERY_ACPI
+#define MONOLITH_FEATURE_DISCOVERY_ACPI 1
+#endif
+
+#ifndef MONOLITH_FEATURE_DISCOVERY_DTB
+#define MONOLITH_FEATURE_DISCOVERY_DTB 1
+#endif
+
+#endif

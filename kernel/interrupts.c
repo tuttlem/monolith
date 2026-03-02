@@ -1,10 +1,7 @@
 #include "interrupts.h"
 #include "arch_irq.h"
+#include "config.h"
 #include "panic.h"
-
-#ifndef MONOLITH_IRQ_LOG_UNHANDLED
-#define MONOLITH_IRQ_LOG_UNHANDLED 1
-#endif
 
 static const char g_irq_owner_anon[] = "anonymous";
 
