@@ -19,6 +19,7 @@ if [[ "${headless}" == "1" ]]; then
 else
   qemu_ui_flags=(-monitor none)
 fi
+qemu_smp="${QEMU_SMP:-1}"
 
 case "${arch}" in
   x86_64)
@@ -46,7 +47,7 @@ case "${arch}" in
 
     serial_backend="${QEMU_SERIAL:-stdio}"
 
-    exec qemu-system-x86_64 -machine q35 -m 512M \
+    exec qemu-system-x86_64 -machine q35 -m 512M -smp "${qemu_smp}" \
       -drive if=pflash,format=raw,readonly=on,file="${code_fw}" \
       -drive if=pflash,format=raw,file="${vars_copy}" \
       -drive format=raw,file="${img}" \
@@ -78,7 +79,7 @@ case "${arch}" in
 
     serial_backend="${QEMU_SERIAL:-stdio}"
 
-    exec qemu-system-aarch64 -machine virt -cpu cortex-a57 -m 512M \
+    exec qemu-system-aarch64 -machine virt -cpu cortex-a57 -m 512M -smp "${qemu_smp}" \
       -drive if=pflash,format=raw,readonly=on,file="${code_fw}" \
       -drive if=pflash,format=raw,file="${vars_copy}" \
       -drive format=raw,file="${img}" \
@@ -95,7 +96,7 @@ case "${arch}" in
       echo "error: missing kernel ${img}. Run 'make riscv64'." >&2
       exit 1
     }
-    exec qemu-system-riscv64 -machine virt -m 512M -bios default \
+    exec qemu-system-riscv64 -machine virt -m 512M -smp "${qemu_smp}" -bios default \
       -device loader,file="${img}",cpu-num=0 \
       -serial stdio -nographic -no-reboot \
       -monitor none "$@"

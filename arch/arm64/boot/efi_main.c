@@ -5,6 +5,43 @@ static EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *g_con_out;
 
 static const EFI_GUID k_gop_guid = {
     0x9042a9deU, 0x23dcU, 0x4a38U, {0x96U, 0xfbU, 0x7aU, 0xdeU, 0xd0U, 0x80U, 0x51U, 0x6aU}};
+static const EFI_GUID k_acpi_20_table_guid = {
+    0x8868e871U, 0xe4f1U, 0x11d3U, {0xbcU, 0x22U, 0x00U, 0x80U, 0xc7U, 0x3cU, 0x88U, 0x81U}};
+static const EFI_GUID k_acpi_10_table_guid = {
+    0xeb9d2d30U, 0x2d88U, 0x11d3U, {0x9aU, 0x16U, 0x00U, 0x90U, 0x27U, 0x3fU, 0xc1U, 0x4dU}};
+
+static int guid_equal(const EFI_GUID *a, const EFI_GUID *b) {
+  UINTN i;
+
+  if (a->Data1 != b->Data1 || a->Data2 != b->Data2 || a->Data3 != b->Data3) {
+    return 0;
+  }
+
+  for (i = 0; i < 8; ++i) {
+    if (a->Data4[i] != b->Data4[i]) {
+      return 0;
+    }
+  }
+  return 1;
+}
+
+static BOOT_U64 find_acpi_rsdp(EFI_SYSTEM_TABLE *system_table) {
+  EFI_CONFIGURATION_TABLE *tables;
+  UINTN i;
+
+  if (system_table == (VOID *)0 || system_table->ConfigurationTable == (VOID *)0) {
+    return 0;
+  }
+
+  tables = (EFI_CONFIGURATION_TABLE *)system_table->ConfigurationTable;
+  for (i = 0; i < system_table->NumberOfTableEntries; ++i) {
+    if (guid_equal(&tables[i].VendorGuid, &k_acpi_20_table_guid) ||
+        guid_equal(&tables[i].VendorGuid, &k_acpi_10_table_guid)) {
+      return (BOOT_U64)(UINTN)tables[i].VendorTable;
+    }
+  }
+  return 0;
+}
 
 static BOOT_U32 uefi_memory_kind(UINT32 uefi_type) {
   switch (uefi_type) {
@@ -153,7 +190,10 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *system_tab
   boot_info.memory_region_count = 0;
   boot_info.memory_region_capacity = BOOT_INFO_MAX_MEM_REGIONS;
   capture_uefi_memory_map(&boot_info, boot_services);
-  boot_info.acpi_rsdp = 0;
+  boot_info.acpi_rsdp = find_acpi_rsdp(system_table);
+  if (boot_info.acpi_rsdp != 0) {
+    boot_info.valid_mask |= BOOT_INFO_HAS_ACPI_RSDP;
+  }
   boot_info.dtb_ptr = 0;
   boot_info.boot_cpu_id = 0;
   uefi_ext.image_handle = (BOOT_U64)(UINTN)image_handle;

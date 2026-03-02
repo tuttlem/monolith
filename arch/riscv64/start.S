@@ -1,6 +1,7 @@
 .section .text
 .global _start
 _start:
+  bnez a0, 1f
   la sp, _stack_top
   call arch_main
 1:

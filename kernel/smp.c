@@ -64,7 +64,7 @@ status_t smp_init(const boot_info_t *boot_info) {
   st = arch_smp_bootstrap(boot_info, &possible, &started);
   if (st == STATUS_DEFERRED) {
     g_smp.initialized = 1ULL;
-    if (possible != 0ULL) {
+    if (possible > g_smp.possible_cpus) {
       g_smp.possible_cpus = possible;
     }
     g_smp.online_cpus = percpu_online_count();

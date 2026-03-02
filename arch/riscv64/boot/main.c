@@ -25,6 +25,7 @@ typedef struct {
 #define FDT_PROP 3U
 #define FDT_NOP 4U
 #define FDT_END 9U
+#define RISCV64_QEMU_DTB_FALLBACK 0x9fe00000ULL
 
 static BOOT_U64 read_sp(void) {
   BOOT_U64 sp;
@@ -75,6 +76,24 @@ static int str_starts_with(const char *s, const char *prefix) {
 }
 
 static BOOT_U32 align4(BOOT_U32 v) { return (v + 3U) & ~3U; }
+
+static BOOT_U64 resolve_dtb_ptr(BOOT_U64 dtb_ptr) {
+  const fdt_header_t *hdr;
+
+  if (dtb_ptr != 0) {
+    hdr = (const fdt_header_t *)(BOOT_UPTR)dtb_ptr;
+    if (be32_at((const u8 *)&hdr->magic) == FDT_MAGIC) {
+      return dtb_ptr;
+    }
+  }
+
+  hdr = (const fdt_header_t *)(BOOT_UPTR)RISCV64_QEMU_DTB_FALLBACK;
+  if (be32_at((const u8 *)&hdr->magic) == FDT_MAGIC) {
+    return RISCV64_QEMU_DTB_FALLBACK;
+  }
+
+  return 0;
+}
 
 static int parse_fdt_memory(const void *dtb, BOOT_U64 *out_base, BOOT_U64 *out_size) {
   const fdt_header_t *hdr;
@@ -204,9 +223,12 @@ void arch_main(BOOT_U64 hart_id, BOOT_U64 dtb_ptr) {
   BOOT_U64 satp;
   BOOT_U64 ram_base = RISCV64_RAM_BASE_FALLBACK;
   BOOT_U64 ram_size = RISCV64_RAM_SIZE_FALLBACK;
+  BOOT_U64 effective_dtb_ptr;
+
+  effective_dtb_ptr = resolve_dtb_ptr(dtb_ptr);
 
   satp = read_satp();
-  if (parse_fdt_memory((const void *)(BOOT_UPTR)dtb_ptr, &ram_base, &ram_size)) {
+  if (parse_fdt_memory((const void *)(BOOT_UPTR)effective_dtb_ptr, &ram_base, &ram_size)) {
     /* DTB memory range overrides fallback values. */
   }
 
@@ -233,16 +255,16 @@ void arch_main(BOOT_U64 hart_id, BOOT_U64 dtb_ptr) {
     boot_info.valid_mask |= BOOT_INFO_HAS_MEM_REGIONS;
   }
   boot_info.acpi_rsdp = 0;
-  boot_info.dtb_ptr = dtb_ptr;
+  boot_info.dtb_ptr = effective_dtb_ptr;
   boot_info.boot_cpu_id = hart_id;
-  if (dtb_ptr != 0) {
+  if (effective_dtb_ptr != 0) {
     boot_info.valid_mask |= BOOT_INFO_HAS_DTB;
   }
   boot_info.valid_mask |= BOOT_INFO_HAS_BOOT_CPU_ID;
   boot_info.serial_port = RISCV64_UART_BASE;
   boot_info.valid_mask |= BOOT_INFO_HAS_SERIAL;
   riscv_ext.hart_id = hart_id;
-  riscv_ext.dtb_ptr = dtb_ptr;
+  riscv_ext.dtb_ptr = effective_dtb_ptr;
   riscv_ext.satp = satp;
   riscv_ext.uart_base = RISCV64_UART_BASE;
   riscv_ext.ram_base = ram_base;

@@ -58,6 +58,35 @@ typedef struct {
   unsigned int acpi_uid;
 } __attribute__((packed)) madt_x2apic_t;
 
+typedef struct {
+  madt_entry_header_t h;
+  unsigned short reserved;
+  unsigned int cpu_interface_number;
+  unsigned int acpi_uid;
+  unsigned int flags;
+  unsigned int parking_protocol_version;
+  unsigned int performance_interrupt_gsiv;
+  BOOT_U64 parked_address;
+  BOOT_U64 physical_base_address;
+  BOOT_U64 gicv;
+  BOOT_U64 gich;
+  unsigned int vgic_maintenance_interrupt;
+  BOOT_U64 gicr_base_address;
+  BOOT_U64 mpidr;
+  unsigned char processor_power_efficiency_class;
+  unsigned char reserved2[3];
+} __attribute__((packed)) madt_gicc_t;
+
+typedef struct {
+  madt_entry_header_t h;
+  unsigned short reserved;
+  unsigned int gic_id;
+  BOOT_U64 physical_base_address;
+  unsigned int system_vector_base;
+  unsigned char gic_version;
+  unsigned char reserved2[3];
+} __attribute__((packed)) madt_gicd_t;
+
 static int sig_eq4(const char *a, const char *b) {
   return a[0] == b[0] && a[1] == b[1] && a[2] == b[2] && a[3] == b[3];
 }
@@ -123,6 +152,14 @@ static void parse_madt(hw_desc_t *desc, const madt_t *madt) {
       if ((e->flags & 1U) != 0U) {
         add_cpu(desc, (BOOT_U64)e->x2apic_id);
       }
+    } else if (h->type == 11 && h->length >= sizeof(madt_gicc_t)) {
+      const madt_gicc_t *e = (const madt_gicc_t *)p;
+      if ((e->flags & 1U) != 0U) {
+        add_cpu(desc, e->mpidr);
+      }
+    } else if (h->type == 12 && h->length >= sizeof(madt_gicd_t)) {
+      const madt_gicd_t *e = (const madt_gicd_t *)p;
+      add_irqc(desc, HW_IRQ_CONTROLLER_ARM_GIC, e->physical_base_address, 0x10000ULL, 0ULL, 0ULL);
     }
 
     p += h->length;
