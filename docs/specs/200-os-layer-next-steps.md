@@ -2,7 +2,7 @@
 
 This document captures what comes after the hardware substrate is complete.
 
-Base milestone ends at stable hardware/platform foundations (CPU, MMU mapping, IRQ/timer, discovery, per-CPU/SMP skeleton, device baseline, test discipline).
+Base milestone ends at stable hardware/platform foundations (CPU, MMU mapping, IRQ/timer, discovery, per-CPU/SMP skeleton, bus/device baseline domains, test discipline).
 
 Then OS-specific design begins.
 
@@ -14,6 +14,14 @@ The following are strongly tied to OS policy and product goals:
 - VFS contract
 
 Different operating systems will intentionally make different choices here.
+
+## Capability Domain Prerequisite
+
+Before OS-layer specs (`130+`), ensure capability-domain planning is complete:
+- `126-capability-profiles-and-gating.md`
+- `127-network-baseline.md` (if desired by target OS)
+- `128-audio-baseline.md` (optional)
+- `129-standard-capability-domains.md`
 
 ## Recommended Next Steps
 

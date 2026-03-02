@@ -23,6 +23,11 @@ Translate the specs into an execution matrix so progress is measurable per archi
 | SMP bootstrap | AP startup | PSCI CPU_ON | SBI HSM | P1 |
 | unified ACPI/DT discovery | ACPI-centric | ACPI/DT | DT-centric | P1 |
 | device model baseline | required | required | required | P1 |
+| bus core + PCI/USB enumeration | required | required | required | P1 |
+| standard capability profiles/gating | required | required | required | P1 |
+| storage/input/display baseline domains | required | required | required | P1 |
+| network baseline domain | recommended | recommended | recommended | P2 |
+| audio baseline domain | optional | optional | optional | P2 |
 | syscall skeleton | required | required | required | P1 |
 | scheduler scaffolding | required | required | required | P1 |
 | VFS tiny contract | required | required | required | P1 |
@@ -45,11 +50,15 @@ Translate the specs into an execution matrix so progress is measurable per archi
 - specs `110`, `120`
 - exits with common discovery model and baseline driver framework
 
-### Wave 5 (P1 kernel scaffolding)
+### Wave 5 (P1 device usability domains)
+- specs `121` through `129`
+- exits with bus-level enumeration plus profile-based optional domains
+
+### Wave 6 (P1 kernel scaffolding)
 - specs `130`, `140`, `150`
 - exits with syscall/task/VFS skeletons for OS experimentation
 
-### Wave 6 (discipline lock-in)
+### Wave 7 (discipline lock-in)
 - spec `160`
 - exits with CI quality gates and milestone closure
 
@@ -72,7 +81,7 @@ This order optimizes debugging velocity while enforcing final parity.
 
 ## Base vs OS-Layer Boundary
 
-- Base milestone: focus on `010` through `120`, then `160`.
+- Base milestone: focus on `010` through `129`, then `160`.
 - OS-layer milestone: `130`, `140`, `150`.
 
 See [200-os-layer-next-steps.md](200-os-layer-next-steps.md) for the post-base implementation guide.
