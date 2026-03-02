@@ -11,21 +11,25 @@ Bootloader/firmware glue is architecture-specific and must construct `boot_info_
 ## Current Startup Order (Inside `kmain`)
 
 Initialization order is fixed and intentional:
-1. `arch_memory_init(boot_info_mut)`
-2. `page_alloc_init(boot_info_mut)`
-3. `kmalloc_init(boot_info_mut)`
-4. `interrupts_init(boot_info)`
-5. `timer_init(boot_info)`
+1. `arch_cpu_early_init(boot_info)`
+2. `percpu_init_boot_cpu(boot_info)`
+3. `arch_mm_early_init(boot_info_mut)` (wrapper over `arch_memory_init`)
+4. `page_alloc_init(boot_info_mut)`
+5. `kmalloc_init(boot_info_mut)`
+6. `interrupts_init(boot_info)`
+7. `timer_init(boot_info)`
 
 Then optional self-tests/diagnostics run (macro-controlled), then the kernel idles in `arch_halt()` loop.
 
 ## Why This Order
 
-- `arch_memory_init` may change page table root and records final VM state in `boot_info`.
+- `arch_cpu_early_init` provides stable CPU identity and architecture CPU state.
+- `percpu_init_boot_cpu` installs a lockless current-CPU pointer before IRQ/timer activity.
+- `arch_mm_early_init` may change page table root and records final VM state in `boot_info`.
 - `page_alloc_init` depends on usable memory regions in `boot_info.memory_regions`.
 - `kmalloc_init` depends on page allocator availability.
-- `interrupts_init` sets the CPU interrupt backend and handler table.
-- `timer_init` registers a timer IRQ handler and enables interrupts when successful.
+- `interrupts_init` sets the CPU interrupt backend and handler table; dispatch updates per-CPU IRQ nesting.
+- `timer_init` registers a timer IRQ handler and enables interrupts when successful; timer IRQ updates per-CPU local tick count.
 
 ## Deferred vs Hard Failure
 

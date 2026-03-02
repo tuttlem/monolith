@@ -1,9 +1,10 @@
 # Memory Stack
 
-This project's early memory stack has 3 layers:
+This project's early memory stack has 4 layers:
 1. architecture MMU handoff stabilization (`arch_memory_init`)
-2. physical page allocator (`page_alloc`)
-3. kernel heap allocator (`kmalloc`)
+2. architecture-neutral MMU mapping API (`mm_map` family)
+3. physical page allocator (`page_alloc`)
+4. kernel heap allocator (`kmalloc`)
 
 ## 1) `arch_memory_init`
 
@@ -19,7 +20,58 @@ Architecture implementations:
 - arm64: `arch/arm64/mm/memory_init.c` + `early_paging.c`
 - riscv64: `arch/riscv64/mm/memory_init.c` + `early_paging.c`
 
-## 2) Page Allocator (`page_alloc`)
+## 2) MMU Mapping API (`mm_map`, `mm_unmap`, ...)
+
+Public API: `kernel/include/arch_mm.h`  
+Generic implementation: `kernel/mm/mmu.c`  
+Per-arch backends:
+- `arch/x86_64/mm/mmu_backend.c`
+- `arch/arm64/mm/mmu_backend.c`
+- `arch/riscv64/mm/mmu_backend.c`
+
+### Types and flags
+
+- `mm_virt_addr_t`, `mm_phys_addr_t`: 64-bit address types.
+- `mmu_prot_t` flags:
+  - `MMU_PROT_READ`
+  - `MMU_PROT_WRITE`
+  - `MMU_PROT_EXEC`
+  - `MMU_PROT_USER`
+  - `MMU_PROT_DEVICE`
+  - `MMU_PROT_GLOBAL`
+
+### Generic API functions
+
+- `status_t mm_map(mm_virt_addr_t va, mm_phys_addr_t pa, BOOT_U64 size, BOOT_U64 prot_flags)`
+- `status_t mm_unmap(mm_virt_addr_t va, BOOT_U64 size)`
+- `status_t mm_protect(mm_virt_addr_t va, BOOT_U64 size, BOOT_U64 prot_flags)`
+- `status_t mm_translate(mm_virt_addr_t va, mm_phys_addr_t *out_pa, BOOT_U64 *out_flags)`
+- `status_t mm_sync_tlb(mm_virt_addr_t va, BOOT_U64 size)`
+- `BOOT_U64 mm_page_size(void)`
+
+### Alignment and multi-page semantics
+
+- all map/unmap/protect operations require:
+  - non-zero `size`
+  - `va` aligned to backend page granule
+  - `pa` aligned for map
+  - `size` aligned to backend page granule
+- operations iterate one backend page at a time.
+
+Partial-failure policy:
+- `mm_map`: if page `N` fails, pages `0..N-1` mapped in this call are rolled back.
+- `mm_unmap`: stops on first failure; pages already unmapped remain unmapped.
+- `mm_protect`: stops on first failure; pages already updated remain updated.
+
+### Current backend mapping granularity
+
+- x86_64: `2 MiB` (large pages inside 4 GiB identity window)
+- arm64: `2 MiB` (L2 block entries inside 4 GiB identity window)
+- riscv64: `1 GiB` (Sv39 root leaf entries inside 4 GiB identity window)
+
+Current limitation: backends intentionally operate within the early identity-mapped 4 GiB window only.
+
+## 3) Page Allocator (`page_alloc`)
 
 API: `kernel/include/page_alloc.h`
 Implementation: `kernel/mm/page_alloc.c`
@@ -52,7 +104,7 @@ Implementation: `kernel/mm/page_alloc.c`
 - `void page_alloc_stats(page_alloc_stats_t *out)`
   - reports availability and page counts
 
-## 3) Heap Allocator (`kmalloc`)
+## 4) Heap Allocator (`kmalloc`)
 
 API: `kernel/include/kmalloc.h`
 Implementation: `kernel/mm/kmalloc.c`
@@ -88,8 +140,10 @@ Implementation: `kernel/mm/kmalloc.c`
 ## Usage Order Contract
 
 Call in this order:
-1. `arch_memory_init`
+1. `arch_memory_init` / `arch_mm_early_init`
 2. `page_alloc_init`
 3. `kmalloc_init`
+
+Call the MMU mapping API (`mm_map` family) only after early MMU handoff (`arch_mm_early_init`) succeeds.
 
 Do not call `kmalloc` before `kmalloc_init` succeeds.

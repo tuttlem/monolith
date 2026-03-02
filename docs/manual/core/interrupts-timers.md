@@ -11,6 +11,7 @@ Implementation: `kernel/interrupts.c`
 - per-vector handler slot: function + context + owner string
 - architecture backend installs low-level trap/IRQ entry logic
 - core dispatcher applies policy and routes to registered handlers
+- dispatcher updates per-CPU IRQ nesting (`percpu_current()->irq_nesting`)
 
 ### Registration API
 
@@ -37,7 +38,10 @@ Implementation: `kernel/timer.c`
 
 1. `timer_init(boot_info)` calls `arch_timer_init(boot_info, &hz, &vector)`.
 2. If arch returns `STATUS_OK`, timer core registers IRQ handler for that vector.
-3. Handler increments global tick counter and calls `arch_timer_ack(vector)`.
+3. Handler increments:
+   - per-CPU local tick counter (`percpu_current()->local_tick_count`)
+   - global time tick counter
+   then calls `arch_timer_ack(vector)`.
 4. Timer init enables interrupts via `interrupts_enable()`.
 
 ### Public API

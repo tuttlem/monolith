@@ -13,6 +13,13 @@
 ## Memory Init and Allocation
 
 - `status_t arch_memory_init(boot_info_t *boot_info)`
+- `status_t arch_mm_early_init(boot_info_t *boot_info)`
+- `status_t mm_map(mm_virt_addr_t va, mm_phys_addr_t pa, BOOT_U64 size, BOOT_U64 prot_flags)`
+- `status_t mm_unmap(mm_virt_addr_t va, BOOT_U64 size)`
+- `status_t mm_protect(mm_virt_addr_t va, BOOT_U64 size, BOOT_U64 prot_flags)`
+- `status_t mm_translate(mm_virt_addr_t va, mm_phys_addr_t *out_pa, BOOT_U64 *out_flags)`
+- `status_t mm_sync_tlb(mm_virt_addr_t va, BOOT_U64 size)`
+- `BOOT_U64 mm_page_size(void)`
 - `status_t page_alloc_init(boot_info_t *boot_info)`
 - `BOOT_U64 alloc_page(void)`
 - `void free_page(BOOT_U64 phys_addr)`
@@ -21,6 +28,17 @@
 - `void *kmalloc(BOOT_U64 size)`
 - `void kfree(void *ptr)`
 - `void kmalloc_stats(kmalloc_stats_t *out)`
+
+## Per-CPU
+
+- `status_t percpu_init_boot_cpu(const boot_info_t *boot_info)`
+- `percpu_t *percpu_current(void)`
+- `percpu_t *percpu_by_id(BOOT_U64 cpu_id)`
+
+## CPU Local Base (Architecture Hooks)
+
+- `status_t arch_cpu_set_local_base(BOOT_U64 base)`
+- `BOOT_U64 arch_cpu_get_local_base(void)`
 
 ## Interrupts
 

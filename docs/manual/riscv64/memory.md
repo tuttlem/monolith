@@ -30,3 +30,25 @@ Result metadata:
 ## Practical Implication
 
 RISC-V gets stable early VM handoff and can use the same generic page allocator + kmalloc layers as other active architectures.
+
+## MMU Mapping API Backend
+
+File: `arch/riscv64/mm/mmu_backend.c`
+
+Implements architecture hooks used by generic `mm_map` API:
+- `arch_mm_page_size` -> `1 GiB`
+- `arch_mm_map_page`
+- `arch_mm_unmap_page`
+- `arch_mm_protect_page`
+- `arch_mm_translate_page`
+- `arch_mm_sync_tlb`
+
+Flag mapping details:
+- read/write/exec/user/global map to Sv39 PTE `R/W/X/U/G`
+- accessed/dirty management sets `A`, and `D` when writable
+
+Current supported range:
+- first 4 GiB identity window from early paging root entries
+
+TLB maintenance:
+- `sfence.vma x0, x0`
