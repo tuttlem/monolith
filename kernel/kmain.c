@@ -7,6 +7,7 @@
 #include "arch_mm.h"
 #include "panic.h"
 #include "page_alloc.h"
+#include "timebase.h"
 #include "timer.h"
 
 #ifndef CORE_ARCH_NAME
@@ -74,6 +75,7 @@ void kmain(const boot_info_t *boot_info) {
   heap_status = kmalloc_init(mutable_boot_info);
   irq_status = interrupts_init(boot_info);
   timer_status = timer_init(boot_info);
+  kprintf("time: now_ns=%llu ticks=%llu hz=%llu\n", time_now_ns(), time_ticks(), time_hz());
 
   if (!status_is_ok(cpu_status) && cpu_status != STATUS_DEFERRED) {
     kprintf("arch_cpu_early_init: %s (%d)\n", status_str(cpu_status), cpu_status);
@@ -162,6 +164,7 @@ void kmain(const boot_info_t *boot_info) {
   diag_boot_info_print(boot_info);
 #endif
 
+  kprintf("time: now_ns=%llu ticks=%llu hz=%llu\n", time_now_ns(), time_ticks(), time_hz());
 spin:
   for (;;) {
     arch_cpu_halt();

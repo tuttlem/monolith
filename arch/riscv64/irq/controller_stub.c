@@ -2,14 +2,37 @@
 #include "interrupts.h"
 #include "irq_controller.h"
 
+#define RISCV64_IRQ_SUPERVISOR_TIMER 5ULL
+#define RISCV64_IRQ_SUPERVISOR_EXTERNAL 9ULL
+#define RISCV64_SIE_STIE (1ULL << 5)
+#define RISCV64_SIE_SEIE (1ULL << 9)
+
 static status_t riscv64_irq_enable(BOOT_U64 irq) {
-  (void)irq;
-  return STATUS_DEFERRED;
+  BOOT_U64 mask = 0;
+  if (irq == RISCV64_IRQ_SUPERVISOR_TIMER) {
+    mask = RISCV64_SIE_STIE;
+  } else if (irq == RISCV64_IRQ_SUPERVISOR_EXTERNAL) {
+    mask = RISCV64_SIE_SEIE;
+  } else {
+    return STATUS_NOT_SUPPORTED;
+  }
+
+  __asm__ volatile("csrs sie, %0" : : "r"(mask) : "memory");
+  return STATUS_OK;
 }
 
 static status_t riscv64_irq_disable(BOOT_U64 irq) {
-  (void)irq;
-  return STATUS_DEFERRED;
+  BOOT_U64 mask = 0;
+  if (irq == RISCV64_IRQ_SUPERVISOR_TIMER) {
+    mask = RISCV64_SIE_STIE;
+  } else if (irq == RISCV64_IRQ_SUPERVISOR_EXTERNAL) {
+    mask = RISCV64_SIE_SEIE;
+  } else {
+    return STATUS_NOT_SUPPORTED;
+  }
+
+  __asm__ volatile("csrc sie, %0" : : "r"(mask) : "memory");
+  return STATUS_OK;
 }
 
 static void riscv64_irq_ack(BOOT_U64 irq) { (void)irq; }
