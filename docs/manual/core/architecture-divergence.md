@@ -62,6 +62,13 @@ This page highlights where execution paths diverge between `x86_64`, `arm64`, an
 - `x86_64` has active PCI enumeration and therefore can expose network-domain devices.
 - `arm64`/`riscv64` network discovery becomes active when their PCI backend paths are enabled.
 
+## Audio Domain Baseline
+
+- Audio domain classification is common across architectures.
+- Practical discovery currently follows PCI class code `0x04`.
+- `x86_64` can expose audio-domain devices when PCI multimedia functions are present.
+- `arm64`/`riscv64` audio discovery becomes active when their PCI backend paths are enabled.
+
 ## SMP Bootstrap Behavior
 
 - `x86_64`: UEFI MP Services enumeration and AP startup.

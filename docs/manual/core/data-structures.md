@@ -362,6 +362,21 @@ typedef struct boot_info boot_info_t;
   - `link_up`: link state placeholder (`0/1`).
   - `tx_queue_count`, `rx_queue_count`: queue-capability summary placeholders.
 
+## Audio Baseline Types (`audio.h`)
+
+### `audio_device_info_t`
+- Struct purpose: compact, stable descriptor for audio-domain discovery output.
+- Members:
+  - `device_id`: audio device graph ID.
+  - `parent_id`: source device ID.
+  - `vendor_id`: copied vendor identifier.
+  - `pci_device_id`: copied PCI device identifier.
+  - `class_code`, `subclass_code`, `prog_if`: copied class tuple.
+  - `resource_count`: copied resource descriptor count.
+  - `has_output`: output-capability flag.
+  - `has_input`: input-capability flag.
+  - `min_sample_rate_hz`, `max_sample_rate_hz`: baseline sample-rate summary.
+
 ## Hardware Discovery Structures (`hw_desc.h`)
 
 ### `hw_cpu_desc_t`
