@@ -14,6 +14,11 @@ Architectures in scope:
 3. Reach feature parity at the substrate layer before OS policy work.
 4. Ensure each layer has explicit init order and acceptance tests.
 
+## Workflow Assets
+
+- [Foundation Phase Gates](FOUNDATION-GATES.md)
+- [Spec Implementation Template](SPEC-IMPLEMENTATION-TEMPLATE.md)
+
 ## Ordered Execution Plan
 
 1. [000 Foundation and Rules](000-foundation.md)

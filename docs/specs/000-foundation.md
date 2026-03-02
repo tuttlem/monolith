@@ -55,3 +55,30 @@ Each implementation spec must provide:
 - diagnostics/logging requirements
 - failure model
 - test matrix
+
+## Foundation Deliverables (This Phase)
+
+`000-foundation` is complete only when the repository has:
+1. A documented phase gate checklist used by all specs.
+2. A reusable implementation template for future spec branches.
+3. A strict base-vs-OS-layer boundary recorded in specs.
+
+These are provided by:
+- `docs/specs/FOUNDATION-GATES.md`
+- `docs/specs/SPEC-IMPLEMENTATION-TEMPLATE.md`
+- `docs/specs/170-roadmap-by-arch.md`
+- `docs/specs/200-os-layer-next-steps.md`
+
+## Branch Workflow Contract
+
+For each spec branch:
+1. Branch name matches spec file name (`040-arch-cpu`, etc.).
+2. Changes are limited to that spec's scope.
+3. Build + test are run before merge.
+4. Merge back to `master` only on green checks, or with explicit deferred rationale.
+
+## Definition of Done for `000-foundation`
+
+- Foundation rules are explicit and discoverable from `docs/specs/README.md`.
+- Every future spec can be executed with one standard template and one standard gate checklist.
+- Base milestone and OS-layer milestones are clearly separated.
