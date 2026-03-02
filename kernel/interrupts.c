@@ -216,10 +216,12 @@ static void default_interrupt_handler(const interrupt_frame_t *frame) {
   }
 
   /*
-   * x86_64 can observe one legacy PIT tick during bootstrap transition.
-   * Before timer handler registration, treat vector 32 as a benign early tick.
+   * Early-timer bootstrap window:
+   * - x86_64 can observe legacy PIT vector 32 before timer handler ownership.
+   * - arm64 can observe virtual timer vector 59 before timer handler ownership.
    */
-  if (frame->arch_id == BOOT_INFO_ARCH_X86_64 && frame->vector == 32ULL) {
+  if ((frame->arch_id == BOOT_INFO_ARCH_X86_64 && frame->vector == 32ULL) ||
+      (frame->arch_id == BOOT_INFO_ARCH_ARM64 && frame->vector == 59ULL)) {
     if (irq_controller_vector_to_irq(frame->vector, &irq) == STATUS_OK) {
       irq_controller_eoi(irq);
     }

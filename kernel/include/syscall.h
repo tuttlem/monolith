@@ -39,10 +39,13 @@ status_t syscall_register(BOOT_U64 op, syscall_handler_t handler, const char *ow
 status_t syscall_dispatch(const syscall_request_t *req, syscall_response_t *resp);
 status_t syscall_invoke_kernel(BOOT_U64 op, BOOT_U64 arg0, BOOT_U64 arg1, BOOT_U64 arg2, BOOT_U64 arg3, BOOT_U64 arg4,
                                BOOT_U64 arg5, syscall_response_t *resp);
+status_t syscall_invoke_trap(BOOT_U64 op, BOOT_U64 arg0, BOOT_U64 arg1, BOOT_U64 arg2, BOOT_U64 arg3, BOOT_U64 arg4,
+                             BOOT_U64 arg5, syscall_response_t *resp);
 const char *syscall_owner(BOOT_U64 op);
 const char *syscall_op_name(BOOT_U64 op);
 BOOT_U64 syscall_abi_info_word(void);
 int syscall_trap_entry_ready(void);
+int syscall_trap_mailbox_active(void);
 void syscall_dump_table(void);
 
 #endif

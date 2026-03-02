@@ -128,5 +128,11 @@ Function details:
 ### `status_t arch_syscall_init(const boot_info_t *boot_info)`
 - File: `arch/arm64/syscall/syscall.c`
 - Purpose: arm64 syscall trap-entry backend hook for transport ABI.
-- Current phase behavior:
-  - returns `STATUS_DEFERRED` while dedicated trap-entry plumbing is staged.
+
+### `status_t arch_syscall_get_vector(BOOT_U64 *out_vector)`
+- File: `arch/arm64/syscall/syscall.c`
+- Purpose: provide synthetic syscall vector (`64`) to generic syscall layer.
+
+### `status_t arch_syscall_trigger(void)`
+- File: `arch/arm64/syscall/syscall.c`
+- Purpose: execute `svc #0`; arm64 sync-trap decode routes SVC to vector `64`.

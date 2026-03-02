@@ -40,10 +40,13 @@ This page highlights where execution paths diverge between `x86_64`, `arm64`, an
 ## Syscall Trap Entry Backend
 
 - Transport ABI and dispatcher are common across all architectures.
-- Current phase keeps per-arch trap-entry hook (`arch_syscall_init`) intentionally deferred.
+- Per-arch trap entry hook is active:
+  - `x86_64`: `int $0x80` mapped to vector `0x80`
+  - `arm64`: `svc #0` routed from synchronous exception class (`ESR_EL1.EC=0x15`) to vector `64`
+  - `riscv64`: `ecall` routed from exception causes (`8/9/11`) to vector `64`
 - Result:
-  - consistent syscall numbering/dispatch contract exists now
-  - architecture trap entry wiring can be enabled later without changing the transport ABI
+  - consistent syscall numbering/dispatch contract
+  - consistent trap-based invocation path across all architectures
 
 ## MMU Backend Granule/Shape
 

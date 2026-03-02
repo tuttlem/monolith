@@ -127,10 +127,13 @@
 ## Syscall Transport
 
 - `status_t arch_syscall_init(const boot_info_t *boot_info)`
+- `status_t arch_syscall_get_vector(BOOT_U64 *out_vector)`
+- `status_t arch_syscall_trigger(void)`
 - `status_t syscall_init(const boot_info_t *boot_info)`
 - `status_t syscall_register(BOOT_U64 op, syscall_handler_t handler, const char *owner)`
 - `status_t syscall_dispatch(const syscall_request_t *req, syscall_response_t *resp)`
 - `status_t syscall_invoke_kernel(..., syscall_response_t *resp)`
+- `status_t syscall_invoke_trap(..., syscall_response_t *resp)`
 - `BOOT_U64 syscall_abi_info_word(void)`
 - `int syscall_trap_entry_ready(void)`
 - `void syscall_dump_table(void)`

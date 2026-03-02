@@ -8,6 +8,7 @@
 #define ARM64_TRAP_IRQ 1ULL
 #define ARM64_TRAP_FIQ 2ULL
 #define ARM64_TRAP_SERROR 3ULL
+#define ARM64_SYSCALL_VECTOR 64ULL
 
 status_t arch_interrupts_init(const boot_info_t *boot_info) {
   extern char arm64_vector_table[];
@@ -65,7 +66,12 @@ BOOT_U64 arm64_trap_c(BOOT_U64 trap_kind, BOOT_U64 esr, BOOT_U64 elr, BOOT_U64 s
   } else if (kind == ARM64_TRAP_SERROR) {
     vector = 2;
   } else {
-    vector = 0;
+    BOOT_U64 ec = (esr >> 26) & 0x3FULL;
+    if (ec == 0x15ULL) {
+      vector = ARM64_SYSCALL_VECTOR;
+    } else {
+      vector = 0;
+    }
   }
 
   frame.arch_id = BOOT_INFO_ARCH_ARM64;

@@ -122,5 +122,11 @@ Divergence notes:
 ### `status_t arch_syscall_init(const boot_info_t *boot_info)`
 - File: `arch/riscv64/syscall/syscall.c`
 - Purpose: riscv64 syscall trap-entry backend hook for transport ABI.
-- Current phase behavior:
-  - returns `STATUS_DEFERRED` while dedicated trap-entry plumbing is staged.
+
+### `status_t arch_syscall_get_vector(BOOT_U64 *out_vector)`
+- File: `arch/riscv64/syscall/syscall.c`
+- Purpose: provide synthetic syscall vector (`64`) to generic syscall layer.
+
+### `status_t arch_syscall_trigger(void)`
+- File: `arch/riscv64/syscall/syscall.c`
+- Purpose: execute `ecall`; exception decode routes ECALL causes (`8/9/11`) to vector `64`.

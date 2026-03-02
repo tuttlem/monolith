@@ -526,8 +526,14 @@ if (d != 0) {
 ### `status_t arch_syscall_init(const boot_info_t *boot_info)`
 - Purpose: architecture hook for syscall trap-entry backend setup.
 - Returns:
-  - `STATUS_OK` when trap entry is active.
-  - `STATUS_DEFERRED` when trap entry is intentionally not wired yet.
+  - `STATUS_OK` when trap entry backend is initialized.
+  - `STATUS_INVALID_ARG` on null/mismatched architecture handoff.
+
+### `status_t arch_syscall_get_vector(BOOT_U64 *out_vector)`
+- Purpose: return the architecture syscall dispatch vector used by generic interrupt dispatch.
+
+### `status_t arch_syscall_trigger(void)`
+- Purpose: execute architecture trap instruction to enter syscall dispatch path.
 
 ### `status_t syscall_init(const boot_info_t *boot_info)`
 - Purpose: initialize generic syscall transport dispatcher and register substrate reserved handlers.
@@ -540,6 +546,9 @@ if (d != 0) {
 
 ### `status_t syscall_invoke_kernel(..., syscall_response_t *resp)`
 - Purpose: kernel-side invocation helper for transport bring-up and tests.
+
+### `status_t syscall_invoke_trap(..., syscall_response_t *resp)`
+- Purpose: issue syscall through architecture trap-entry path for end-to-end validation.
 
 ### `BOOT_U64 syscall_abi_info_word(void)`
 - Purpose: read packed ABI/version/feature info word.

@@ -194,6 +194,44 @@ __attribute__((naked)) static void x86_64_irq_stub_32(void) {
                    "iretq\n\t");
 }
 
+__attribute__((naked)) static void x86_64_irq_stub_128(void) {
+  __asm__ volatile("pushq %rax\n\t"
+                   "pushq %rbx\n\t"
+                   "pushq %rcx\n\t"
+                   "pushq %rdx\n\t"
+                   "pushq %rsi\n\t"
+                   "pushq %rdi\n\t"
+                   "pushq %rbp\n\t"
+                   "pushq %r8\n\t"
+                   "pushq %r9\n\t"
+                   "pushq %r10\n\t"
+                   "pushq %r11\n\t"
+                   "pushq %r12\n\t"
+                   "pushq %r13\n\t"
+                   "pushq %r14\n\t"
+                   "pushq %r15\n\t"
+                   "movq $128, %rcx\n\t"
+                   "subq $32, %rsp\n\t"
+                   "callq x86_64_irq_dispatch_common\n\t"
+                   "addq $32, %rsp\n\t"
+                   "popq %r15\n\t"
+                   "popq %r14\n\t"
+                   "popq %r13\n\t"
+                   "popq %r12\n\t"
+                   "popq %r11\n\t"
+                   "popq %r10\n\t"
+                   "popq %r9\n\t"
+                   "popq %r8\n\t"
+                   "popq %rbp\n\t"
+                   "popq %rdi\n\t"
+                   "popq %rsi\n\t"
+                   "popq %rdx\n\t"
+                   "popq %rcx\n\t"
+                   "popq %rbx\n\t"
+                   "popq %rax\n\t"
+                   "iretq\n\t");
+}
+
 static void (*const g_exceptions[32])(void) = {
     x86_64_exc_0,  x86_64_exc_1,  x86_64_exc_2,  x86_64_exc_3,  x86_64_exc_4,  x86_64_exc_5,
     x86_64_exc_6,  x86_64_exc_7,  x86_64_exc_8,  x86_64_exc_9,  x86_64_exc_10, x86_64_exc_11,
@@ -218,6 +256,7 @@ status_t arch_interrupts_init(const boot_info_t *boot_info) {
     set_gate(i, g_exceptions[i], cs);
   }
   set_gate(32ULL, x86_64_irq_stub_32, cs);
+  set_gate(128ULL, x86_64_irq_stub_128, cs);
 
   g_idtr.limit = (unsigned short)(sizeof(g_idt) - 1U);
   g_idtr.base = (BOOT_U64)(BOOT_UPTR)&g_idt[0];

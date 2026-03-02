@@ -85,8 +85,10 @@ void kmain(const boot_info_t *boot_info) {
   status_t irq_status;
   status_t timer_status;
   status_t syscall_status;
+  status_t syscall_probe_status;
   status_t console_status;
   const hw_desc_t *hw;
+  syscall_response_t syscall_probe_resp = {STATUS_DEFERRED, 0};
 
   arch_puts("HELLO FROM CORE KERNEL (" CORE_ARCH_NAME ") We good!\n");
   capability_profile_print();
@@ -119,6 +121,7 @@ void kmain(const boot_info_t *boot_info) {
   irq_status = driver_class_last_status("irqc");
   timer_status = driver_class_last_status("timer");
   syscall_status = syscall_init(boot_info);
+  syscall_probe_status = syscall_invoke_trap(SYSCALL_OP_ABI_INFO, 0, 0, 0, 0, 0, 0, &syscall_probe_resp);
   console_status = driver_class_last_status("console");
   kprintf("time: now_ns=%llu ticks=%llu hz=%llu\n", time_now_ns(), time_ticks(), time_hz());
 
@@ -175,6 +178,15 @@ void kmain(const boot_info_t *boot_info) {
   }
   if (!status_is_ok(syscall_status) && syscall_status != STATUS_DEFERRED) {
     kprintf("syscall_init: %s (%d)\n", status_str(syscall_status), syscall_status);
+  }
+  if (!status_is_ok(syscall_probe_status) && syscall_probe_status != STATUS_DEFERRED) {
+    kprintf("syscall abi probe call: %s (%d)\n", status_str(syscall_probe_status), syscall_probe_status);
+  } else if (status_is_ok(syscall_probe_status)) {
+    kprintf("syscall abi probe: call=%s (%d) resp=%s (%d) value=0x%llx\n", status_str(syscall_probe_status),
+            syscall_probe_status, status_str(syscall_probe_resp.status), syscall_probe_resp.status,
+            syscall_probe_resp.value);
+  } else {
+    kprintf("syscall abi probe: call=%s (%d)\n", status_str(syscall_probe_status), syscall_probe_status);
   }
   if (!status_is_ok(console_status) && console_status != STATUS_DEFERRED) {
     kprintf("console_init: %s (%d)\n", status_str(console_status), console_status);

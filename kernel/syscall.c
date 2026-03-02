@@ -1,5 +1,6 @@
 #include "syscall.h"
 #include "arch_syscall.h"
+#include "interrupts.h"
 #include "print.h"
 #include "timebase.h"
 
@@ -19,9 +20,31 @@ static struct {
   BOOT_U64 feature_bits;
   syscall_slot_t slots[SYSCALL_MAX_HANDLERS];
   BOOT_U64 slot_count;
+  BOOT_U64 trap_vector;
 } g_syscall;
 
 static const char g_syscall_owner_core[] = "core";
+static const char g_syscall_owner_trap[] = "syscall-trap";
+
+static struct {
+  BOOT_U64 active;
+  syscall_request_t req;
+  syscall_response_t resp;
+} g_syscall_trap_mailbox;
+
+static void syscall_trap_handler(const interrupt_frame_t *frame, void *ctx) {
+  status_t st;
+  (void)frame;
+  (void)ctx;
+  if (g_syscall_trap_mailbox.active == 0ULL) {
+    return;
+  }
+  st = syscall_dispatch(&g_syscall_trap_mailbox.req, &g_syscall_trap_mailbox.resp);
+  if (st != STATUS_OK && g_syscall_trap_mailbox.resp.status == STATUS_OK) {
+    g_syscall_trap_mailbox.resp.status = st;
+  }
+  g_syscall_trap_mailbox.active = 0ULL;
+}
 
 static status_t syscall_handle_abi_info(const syscall_request_t *req, syscall_response_t *resp) {
   (void)req;
@@ -83,6 +106,8 @@ void syscall_reset(void) {
   g_syscall.abi_version = SYSCALL_TRANSPORT_ABI_VERSION;
   g_syscall.feature_bits = 0;
   g_syscall.slot_count = 0;
+  g_syscall.trap_vector = 0;
+  g_syscall_trap_mailbox.active = 0;
   for (i = 0; i < SYSCALL_MAX_HANDLERS; ++i) {
     g_syscall.slots[i].op = 0;
     g_syscall.slots[i].handler = (syscall_handler_t)0;
@@ -117,6 +142,7 @@ status_t syscall_register(BOOT_U64 op, syscall_handler_t handler, const char *ow
 
 status_t syscall_init(const boot_info_t *boot_info) {
   status_t st;
+  BOOT_U64 trap_vector = 0;
 
   if (boot_info == (const boot_info_t *)0) {
     return STATUS_INVALID_ARG;
@@ -127,11 +153,25 @@ status_t syscall_init(const boot_info_t *boot_info) {
   g_syscall.initialized = 1ULL;
 
   st = arch_syscall_init(boot_info);
-  if (st == STATUS_OK) {
-    g_syscall.feature_bits |= SYSCALL_ABI_FEATURE_TRAP_ENTRY;
-  } else if (st != STATUS_DEFERRED) {
+  if (st != STATUS_OK && st != STATUS_DEFERRED) {
     g_syscall.initialized = 0ULL;
     return st;
+  }
+  if (st == STATUS_OK) {
+    st = arch_syscall_get_vector(&trap_vector);
+    if (st != STATUS_OK) {
+      g_syscall.initialized = 0ULL;
+      return st;
+    }
+    st = interrupts_register_handler_owned(trap_vector, syscall_trap_handler, (void *)0, g_syscall_owner_trap);
+    if (st != STATUS_OK && st != STATUS_DEFERRED) {
+      g_syscall.initialized = 0ULL;
+      return st;
+    }
+    if (st == STATUS_OK) {
+      g_syscall.feature_bits |= SYSCALL_ABI_FEATURE_TRAP_ENTRY;
+      g_syscall.trap_vector = trap_vector;
+    }
   }
 
   st = syscall_register(SYSCALL_OP_ABI_INFO, syscall_handle_abi_info, g_syscall_owner_core);
@@ -198,6 +238,53 @@ status_t syscall_invoke_kernel(BOOT_U64 op, BOOT_U64 arg0, BOOT_U64 arg1, BOOT_U
   return syscall_dispatch(&req, resp);
 }
 
+status_t syscall_invoke_trap(BOOT_U64 op, BOOT_U64 arg0, BOOT_U64 arg1, BOOT_U64 arg2, BOOT_U64 arg3, BOOT_U64 arg4,
+                             BOOT_U64 arg5, syscall_response_t *resp) {
+  BOOT_U64 spin;
+
+  if (resp == (syscall_response_t *)0) {
+    return STATUS_INVALID_ARG;
+  }
+  if (!syscall_trap_entry_ready()) {
+    return STATUS_DEFERRED;
+  }
+  if (g_syscall_trap_mailbox.active != 0ULL) {
+    return STATUS_BUSY;
+  }
+
+  g_syscall_trap_mailbox.active = 1ULL;
+  g_syscall_trap_mailbox.req.abi_version = g_syscall.abi_version;
+  g_syscall_trap_mailbox.req.op = op;
+  g_syscall_trap_mailbox.req.args[0] = arg0;
+  g_syscall_trap_mailbox.req.args[1] = arg1;
+  g_syscall_trap_mailbox.req.args[2] = arg2;
+  g_syscall_trap_mailbox.req.args[3] = arg3;
+  g_syscall_trap_mailbox.req.args[4] = arg4;
+  g_syscall_trap_mailbox.req.args[5] = arg5;
+  g_syscall_trap_mailbox.req.arch_id = g_syscall.arch_id;
+  g_syscall_trap_mailbox.req.flags = 0;
+  g_syscall_trap_mailbox.resp.status = STATUS_DEFERRED;
+  g_syscall_trap_mailbox.resp.value = 0;
+
+  if (arch_syscall_trigger() != STATUS_OK) {
+    g_syscall_trap_mailbox.active = 0ULL;
+    return STATUS_FAULT;
+  }
+  for (spin = 0; spin < 1000000ULL; ++spin) {
+    if (g_syscall_trap_mailbox.active == 0ULL) {
+      break;
+    }
+    __asm__ volatile("" : : : "memory");
+  }
+  if (g_syscall_trap_mailbox.active != 0ULL) {
+    g_syscall_trap_mailbox.active = 0ULL;
+    return STATUS_TRY_AGAIN;
+  }
+  resp->status = g_syscall_trap_mailbox.resp.status;
+  resp->value = g_syscall_trap_mailbox.resp.value;
+  return resp->status;
+}
+
 const char *syscall_owner(BOOT_U64 op) {
   BOOT_U64 i;
   if (g_syscall.initialized == 0ULL) {
@@ -235,6 +322,8 @@ BOOT_U64 syscall_abi_info_word(void) {
 int syscall_trap_entry_ready(void) {
   return (g_syscall.feature_bits & SYSCALL_ABI_FEATURE_TRAP_ENTRY) != 0ULL;
 }
+
+int syscall_trap_mailbox_active(void) { return g_syscall_trap_mailbox.active != 0ULL; }
 
 void syscall_dump_table(void) {
   BOOT_U64 i;

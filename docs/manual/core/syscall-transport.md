@@ -27,12 +27,15 @@ Header: `kernel/include/syscall.h`
 - `status_t syscall_register(BOOT_U64 op, syscall_handler_t handler, const char *owner)`
 - `status_t syscall_dispatch(const syscall_request_t *req, syscall_response_t *resp)`
 - `status_t syscall_invoke_kernel(..., syscall_response_t *resp)`
+- `status_t syscall_invoke_trap(..., syscall_response_t *resp)`
 - `BOOT_U64 syscall_abi_info_word(void)`
 - `int syscall_trap_entry_ready(void)`
 - `void syscall_dump_table(void)`
 
 Architecture hook:
 - `status_t arch_syscall_init(const boot_info_t *boot_info)` in `kernel/include/arch_syscall.h`
+- `status_t arch_syscall_get_vector(BOOT_U64 *out_vector)` in `kernel/include/arch_syscall.h`
+- `status_t arch_syscall_trigger(void)` in `kernel/include/arch_syscall.h`
 
 ## Current Phase Behavior
 
@@ -41,7 +44,11 @@ Architecture hook:
   - ABI info query
   - debug log channel
   - monotonic time query
-- Architecture trap entry glue is intentionally deferred for now; transport remains usable for bootstrap/testing through generic invocation.
+- Architecture trap entry glue is active on all supported architectures:
+  - `x86_64`: `int $0x80` -> vector `0x80`
+  - `arm64`: `svc #0` -> synthetic syscall vector `64` from synchronous trap decode
+  - `riscv64`: `ecall` -> synthetic syscall vector `64` from exception-cause decode
+- `syscall_invoke_kernel` and `syscall_invoke_trap` both dispatch through the same registered handlers.
 
 ## ABI Info Encoding
 
@@ -54,7 +61,7 @@ Architecture hook:
 
 ```c
 syscall_response_t r;
-status_t st = syscall_invoke_kernel(SYSCALL_OP_TIME_NOW, 0, 0, 0, 0, 0, 0, &r);
+status_t st = syscall_invoke_trap(SYSCALL_OP_TIME_NOW, 0, 0, 0, 0, 0, 0, &r);
 if (st == STATUS_OK && r.status == STATUS_OK) {
   kprintf("sys_time_now=%llu\n", r.value);
 }
