@@ -42,10 +42,6 @@ static const char *boot_info_arch_name(BOOT_U64 arch_id) {
     return "arm64";
   case BOOT_INFO_ARCH_RISCV64:
     return "riscv64";
-  case BOOT_INFO_ARCH_MIPS:
-    return "mips";
-  case BOOT_INFO_ARCH_SPARC64:
-    return "sparc64";
   default:
     return "unknown";
   }

@@ -5,7 +5,7 @@ arch="${1:-}"
 shift || true
 
 if [[ -z "${arch}" ]]; then
-  echo "usage: $0 <x86_64|arm64|riscv64|mips|sparc64> [extra-qemu-flags...]" >&2
+  echo "usage: $0 <x86_64|arm64|riscv64> [extra-qemu-flags...]" >&2
   exit 1
 fi
 
@@ -98,34 +98,6 @@ case "${arch}" in
     exec qemu-system-riscv64 -machine virt -m 512M -bios default \
       -device loader,file="${img}",cpu-num=0 \
       -serial stdio -nographic -no-reboot \
-      -monitor none "$@"
-    ;;
-  mips)
-    command -v qemu-system-mips >/dev/null 2>&1 || {
-      echo "error: qemu-system-mips not found. Install qemu-system-mips." >&2
-      exit 1
-    }
-    img="build/mips/kernel.elf"
-    [[ -f "${img}" ]] || {
-      echo "error: missing kernel ${img}. Run 'make mips'." >&2
-      exit 1
-    }
-    exec qemu-system-mips -machine malta -m 256M \
-      -kernel "${img}" -serial stdio -nographic -no-reboot \
-      -monitor none "$@"
-    ;;
-  sparc64)
-    command -v qemu-system-sparc64 >/dev/null 2>&1 || {
-      echo "error: qemu-system-sparc64 not found. Install qemu-system-sparc." >&2
-      exit 1
-    }
-    img="build/sparc64/kernel.elf"
-    [[ -f "${img}" ]] || {
-      echo "error: missing kernel ${img}. Run 'make sparc64'." >&2
-      exit 1
-    }
-    exec qemu-system-sparc64 -M sun4u -m 256M \
-      -kernel "${img}" -serial stdio -nographic -no-reboot \
       -monitor none "$@"
     ;;
   *)

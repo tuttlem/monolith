@@ -15,8 +15,6 @@ typedef unsigned long BOOT_UPTR;
 #define BOOT_INFO_ARCH_X86_64 1ULL
 #define BOOT_INFO_ARCH_ARM64 2ULL
 #define BOOT_INFO_ARCH_RISCV64 3ULL
-#define BOOT_INFO_ARCH_MIPS 4ULL
-#define BOOT_INFO_ARCH_SPARC64 5ULL
 
 #define BOOT_INFO_HAS_ENTRY_STATE (1ULL << 0)
 #define BOOT_INFO_HAS_VM_STATE (1ULL << 1)
@@ -127,36 +125,5 @@ typedef struct {
   BOOT_U64 mem_new_root;
   BOOT_U64 mem_mapped_bytes;
 } boot_info_ext_riscv64_t;
-
-typedef struct {
-  BOOT_U64 entry_a0;
-  BOOT_U64 entry_a1;
-  BOOT_U64 entry_a2;
-  BOOT_U64 entry_a3;
-  BOOT_U64 uart_base;
-  BOOT_U64 ram_base;
-  BOOT_U64 ram_size;
-  BOOT_U64 mem_init_status;
-  BOOT_U64 mem_old_root;
-  BOOT_U64 mem_new_root;
-  BOOT_U64 mem_mapped_bytes;
-} boot_info_ext_mips_t;
-
-typedef struct {
-  BOOT_U64 prom_o0;
-  BOOT_U64 prom_o1;
-  BOOT_U64 prom_o2;
-  BOOT_U64 prom_o3;
-  BOOT_U64 prom_o4;
-  BOOT_U64 prom_o5;
-  BOOT_U64 prom_g7;
-  BOOT_U64 uart_base;
-  BOOT_U64 ram_base;
-  BOOT_U64 ram_size;
-  BOOT_U64 mem_init_status;
-  BOOT_U64 mem_old_root;
-  BOOT_U64 mem_new_root;
-  BOOT_U64 mem_mapped_bytes;
-} boot_info_ext_sparc64_t;
 
 #endif

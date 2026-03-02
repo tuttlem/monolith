@@ -3,9 +3,6 @@
 #define PAGE_SIZE 4096ULL
 #define ONE_MIB 0x100000ULL
 #define RISCV64_ALLOC_FLOOR 0x80400000ULL
-#define MIPS_ALLOC_FLOOR 0x01000000ULL
-#define MIPS_KSEG0_BIAS 0x80000000ULL
-#define SPARC64_ALLOC_FLOOR 0x01000000ULL
 #define MAX_USABLE_RANGES 64U
 #define MAX_RECYCLED_PAGES 256U
 
@@ -104,17 +101,11 @@ status_t page_alloc_init(boot_info_t *boot_info) {
   }
 
   if (boot_info->arch_id != BOOT_INFO_ARCH_X86_64 && boot_info->arch_id != BOOT_INFO_ARCH_RISCV64 &&
-      boot_info->arch_id != BOOT_INFO_ARCH_ARM64 && boot_info->arch_id != BOOT_INFO_ARCH_MIPS &&
-      boot_info->arch_id != BOOT_INFO_ARCH_SPARC64) {
+      boot_info->arch_id != BOOT_INFO_ARCH_ARM64) {
     return STATUS_NOT_SUPPORTED;
   }
   if (boot_info->arch_id == BOOT_INFO_ARCH_RISCV64) {
     floor = RISCV64_ALLOC_FLOOR;
-  } else if (boot_info->arch_id == BOOT_INFO_ARCH_MIPS) {
-    floor = MIPS_ALLOC_FLOOR;
-    bias = MIPS_KSEG0_BIAS;
-  } else if (boot_info->arch_id == BOOT_INFO_ARCH_SPARC64) {
-    floor = SPARC64_ALLOC_FLOOR;
   }
 
   for (i = 0; i < boot_info->memory_region_count; ++i) {

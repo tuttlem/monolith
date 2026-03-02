@@ -69,7 +69,7 @@ In `arch/x86_64/boot/efi_main.c`, these fields are actively populated:
 
 Fields not currently populated are set to `0` and left clear in `valid_mask`.
 
-## Non-UEFI Arch Stubs (Current)
+## Non-UEFI Arch Population (Current)
 
 `riscv64` currently provides:
 
@@ -89,26 +89,12 @@ Fields not currently populated are set to `0` and left clear in `valid_mask`.
 - extension data includes `satp`, UART base, and QEMU RAM profile
 - `memory_regions[0]` populated from DTB `/memory/reg` when available, otherwise fallback profile
 
-`mips` and `sparc64` currently provide:
-
-- `abi_version`
-- `arch_id`
-- `valid_mask` includes:
-  - `BOOT_INFO_HAS_ENTRY_STATE`
-  - `BOOT_INFO_HAS_ARCH_DATA`
-  - `BOOT_INFO_HAS_MEM_REGIONS`
-  - `BOOT_INFO_HAS_SERIAL`
-- `serial_port` from architecture console backend base
-- extension data includes captured firmware/entry register context and QEMU RAM profile
-
-All other fields are currently zero until architecture-specific entry capture is added.
+All other fields are currently zero unless explicitly populated by architecture firmware handoff.
 
 ## Extension Structs (Current)
 
 - UEFI path (`x86_64`/`arm64`): `boot_info_ext_uefi_t`
 - `riscv64`: `boot_info_ext_riscv64_t`
-- `mips`: `boot_info_ext_mips_t`
-- `sparc64`: `boot_info_ext_sparc64_t`
 
 ## Rule
 

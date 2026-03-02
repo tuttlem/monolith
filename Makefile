@@ -4,8 +4,6 @@ SHELL := /usr/bin/env bash
   x86_64-uefi run-x86_64 gdb-x86_64 smoke-x86_64 \
   arm64-uefi run-arm64 gdb-arm64 smoke-arm64 \
   riscv64 run-riscv64 gdb-riscv64 smoke-riscv64 \
-  mips run-mips gdb-mips smoke-mips \
-  sparc64 run-sparc64 gdb-sparc64 smoke-sparc64 \
   clean
 
 X64_CC ?= clang
@@ -14,31 +12,20 @@ LLD_LINK ?= lld-link
 
 RISCV64_CC ?= clang
 RISCV64_LD ?= ld.lld
-MIPS_CC ?= clang
-MIPS_LD ?= ld.lld
-SPARC64_CC ?= clang
-SPARC64_LD ?= ld.lld
 
 BUILD_X64 := build/x86_64
 BUILD_A64 := build/arm64
 BUILD_RISCV64 := build/riscv64
-BUILD_MIPS := build/mips
-BUILD_SPARC64 := build/sparc64
 
 include arch/x86_64/arch.mk
 include arch/arm64/arch.mk
 include arch/riscv64/arch.mk
-include arch/mips/arch.mk
-include arch/sparc64/arch.mk
 
 all: x86_64-uefi
 
 x86_64-uefi: $(BUILD_X64)/uefi.img
 arm64-uefi: $(BUILD_A64)/uefi.img
-
 riscv64: $(BUILD_RISCV64)/kernel.elf
-mips: $(BUILD_MIPS)/kernel.elf
-sparc64: $(BUILD_SPARC64)/kernel.elf
 
 $(BUILD_X64)/boot/efi_main.o: arch/x86_64/boot/efi_main.c kernel/include/uefi.h kernel/include/kernel.h arch/x86_64/arch.mk
 	@mkdir -p $(@D)
@@ -171,41 +158,15 @@ $(BUILD_A64)/uefi.img: $(BUILD_A64)/BOOTAA64.EFI scripts/mk-uefi-image.sh
 RISCV64_SRCS := kernel/kmain.c kernel/print.c kernel/status.c kernel/interrupts.c kernel/timer.c kernel/diag/boot_info.c kernel/mm/page_alloc.c kernel/mm/kmalloc.c arch/riscv64/mm/memory_init.c arch/riscv64/mm/early_paging.c arch/riscv64/irq/interrupts.c arch/riscv64/timer/timer.c arch/riscv64/boot/main.c arch/riscv64/boot/console.c lib/memset.c lib/memcpy.c lib/strlen.c
 RISCV64_OBJS := $(patsubst %.c,$(BUILD_RISCV64)/%.o,$(RISCV64_SRCS)) $(BUILD_RISCV64)/arch/riscv64/start.o $(BUILD_RISCV64)/arch/riscv64/irq/entry.o
 
-MIPS_SRCS := kernel/kmain.c kernel/print.c kernel/status.c kernel/interrupts.c kernel/timer.c kernel/diag/boot_info.c kernel/mm/page_alloc.c kernel/mm/kmalloc.c arch/mips/mm/memory_init.c arch/mips/mm/early_paging.c arch/mips/irq/interrupts.c arch/mips/timer/timer.c arch/mips/boot/main.c arch/mips/boot/console.c lib/memset.c lib/memcpy.c lib/strlen.c
-MIPS_OBJS := $(patsubst %.c,$(BUILD_MIPS)/%.o,$(MIPS_SRCS)) $(BUILD_MIPS)/arch/mips/start.o $(BUILD_MIPS)/arch/mips/irq/entry.o
-
-SPARC64_SRCS := kernel/kmain.c kernel/print.c kernel/status.c kernel/interrupts.c kernel/timer.c kernel/diag/boot_info.c kernel/mm/page_alloc.c kernel/mm/kmalloc.c arch/sparc64/mm/memory_init.c arch/sparc64/mm/early_paging.c arch/sparc64/irq/interrupts.c arch/sparc64/timer/timer.c arch/sparc64/boot/main.c arch/sparc64/boot/console.c lib/memset.c lib/memcpy.c lib/strlen.c
-SPARC64_OBJS := $(patsubst %.c,$(BUILD_SPARC64)/%.o,$(SPARC64_SRCS)) $(BUILD_SPARC64)/arch/sparc64/start.o
-
 $(BUILD_RISCV64)/kernel.elf: $(RISCV64_OBJS) arch/riscv64/linker.ld
 	@mkdir -p $(@D)
 	@command -v $(RISCV64_LD) >/dev/null 2>&1 || { echo "error: $(RISCV64_LD) not found. Install lld."; exit 1; }
 	$(RISCV64_LD) $(RISCV64_LDFLAGS) -o $@ $(RISCV64_OBJS)
 
-$(BUILD_MIPS)/kernel.elf: $(MIPS_OBJS) arch/mips/linker.ld
-	@mkdir -p $(@D)
-	@command -v $(MIPS_LD) >/dev/null 2>&1 || { echo "error: $(MIPS_LD) not found. Install lld."; exit 1; }
-	$(MIPS_LD) $(MIPS_LDFLAGS) -o $@ $(MIPS_OBJS)
-
-$(BUILD_SPARC64)/kernel.elf: $(SPARC64_OBJS) arch/sparc64/linker.ld
-	@mkdir -p $(@D)
-	@command -v $(SPARC64_LD) >/dev/null 2>&1 || { echo "error: $(SPARC64_LD) not found. Install lld."; exit 1; }
-	$(SPARC64_LD) $(SPARC64_LDFLAGS) -o $@ $(SPARC64_OBJS)
-
 $(BUILD_RISCV64)/%.o: %.c
 	@mkdir -p $(@D)
 	@command -v $(RISCV64_CC) >/dev/null 2>&1 || { echo "error: $(RISCV64_CC) not found. Install clang."; exit 1; }
 	$(RISCV64_CC) $(RISCV64_CFLAGS) -c $< -o $@
-
-$(BUILD_MIPS)/%.o: %.c
-	@mkdir -p $(@D)
-	@command -v $(MIPS_CC) >/dev/null 2>&1 || { echo "error: $(MIPS_CC) not found. Install clang."; exit 1; }
-	$(MIPS_CC) $(MIPS_CFLAGS) -c $< -o $@
-
-$(BUILD_SPARC64)/%.o: %.c
-	@mkdir -p $(@D)
-	@command -v $(SPARC64_CC) >/dev/null 2>&1 || { echo "error: $(SPARC64_CC) not found. Install clang."; exit 1; }
-	$(SPARC64_CC) $(SPARC64_CFLAGS) -c $< -o $@
 
 $(BUILD_RISCV64)/arch/riscv64/start.o: arch/riscv64/start.S
 	@mkdir -p $(@D)
@@ -214,18 +175,6 @@ $(BUILD_RISCV64)/arch/riscv64/start.o: arch/riscv64/start.S
 $(BUILD_RISCV64)/arch/riscv64/irq/entry.o: arch/riscv64/irq/entry.S
 	@mkdir -p $(@D)
 	$(RISCV64_CC) $(RISCV64_ASFLAGS) -c $< -o $@
-
-$(BUILD_MIPS)/arch/mips/start.o: arch/mips/start.S
-	@mkdir -p $(@D)
-	$(MIPS_CC) $(MIPS_ASFLAGS) -c $< -o $@
-
-$(BUILD_MIPS)/arch/mips/irq/entry.o: arch/mips/irq/entry.S
-	@mkdir -p $(@D)
-	$(MIPS_CC) $(MIPS_ASFLAGS) -c $< -o $@
-
-$(BUILD_SPARC64)/arch/sparc64/start.o: arch/sparc64/start.S
-	@mkdir -p $(@D)
-	$(SPARC64_CC) $(SPARC64_ASFLAGS) -c $< -o $@
 
 run-x86_64: x86_64-uefi
 	@./scripts/run-qemu.sh x86_64
@@ -253,24 +202,6 @@ gdb-riscv64: riscv64
 
 smoke-riscv64: riscv64
 	@./scripts/smoke-riscv64.sh
-
-run-mips: mips
-	@./scripts/run-qemu.sh mips
-
-gdb-mips: mips
-	@./scripts/gdb-qemu.sh mips
-
-smoke-mips: mips
-	@./scripts/smoke-mips.sh
-
-run-sparc64: sparc64
-	@./scripts/run-qemu.sh sparc64
-
-gdb-sparc64: sparc64
-	@./scripts/gdb-qemu.sh sparc64
-
-smoke-sparc64: sparc64
-	@./scripts/smoke-sparc64.sh
 
 clean:
 	rm -rf build
