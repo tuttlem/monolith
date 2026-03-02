@@ -5,6 +5,150 @@
 
 static const char g_irq_owner_anon[] = "anonymous";
 
+static BOOT_U64 exception_class_from_frame(const interrupt_frame_t *frame) {
+  if (frame == (const interrupt_frame_t *)0) {
+    return EXCEPTION_CLASS_UNKNOWN;
+  }
+  if (frame->vector >= 32ULL) {
+    return EXCEPTION_CLASS_IRQ;
+  }
+  return EXCEPTION_CLASS_FAULT;
+}
+
+static const char *x86_64_exception_name(BOOT_U64 vector) {
+  switch (vector) {
+  case 0:
+    return "divide_error";
+  case 1:
+    return "debug";
+  case 2:
+    return "nmi";
+  case 3:
+    return "breakpoint";
+  case 4:
+    return "overflow";
+  case 5:
+    return "bound_range_exceeded";
+  case 6:
+    return "invalid_opcode";
+  case 7:
+    return "device_not_available";
+  case 8:
+    return "double_fault";
+  case 10:
+    return "invalid_tss";
+  case 11:
+    return "segment_not_present";
+  case 12:
+    return "stack_segment_fault";
+  case 13:
+    return "general_protection";
+  case 14:
+    return "page_fault";
+  case 16:
+    return "x87_fpu_error";
+  case 17:
+    return "alignment_check";
+  case 18:
+    return "machine_check";
+  case 19:
+    return "simd_floating_point";
+  case 20:
+    return "virtualization";
+  default:
+    return "x86_exception";
+  }
+}
+
+static const char *arm64_exception_name(const interrupt_frame_t *frame) {
+  BOOT_U64 ec;
+  if (frame == (const interrupt_frame_t *)0) {
+    return "arm64_exception";
+  }
+
+  if (frame->vector >= 32ULL) {
+    if (frame->vector == 59ULL) {
+      return "timer_interrupt";
+    }
+    return "irq_interrupt";
+  }
+
+  ec = (frame->error_code >> 26) & 0x3FULL;
+  switch (ec) {
+  case 0x15ULL:
+    return "svc_aarch64";
+  case 0x20ULL:
+  case 0x21ULL:
+    return "instruction_abort";
+  case 0x22ULL:
+  case 0x24ULL:
+  case 0x25ULL:
+    return "data_abort";
+  case 0x2FULL:
+    return "serror";
+  case 0x3CULL:
+    return "brk";
+  default:
+    return "arm64_exception";
+  }
+}
+
+static const char *riscv64_exception_name(const interrupt_frame_t *frame) {
+  BOOT_U64 scause;
+  BOOT_U64 is_interrupt;
+  BOOT_U64 code;
+
+  if (frame == (const interrupt_frame_t *)0) {
+    return "riscv_exception";
+  }
+
+  scause = frame->error_code;
+  is_interrupt = (scause >> 63) & 1ULL;
+  code = scause & ((1ULL << 63) - 1ULL);
+  if (is_interrupt != 0) {
+    switch (code) {
+    case 5ULL:
+      return "timer_interrupt";
+    case 9ULL:
+      return "external_interrupt";
+    default:
+      return "interrupt";
+    }
+  }
+
+  switch (code) {
+  case 2ULL:
+    return "illegal_instruction";
+  case 3ULL:
+    return "breakpoint";
+  case 12ULL:
+    return "instruction_page_fault";
+  case 13ULL:
+    return "load_page_fault";
+  case 15ULL:
+    return "store_page_fault";
+  default:
+    return "riscv_exception";
+  }
+}
+
+static const char *exception_reason_from_frame(const interrupt_frame_t *frame) {
+  if (frame == (const interrupt_frame_t *)0) {
+    return "exception:null_frame";
+  }
+
+  switch (frame->arch_id) {
+  case BOOT_INFO_ARCH_X86_64:
+    return x86_64_exception_name(frame->vector);
+  case BOOT_INFO_ARCH_ARM64:
+    return arm64_exception_name(frame);
+  case BOOT_INFO_ARCH_RISCV64:
+    return riscv64_exception_name(frame);
+  default:
+    return "unhandled_exception";
+  }
+}
+
 typedef struct {
   interrupt_handler_t fn;
   void *ctx;
@@ -44,8 +188,10 @@ static void interrupts_panic_exception(const interrupt_frame_t *frame, const cha
   }
 
   info.arch_id = frame->arch_id;
+  info.class_id = exception_class_from_frame(frame);
   info.vector = frame->vector;
   info.error_code = frame->error_code;
+  info.raw_syndrome = frame->error_code;
   info.fault_addr = frame->fault_addr;
   info.ip = frame->ip;
   info.sp = frame->sp;
@@ -60,7 +206,7 @@ static void default_interrupt_handler(const interrupt_frame_t *frame) {
   }
 
   if (frame->vector < 32ULL) {
-    interrupts_panic_exception(frame, "unhandled");
+    interrupts_panic_exception(frame, exception_reason_from_frame(frame));
     return;
   }
 

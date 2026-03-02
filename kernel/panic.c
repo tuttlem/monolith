@@ -61,10 +61,10 @@ void panic_from_exception(const exception_info_t *info) {
     panic_stop_forever();
   }
 
-  kprintf(
-      "panic: exception: %s arch=%llu cpu=%llu vector=%llu err=0x%llx ip=0x%llx sp=0x%llx flags=0x%llx fault=0x%llx\n",
-      info->reason == (const char *)0 ? "unknown" : info->reason, info->arch_id, arch_cpu_id(), info->vector,
-      info->error_code, info->ip, info->sp, info->flags, info->fault_addr);
+  kprintf("panic: exception: %s class=%llu arch=%llu cpu=%llu vector=%llu err=0x%llx raw=0x%llx ip=0x%llx sp=0x%llx "
+          "flags=0x%llx fault=0x%llx\n",
+          info->reason == (const char *)0 ? "unknown" : info->reason, info->class_id, info->arch_id, arch_cpu_id(),
+          info->vector, info->error_code, info->raw_syndrome, info->ip, info->sp, info->flags, info->fault_addr);
   kprintf("panic: stacktrace: <stub>\n");
   panic_stop_forever();
 }
