@@ -4,6 +4,7 @@
 #include "interrupts.h"
 #include "kmalloc.h"
 #include "arch_mm.h"
+#include "panic.h"
 #include "page_alloc.h"
 #include "timer.h"
 
@@ -88,6 +89,7 @@ void kmain(const boot_info_t *boot_info) {
     goto spin;
   }
 
+  panic_set_context(boot_info);
   mutable_boot_info = (boot_info_t *)boot_info;
   cpu_status = arch_cpu_early_init(boot_info);
   mem_status = arch_mm_early_init(mutable_boot_info);
