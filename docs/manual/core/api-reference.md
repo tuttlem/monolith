@@ -459,6 +459,20 @@ if (d != 0) {
 ### `BOOT_U64 pci_device_count(void)`
 - Purpose: report number of PCI functions discovered in last enumeration pass.
 
+## USB (`usb.h`)
+
+### `status_t usb_enumerate(const boot_info_t *boot_info)`
+- Purpose: discover USB host controllers from existing bus graph and create USB host/device placeholder nodes.
+- Parameters:
+  - `boot_info`: handoff context.
+- Returns:
+  - `STATUS_OK` when one or more hosts are discovered.
+  - `STATUS_DEFERRED` when no USB hosts are currently discovered.
+
+### `BOOT_U64 usb_host_count(void)`
+### `BOOT_U64 usb_device_count(void)`
+- Purpose: return counts from last USB enumeration pass.
+
 ## Device Model (`device_model.h`)
 
 ### `status_t driver_set_boot_info(const boot_info_t *boot_info)`

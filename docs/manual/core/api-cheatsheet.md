@@ -95,6 +95,12 @@
 - `status_t pci_enumerate(const boot_info_t *boot_info)`
 - `BOOT_U64 pci_device_count(void)`
 
+## USB
+
+- `status_t usb_enumerate(const boot_info_t *boot_info)`
+- `BOOT_U64 usb_host_count(void)`
+- `BOOT_U64 usb_device_count(void)`
+
 ## Interrupts
 
 - `status_t arch_irq_init(const boot_info_t *boot_info)`
