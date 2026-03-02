@@ -9,21 +9,24 @@ Use this as the reference for boot handoff, memory initialization, MMU mapping, 
 
 ## Read This First
 
-1. [Core Interfaces (spec 010)](core/core-interfaces.md)
-2. [Status, Assert, Panic (spec 020)](core/status-system.md)
-3. [Config and Feature Flags (spec 030)](core/config-flags.md)
-4. [CPU Layer (`arch_cpu`, spec 040)](core/cpu-layer.md)
-5. [Exception and Interrupt Framework (spec 050)](core/exceptions.md)
-6. [Interrupt Controller Layer (spec 060)](core/irq-controller.md)
-7. [Time System (spec 070)](core/time-system.md)
-8. [Memory Stack + MMU Mapping API (spec 080)](core/memory.md)
-9. [Per-CPU Runtime (spec 090)](core/percpu.md)
-10. [SMP Bootstrap Skeleton (spec 100)](core/smp-bootstrap.md)
-11. [Unified Device Discovery (spec 110)](core/device-discovery.md)
+1. [Core Interfaces](core/core-interfaces.md)
+2. [Status, Assert, Panic](core/status-system.md)
+3. [Config and Feature Flags](core/config-flags.md)
+4. [CPU Layer (`arch_cpu`)](core/cpu-layer.md)
+5. [Exception and Interrupt Framework](core/exceptions.md)
+6. [Interrupt Controller Layer](core/irq-controller.md)
+7. [Time System](core/time-system.md)
+8. [Memory Stack + MMU Mapping API](core/memory.md)
+9. [Per-CPU Runtime](core/percpu.md)
+10. [SMP Bootstrap Skeleton](core/smp-bootstrap.md)
+11. [Unified Device Discovery](core/device-discovery.md)
 12. [Core Boot Sequence](core/boot-sequence.md)
 13. [Boot ABI (`boot_info_t`)](core/boot-info-abi.md)
-14. [API Cheatsheet](core/api-cheatsheet.md)
-15. [Spec Coverage Matrix (010-110)](core/spec-coverage-010-110.md)
+14. [Core API Reference](core/api-reference.md)
+15. [Core Data Structures and Enums](core/data-structures.md)
+16. [Architecture Divergence Guide](core/architecture-divergence.md)
+17. [Implementation Coverage](core/implementation-coverage.md)
+18. [API Cheatsheet](core/api-cheatsheet.md)
 
 ## Architecture-Specific Manuals
 

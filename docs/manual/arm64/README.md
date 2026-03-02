@@ -21,3 +21,4 @@ This chapter explains current arm64 behavior for:
 - [Boot](boot.md)
 - [Memory](memory.md)
 - [Interrupts and Timer](interrupts-timer.md)
+- [Architecture API Reference](api-reference.md)
