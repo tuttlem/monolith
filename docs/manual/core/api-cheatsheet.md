@@ -9,8 +9,24 @@
 
 - `status_is_ok(status_t)`
 - `status_str(status_t)`
+- `panic(const char *reason)`
+- `panicf(const char *fmt, ...)`
+- `panic_from_exception(const exception_info_t *info)`
 
-## Memory Init and Allocation
+## CPU Layer
+
+- `status_t arch_cpu_early_init(const boot_info_t *boot_info)`
+- `status_t arch_cpu_late_init(void)`
+- `BOOT_U64 arch_cpu_id(void)`
+- `BOOT_U64 arch_cpu_count_hint(void)`
+- `void arch_cpu_relax(void)`
+- `void arch_cpu_halt(void)`
+- `void arch_cpu_reboot(void)`
+- `BOOT_U64 arch_cycle_counter(void)`
+- `status_t arch_cpu_set_local_base(BOOT_U64 base)`
+- `BOOT_U64 arch_cpu_get_local_base(void)`
+
+## Memory and MMU
 
 - `status_t arch_memory_init(boot_info_t *boot_info)`
 - `status_t arch_mm_early_init(boot_info_t *boot_info)`
@@ -35,13 +51,11 @@
 - `percpu_t *percpu_current(void)`
 - `percpu_t *percpu_by_id(BOOT_U64 cpu_id)`
 
-## CPU Local Base (Architecture Hooks)
-
-- `status_t arch_cpu_set_local_base(BOOT_U64 base)`
-- `BOOT_U64 arch_cpu_get_local_base(void)`
-
 ## Interrupts
 
+- `status_t arch_irq_init(const boot_info_t *boot_info)`
+- `void arch_irq_enable(void)`
+- `void arch_irq_disable(void)`
 - `status_t interrupts_init(const boot_info_t *boot_info)`
 - `status_t interrupts_register_handler(... )`
 - `status_t interrupts_register_handler_owned(... )`
@@ -51,11 +65,28 @@
 - `void interrupts_enable(void)`
 - `void interrupts_disable(void)`
 
-## Timer
+## Interrupt Controller
+
+- `status_t irq_controller_register(const char *name, const irq_controller_ops_t *ops)`
+- `const char *irq_controller_name(void)`
+- `status_t irq_controller_enable(BOOT_U64 irq)`
+- `status_t irq_controller_disable(BOOT_U64 irq)`
+- `void irq_controller_ack(BOOT_U64 irq)`
+- `void irq_controller_eoi(BOOT_U64 irq)`
+- `status_t irq_controller_map(BOOT_U64 irq, BOOT_U64 *out_vector)`
+- `status_t irq_controller_vector_to_irq(BOOT_U64 vector, BOOT_U64 *out_irq)`
+
+## Time
 
 - `status_t timer_init(const boot_info_t *boot_info)`
 - `BOOT_U64 timer_ticks(void)`
 - `BOOT_U64 timer_hz(void)`
+- `status_t time_init(const boot_info_t *boot_info)`
+- `BOOT_U64 time_now_ns(void)`
+- `BOOT_U64 time_ticks(void)`
+- `BOOT_U64 time_hz(void)`
+- `const clocksource_t *time_clocksource(void)`
+- `const clockevent_t *time_clockevent(void)`
 
 ## Printing
 

@@ -42,6 +42,9 @@ For logs:
 - `timer_init`
 - `arch_interrupts_init`
 - `arch_timer_init`
+- `arch_cpu_early_init`
+- `percpu_init_boot_cpu`
+- MMU mapping API (`mm_map`, `mm_unmap`, `mm_protect`, `mm_translate`)
 
 ## Coding Guidance
 
@@ -49,3 +52,16 @@ For logs:
 2. Return `STATUS_DEFERRED` when the subsystem is intentionally not ready yet (not an error).
 3. Use `STATUS_INTERNAL` for logic failures that should not happen in normal operation.
 4. Use `STATUS_NOT_SUPPORTED` for architecture/platform mismatch.
+
+## Panic and Assert Relation (Spec 020)
+
+`status_t` is for recoverable/deferrable control flow.  
+`panic*` is for unrecoverable failures.
+
+Related APIs:
+- `panic`, `panicf`, `panic_from_exception` (`kernel/include/panic.h`)
+- `ASSERT(expr)` (`kernel/include/assert.h`)
+
+Policy:
+- return `status_t` when caller can decide behavior
+- use panic for invariant or fatal trap paths only

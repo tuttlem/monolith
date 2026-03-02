@@ -1,0 +1,42 @@
+# Time System (Spec 070)
+
+API: `kernel/include/timebase.h`  
+Implementation: `kernel/timebase.c`
+
+## Model
+
+The time subsystem combines:
+- `clocksource`: free-running cycle counter + frequency
+- `clockevent`: interrupt event source used for periodic ticks
+
+## Public API
+
+- `status_t time_init(const boot_info_t *boot_info)`
+- `BOOT_U64 time_now_ns(void)`
+- `BOOT_U64 time_ticks(void)`
+- `BOOT_U64 time_hz(void)`
+- `const clocksource_t *time_clocksource(void)`
+- `const clockevent_t *time_clockevent(void)`
+
+Compatibility shim:
+- `kernel/timer.c` keeps `timer_init`, `timer_ticks`, `timer_hz`
+
+## Initialization Flow
+
+1. call `arch_timer_init` to obtain timer frequency and vector
+2. register timer IRQ handler in interrupt core
+3. map vector to IRQ through controller layer
+4. enable timer IRQ where backend supports it
+5. choose clocksource:
+   - preferred: architecture cycle counter (`arch_cycle_counter`)
+   - fallback: tick-derived time
+
+## Monotonicity Rules
+
+- `time_now_ns` is clamped to never move backwards
+- tick count can be refreshed from cycle-derived nanoseconds for consistency
+- overflow-safe conversion uses saturating mul/div helpers
+
+## Architecture Hook
+
+`arch_timer_clocksource_hz(const boot_info_t *boot_info)` exposes cycle-counter frequency for monotonic conversion.

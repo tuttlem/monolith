@@ -9,13 +9,19 @@ Use this as the reference for boot handoff, memory initialization, MMU mapping, 
 
 ## Read This First
 
-1. [Core Boot Sequence](core/boot-sequence.md)
-2. [Boot ABI (`boot_info_t`)](core/boot-info-abi.md)
-3. [Status System (`status_t`)](core/status-system.md)
-4. [Memory Stack (arch memory init -> page alloc -> kmalloc)](core/memory.md)
-5. [Per-CPU Runtime](core/percpu.md)
-6. [Interrupts and Timers](core/interrupts-timers.md)
-7. [API Cheatsheet](core/api-cheatsheet.md)
+1. [Core Interfaces (spec 010)](core/core-interfaces.md)
+2. [Status, Assert, Panic (spec 020)](core/status-system.md)
+3. [Config and Feature Flags (spec 030)](core/config-flags.md)
+4. [CPU Layer (`arch_cpu`, spec 040)](core/cpu-layer.md)
+5. [Exception and Interrupt Framework (spec 050)](core/exceptions.md)
+6. [Interrupt Controller Layer (spec 060)](core/irq-controller.md)
+7. [Time System (spec 070)](core/time-system.md)
+8. [Memory Stack + MMU Mapping API (spec 080)](core/memory.md)
+9. [Per-CPU Runtime (spec 090)](core/percpu.md)
+10. [Core Boot Sequence](core/boot-sequence.md)
+11. [Boot ABI (`boot_info_t`)](core/boot-info-abi.md)
+12. [API Cheatsheet](core/api-cheatsheet.md)
+13. [Spec Coverage Matrix (010-090)](core/spec-coverage-010-090.md)
 
 ## Architecture-Specific Manuals
 
