@@ -59,6 +59,7 @@
 - `BOOT_U64 smp_cpu_count_online(void)`
 - `BOOT_U64 smp_cpu_count_possible(void)`
 - `void smp_secondary_entry(BOOT_U64 cpu_id)`
+- `status_t arch_smp_bootstrap(const boot_info_t *boot_info, BOOT_U64 *out_possible_cpus, BOOT_U64 *out_started_cpus)`
 
 ## Interrupts
 

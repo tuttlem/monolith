@@ -14,6 +14,7 @@ typedef UINT16 CHAR16;
 typedef void VOID;
 typedef UINTN EFI_STATUS;
 typedef VOID *EFI_HANDLE;
+typedef VOID *EFI_EVENT;
 
 #if defined(__x86_64__)
 #define EFIAPI __attribute__((ms_abi))
@@ -117,6 +118,23 @@ typedef struct EFI_GRAPHICS_OUTPUT_PROTOCOL {
   VOID *Blt;
   EFI_GRAPHICS_OUTPUT_PROTOCOL_MODE *Mode;
 } EFI_GRAPHICS_OUTPUT_PROTOCOL;
+
+struct EFI_MP_SERVICES_PROTOCOL;
+typedef void(EFIAPI *EFI_AP_PROCEDURE)(VOID *Buffer);
+typedef EFI_STATUS(EFIAPI *EFI_MP_GET_NUMBER_OF_PROCESSORS)(struct EFI_MP_SERVICES_PROTOCOL *, UINTN *, UINTN *);
+typedef EFI_STATUS(EFIAPI *EFI_MP_STARTUP_ALL_APS)(struct EFI_MP_SERVICES_PROTOCOL *, EFI_AP_PROCEDURE, UINT8, EFI_EVENT,
+                                                    UINTN, VOID *, UINTN **);
+typedef EFI_STATUS(EFIAPI *EFI_MP_WHOAMI)(struct EFI_MP_SERVICES_PROTOCOL *, UINTN *);
+
+typedef struct EFI_MP_SERVICES_PROTOCOL {
+  EFI_MP_GET_NUMBER_OF_PROCESSORS GetNumberOfProcessors;
+  VOID *GetProcessorInfo;
+  EFI_MP_STARTUP_ALL_APS StartupAllAPs;
+  VOID *StartupThisAP;
+  VOID *SwitchBSP;
+  VOID *EnableDisableAP;
+  EFI_MP_WHOAMI WhoAmI;
+} EFI_MP_SERVICES_PROTOCOL;
 
 typedef EFI_STATUS(EFIAPI *EFI_GET_MEMORY_MAP)(UINTN *, EFI_MEMORY_DESCRIPTOR *, UINTN *, UINTN *,
                                                 UINT32 *);

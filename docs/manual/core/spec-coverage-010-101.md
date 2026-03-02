@@ -1,4 +1,4 @@
-# Spec Coverage Matrix (010-100)
+# Spec Coverage Matrix (010-101)
 
 This matrix links each implemented foundation spec to the manual sections that define its operational contract.
 
@@ -49,6 +49,10 @@ This matrix links each implemented foundation spec to the manual sections that d
 - `100-smp-bootstrap`
   - `core/smp-bootstrap.md`
   - `core/boot-sequence.md`
+  - `core/api-cheatsheet.md`
+
+- `101-smp-arch-bootstrap`
+  - `core/smp-bootstrap.md`
   - `core/api-cheatsheet.md`
 
 ## Reader Usage

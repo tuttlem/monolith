@@ -22,7 +22,7 @@ Use this as the reference for boot handoff, memory initialization, MMU mapping, 
 11. [Core Boot Sequence](core/boot-sequence.md)
 12. [Boot ABI (`boot_info_t`)](core/boot-info-abi.md)
 13. [API Cheatsheet](core/api-cheatsheet.md)
-14. [Spec Coverage Matrix (010-100)](core/spec-coverage-010-100.md)
+14. [Spec Coverage Matrix (010-101)](core/spec-coverage-010-101.md)
 
 ## Architecture-Specific Manuals
 

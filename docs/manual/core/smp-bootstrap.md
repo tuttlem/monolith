@@ -44,5 +44,11 @@ Current backend files:
 - `arch/riscv64/cpu/smp.c`
 
 Current backend status:
-- returns `STATUS_DEFERRED` with `possible=1`, `started=0`
-- this preserves cross-architecture stability while real AP/PSCI/SBI startup work is added next.
+- x86_64: uses UEFI MP Services protocol when available; attempts AP callback startup path.
+- arm64: uses UEFI MP Services protocol when available; attempts AP callback startup path.
+- riscv64: parses DTB CPU topology for `possible` count and reports deferred startup until SBI HSM path is added.
+
+Status semantics:
+- `STATUS_OK`: backend performed startup flow (or single-CPU platform)
+- `STATUS_DEFERRED`: startup mechanism unavailable on current firmware/platform
+- `STATUS_TRY_AGAIN`: startup mechanism present but bootstrap attempt failed
