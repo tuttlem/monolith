@@ -19,7 +19,9 @@ typedef struct {
 } percpu_t;
 
 status_t percpu_init_boot_cpu(const boot_info_t *boot_info);
+status_t percpu_register_current_cpu(BOOT_U64 cpu_id);
 percpu_t *percpu_current(void);
 percpu_t *percpu_by_id(BOOT_U64 cpu_id);
+BOOT_U64 percpu_online_count(void);
 
 #endif

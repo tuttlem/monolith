@@ -18,10 +18,11 @@ Use this as the reference for boot handoff, memory initialization, MMU mapping, 
 7. [Time System (spec 070)](core/time-system.md)
 8. [Memory Stack + MMU Mapping API (spec 080)](core/memory.md)
 9. [Per-CPU Runtime (spec 090)](core/percpu.md)
-10. [Core Boot Sequence](core/boot-sequence.md)
-11. [Boot ABI (`boot_info_t`)](core/boot-info-abi.md)
-12. [API Cheatsheet](core/api-cheatsheet.md)
-13. [Spec Coverage Matrix (010-090)](core/spec-coverage-010-090.md)
+10. [SMP Bootstrap Skeleton (spec 100)](core/smp-bootstrap.md)
+11. [Core Boot Sequence](core/boot-sequence.md)
+12. [Boot ABI (`boot_info_t`)](core/boot-info-abi.md)
+13. [API Cheatsheet](core/api-cheatsheet.md)
+14. [Spec Coverage Matrix (010-100)](core/spec-coverage-010-100.md)
 
 ## Architecture-Specific Manuals
 
