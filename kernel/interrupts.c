@@ -1,5 +1,6 @@
 #include "interrupts.h"
 #include "arch_irq.h"
+#include "panic.h"
 
 #ifndef MONOLITH_IRQ_LOG_UNHANDLED
 #define MONOLITH_IRQ_LOG_UNHANDLED 1
@@ -38,18 +39,22 @@ static int owner_eq(const char *a, const char *b) {
 }
 
 static void interrupts_panic_exception(const interrupt_frame_t *frame, const char *why) {
+  exception_info_t info;
+
   if (frame == (const interrupt_frame_t *)0) {
-    for (;;) {
-      arch_halt();
-    }
+    panic("exception:null_frame");
+    return;
   }
 
-  kprintf("exception: %s vector=%llu err=0x%llx ip=0x%llx sp=0x%llx flags=0x%llx fault=0x%llx\n", why, frame->vector,
-          frame->error_code, frame->ip, frame->sp, frame->flags, frame->fault_addr);
-  interrupts_disable();
-  for (;;) {
-    arch_halt();
-  }
+  info.arch_id = frame->arch_id;
+  info.vector = frame->vector;
+  info.error_code = frame->error_code;
+  info.fault_addr = frame->fault_addr;
+  info.ip = frame->ip;
+  info.sp = frame->sp;
+  info.flags = frame->flags;
+  info.reason = why;
+  panic_from_exception(&info);
 }
 
 static void default_interrupt_handler(const interrupt_frame_t *frame) {

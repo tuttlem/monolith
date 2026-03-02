@@ -32,3 +32,5 @@ void arch_puts(const char *s) {
 }
 
 void arch_halt(void) { asm volatile("wfi"); }
+
+void arch_panic_stop(void) { arch_halt(); }

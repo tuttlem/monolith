@@ -119,6 +119,8 @@ void arch_halt(void) {
   }
 }
 
+void arch_panic_stop(void) { arch_halt(); }
+
 EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *system_table) {
   boot_info_t boot_info;
   boot_info_ext_uefi_t uefi_ext;

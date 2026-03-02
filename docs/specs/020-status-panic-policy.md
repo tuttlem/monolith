@@ -50,3 +50,19 @@ Stack trace can be a stub in this phase, but API and output slot must exist.
 - all fatal exception paths route through unified panic backend
 - all subsystem init failures return `status_t` and avoid hard-stop unless unrecoverable
 - panic output format consistent across architectures
+
+## Implementation Notes (Current Repository)
+
+`020-status-panic-policy` is implemented by:
+- adding `kernel/include/panic.h` and `kernel/panic.c`
+- adding `kernel/include/assert.h` (`ASSERT(expr)` with policy toggles)
+- routing fatal exception paths in `kernel/interrupts.c` to `panic_from_exception`
+- adding `arch_panic_stop()` to architecture console/boot backends
+- recording boot panic context via `panic_set_context()` from `kmain`
+
+Panic output includes:
+- reason
+- architecture id
+- cpu id (best effort)
+- exception metadata (vector/error/ip/sp/flags/fault) when applicable
+- stacktrace placeholder line (`<stub>`)
