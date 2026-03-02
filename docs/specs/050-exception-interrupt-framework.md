@@ -54,3 +54,16 @@ Per architecture, add cause decode tables:
 - no fatal path directly loops/halt outside panic backend
 - exceptions produce normalized structured metadata
 - vector ownership rules remain enforced
+
+## Implementation Notes (Current Repository)
+
+`050-exception-interrupt-framework` is implemented by:
+- extending `exception_info_t` with normalized class and raw syndrome fields
+- adding per-architecture exception decode tables in `kernel/interrupts.c`
+  - x86_64: vector-based decode (page fault, GP, invalid opcode, breakpoint, etc.)
+  - arm64: ESR EC-based decode (instruction/data abort, BRK, SError, timer IRQ class)
+  - riscv64: scause decode (illegal instruction, breakpoint, page-fault classes, timer interrupt)
+- routing unhandled exceptions through decoded `panic_from_exception` reasons
+- converting self-test fallback paths and x86 fatal-return fallback to unified `panic*`
+
+IRQ ownership and one-handler-per-vector behavior remain unchanged.

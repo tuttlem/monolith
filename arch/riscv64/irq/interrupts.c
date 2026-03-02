@@ -1,5 +1,6 @@
 #include "arch_interrupts.h"
 #include "interrupts.h"
+#include "panic.h"
 
 status_t arch_interrupts_init(const boot_info_t *boot_info) {
   extern void riscv64_trap_entry(void);
@@ -37,7 +38,5 @@ BOOT_U64 riscv64_trap_c(BOOT_U64 scause, BOOT_U64 sepc, BOOT_U64 stval, BOOT_U64
 
 void arch_exception_selftest_trigger(void) {
   __asm__ volatile("ebreak");
-  for (;;) {
-    arch_halt();
-  }
+  panic("riscv64_exception_selftest_did_not_trap");
 }

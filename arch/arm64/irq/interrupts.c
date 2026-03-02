@@ -1,5 +1,6 @@
 #include "arch_interrupts.h"
 #include "interrupts.h"
+#include "panic.h"
 
 #define ARM64_TRAP_SYNC 0ULL
 #define ARM64_TRAP_IRQ 1ULL
@@ -122,7 +123,5 @@ BOOT_U64 arm64_trap_c(BOOT_U64 trap_kind, BOOT_U64 esr, BOOT_U64 elr, BOOT_U64 s
 
 void arch_exception_selftest_trigger(void) {
   __asm__ volatile("brk #0");
-  for (;;) {
-    arch_halt();
-  }
+  panic("arm64_exception_selftest_did_not_trap");
 }

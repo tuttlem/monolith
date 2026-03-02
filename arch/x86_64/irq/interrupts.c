@@ -1,5 +1,6 @@
 #include "arch_interrupts.h"
 #include "interrupts.h"
+#include "panic.h"
 
 typedef struct {
   unsigned short offset_lo;
@@ -56,11 +57,7 @@ __attribute__((used)) static void x86_64_exception_fatal(BOOT_U64 vector) {
   frame.sp = 0;
   frame.flags = 0;
   interrupts_dispatch(&frame);
-
-  for (;;) {
-    __asm__ volatile("cli");
-    arch_halt();
-  }
+  panicf("x86_64_exception_fatal_returned vector=%llu", vector);
 }
 
 #define X86_64_EXCEPTION_STUB(v)                                                                        \
@@ -234,7 +231,5 @@ void arch_interrupts_disable(void) { __asm__ volatile("cli" : : : "memory"); }
 
 void arch_exception_selftest_trigger(void) {
   __asm__ volatile("ud2");
-  for (;;) {
-    arch_halt();
-  }
+  panic("x86_64_exception_selftest_did_not_trap");
 }
