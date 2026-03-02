@@ -2,6 +2,7 @@
 #include "arch_cpu.h"
 #include "config.h"
 #include "device_bus.h"
+#include "device_domains.h"
 #include "device_model.h"
 #include "diag/boot_info.h"
 #include "hw_desc.h"
@@ -73,6 +74,7 @@ void kmain(const boot_info_t *boot_info) {
   status_t smp_status;
   status_t pci_status;
   status_t usb_status;
+  status_t domain_status;
   status_t irq_status;
   status_t timer_status;
   status_t console_status;
@@ -93,6 +95,7 @@ void kmain(const boot_info_t *boot_info) {
   bus_status = device_bus_init(boot_info, hw);
   pci_status = pci_enumerate(boot_info);
   usb_status = usb_enumerate(boot_info);
+  domain_status = device_domains_enumerate(boot_info);
   smp_status = smp_init(boot_info);
   mem_status = arch_mm_early_init(mutable_boot_info);
   page_status = page_alloc_init(mutable_boot_info);
@@ -126,6 +129,9 @@ void kmain(const boot_info_t *boot_info) {
   }
   if (!status_is_ok(usb_status) && usb_status != STATUS_DEFERRED) {
     kprintf("usb_enumerate: %s (%d)\n", status_str(usb_status), usb_status);
+  }
+  if (!status_is_ok(domain_status) && domain_status != STATUS_DEFERRED) {
+    kprintf("device_domains_enumerate: %s (%d)\n", status_str(domain_status), domain_status);
   }
   if (!status_is_ok(smp_status) && smp_status != STATUS_DEFERRED) {
     kprintf("smp_init: %s (%d)\n", status_str(smp_status), smp_status);
@@ -225,6 +231,8 @@ void kmain(const boot_info_t *boot_info) {
   device_bus_dump();
   kprintf("pci: devices=%llu\n", pci_device_count());
   kprintf("usb: hosts=%llu devices=%llu\n", usb_host_count(), usb_device_count());
+  kprintf("domains: block=%llu input=%llu display=%llu\n", block_device_count(), input_device_count(),
+          display_device_count());
 
 #if MONOLITH_BOOTINFO_DEBUG
   diag_boot_info_print(boot_info);

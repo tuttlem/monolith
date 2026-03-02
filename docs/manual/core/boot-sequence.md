@@ -24,7 +24,8 @@ Initialization order is fixed and intentional:
 11. `device_bus_init(boot_info, hw_desc_get())`
 12. `pci_enumerate(boot_info)` (architecture-dependent backend)
 13. `usb_enumerate(boot_info)` (host-controller discovery skeleton)
-14. `driver_probe_all(hw_desc_get())` in class order:
+14. `device_domains_enumerate(boot_info)` (block/input/display baseline)
+15. `driver_probe_all(hw_desc_get())` in class order:
     - `irqc` (calls IRQ backend init)
     - `timer` (calls timer backend init)
     - `console`
