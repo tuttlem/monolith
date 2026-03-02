@@ -171,10 +171,10 @@ $(BUILD_A64)/uefi.img: $(BUILD_A64)/BOOTAA64.EFI scripts/mk-uefi-image.sh
 RISCV64_SRCS := kernel/kmain.c kernel/print.c kernel/status.c kernel/interrupts.c kernel/timer.c kernel/diag/boot_info.c kernel/mm/page_alloc.c kernel/mm/kmalloc.c arch/riscv64/mm/memory_init.c arch/riscv64/mm/early_paging.c arch/riscv64/irq/interrupts.c arch/riscv64/timer/timer.c arch/riscv64/boot/main.c arch/riscv64/boot/console.c lib/memset.c lib/memcpy.c lib/strlen.c
 RISCV64_OBJS := $(patsubst %.c,$(BUILD_RISCV64)/%.o,$(RISCV64_SRCS)) $(BUILD_RISCV64)/arch/riscv64/start.o $(BUILD_RISCV64)/arch/riscv64/irq/entry.o
 
-MIPS_SRCS := kernel/kmain.c kernel/print.c kernel/status.c kernel/interrupts.c kernel/timer.c kernel/diag/boot_info.c kernel/mm/page_alloc.c kernel/mm/kmalloc.c arch/mips/mm/memory_init.c arch/mips/irq/interrupts.c arch/mips/timer/timer.c arch/mips/boot/main.c arch/mips/boot/console.c lib/memset.c lib/memcpy.c lib/strlen.c
+MIPS_SRCS := kernel/kmain.c kernel/print.c kernel/status.c kernel/interrupts.c kernel/timer.c kernel/diag/boot_info.c kernel/mm/page_alloc.c kernel/mm/kmalloc.c arch/mips/mm/memory_init.c arch/mips/mm/early_paging.c arch/mips/irq/interrupts.c arch/mips/timer/timer.c arch/mips/boot/main.c arch/mips/boot/console.c lib/memset.c lib/memcpy.c lib/strlen.c
 MIPS_OBJS := $(patsubst %.c,$(BUILD_MIPS)/%.o,$(MIPS_SRCS)) $(BUILD_MIPS)/arch/mips/start.o $(BUILD_MIPS)/arch/mips/irq/entry.o
 
-SPARC64_SRCS := kernel/kmain.c kernel/print.c kernel/status.c kernel/interrupts.c kernel/timer.c kernel/diag/boot_info.c kernel/mm/page_alloc.c kernel/mm/kmalloc.c arch/sparc64/mm/memory_init.c arch/sparc64/irq/interrupts.c arch/sparc64/timer/timer.c arch/sparc64/boot/main.c arch/sparc64/boot/console.c lib/memset.c lib/memcpy.c lib/strlen.c
+SPARC64_SRCS := kernel/kmain.c kernel/print.c kernel/status.c kernel/interrupts.c kernel/timer.c kernel/diag/boot_info.c kernel/mm/page_alloc.c kernel/mm/kmalloc.c arch/sparc64/mm/memory_init.c arch/sparc64/mm/early_paging.c arch/sparc64/irq/interrupts.c arch/sparc64/timer/timer.c arch/sparc64/boot/main.c arch/sparc64/boot/console.c lib/memset.c lib/memcpy.c lib/strlen.c
 SPARC64_OBJS := $(patsubst %.c,$(BUILD_SPARC64)/%.o,$(SPARC64_SRCS)) $(BUILD_SPARC64)/arch/sparc64/start.o
 
 $(BUILD_RISCV64)/kernel.elf: $(RISCV64_OBJS) arch/riscv64/linker.ld
