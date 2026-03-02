@@ -164,6 +164,6 @@ void kmain(const boot_info_t *boot_info) {
 
 spin:
   for (;;) {
-    arch_halt();
+    arch_cpu_halt();
   }
 }

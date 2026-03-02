@@ -57,3 +57,22 @@ void arch_icache_sync_range(BOOT_U64 addr, BOOT_U64 size);
 - generic code no longer directly uses architecture inline asm for core CPU primitives
 - cycle counter available on all architectures (or explicit status if unavailable)
 - per-arch capability flags published
+
+## Implementation Notes (Current Repository)
+
+`040-arch-cpu` is implemented with real per-architecture backends:
+- `arch/x86_64/cpu/cpu.c`
+- `arch/arm64/cpu/cpu.c`
+- `arch/riscv64/cpu/cpu.c`
+
+`kernel/include/arch_cpu.h` now exposes the full frozen API (v1.0), and no
+longer uses inline stub implementations.
+
+Current behavior:
+- `arch_cpu_early_init` validates architecture and captures boot CPU identity.
+- `arch_cycle_counter` is implemented on all three architectures.
+- barriers/TLB/i-cache hooks are implemented with architecture instructions.
+- `kmain` idle loop now uses `arch_cpu_halt()`.
+
+Note: `arch_cpu_count_hint()` currently returns `1` across architectures until
+SMP discovery wiring in later specs.
