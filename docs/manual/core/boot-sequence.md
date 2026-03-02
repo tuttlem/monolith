@@ -33,6 +33,7 @@ Initialization order is fixed and intentional:
     - `timer` (calls timer backend init)
     - `console`
     - `early`
+19. `syscall_init(boot_info)` (syscall transport table + substrate handlers)
 
 Then optional self-tests/diagnostics run (macro-controlled), then the kernel idles in `arch_halt()` loop.
 
@@ -49,6 +50,7 @@ Then optional self-tests/diagnostics run (macro-controlled), then the kernel idl
 - Device bus setup converts normalized discovery data into a stable bus/device graph.
 - `irqc` class init sets the CPU interrupt backend and handler table; dispatch updates per-CPU IRQ nesting.
 - `timer` class init registers a timer IRQ handler and enables interrupts when successful; timer IRQ updates per-CPU local tick count.
+- `syscall_init` binds transport-level syscall ABI services without imposing OS-level syscall policy.
 
 ## Deferred vs Hard Failure
 

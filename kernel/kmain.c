@@ -18,6 +18,7 @@
 #include "pci.h"
 #include "percpu.h"
 #include "smp.h"
+#include "syscall.h"
 #include "timebase.h"
 #include "timer.h"
 #include "usb.h"
@@ -83,6 +84,7 @@ void kmain(const boot_info_t *boot_info) {
   status_t audio_status;
   status_t irq_status;
   status_t timer_status;
+  status_t syscall_status;
   status_t console_status;
   const hw_desc_t *hw;
 
@@ -116,6 +118,7 @@ void kmain(const boot_info_t *boot_info) {
   device_status = driver_probe_all(hw);
   irq_status = driver_class_last_status("irqc");
   timer_status = driver_class_last_status("timer");
+  syscall_status = syscall_init(boot_info);
   console_status = driver_class_last_status("console");
   kprintf("time: now_ns=%llu ticks=%llu hz=%llu\n", time_now_ns(), time_ticks(), time_hz());
 
@@ -169,6 +172,9 @@ void kmain(const boot_info_t *boot_info) {
   }
   if (!status_is_ok(timer_status) && timer_status != STATUS_DEFERRED) {
     kprintf("timer_init: %s (%d)\n", status_str(timer_status), timer_status);
+  }
+  if (!status_is_ok(syscall_status) && syscall_status != STATUS_DEFERRED) {
+    kprintf("syscall_init: %s (%d)\n", status_str(syscall_status), syscall_status);
   }
   if (!status_is_ok(console_status) && console_status != STATUS_DEFERRED) {
     kprintf("console_init: %s (%d)\n", status_str(console_status), console_status);
@@ -259,6 +265,7 @@ void kmain(const boot_info_t *boot_info) {
   kprintf("audio: devices=%llu\n", audio_device_count());
   net_dump_diagnostics();
   audio_dump_diagnostics();
+  syscall_dump_table();
 
 #if MONOLITH_BOOTINFO_DEBUG
   diag_boot_info_print(boot_info);

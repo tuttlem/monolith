@@ -120,3 +120,11 @@ Divergence notes:
 - Purpose: PIT periodic timer setup and IRQ ack path.
 - Divergence:
   - Periodic source is PIT IRQ0 path.
+
+## Syscall Trap Hook
+
+### `status_t arch_syscall_init(const boot_info_t *boot_info)`
+- File: `arch/x86_64/syscall/syscall.c`
+- Purpose: x86_64 syscall trap-entry backend hook for transport ABI.
+- Current phase behavior:
+  - returns `STATUS_DEFERRED` while dedicated trap-entry plumbing is staged.

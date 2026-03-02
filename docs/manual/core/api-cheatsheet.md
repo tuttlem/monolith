@@ -124,6 +124,17 @@
 - `void capability_domain_dump_matrix(void)`
 - `void capability_profile_print(void)`
 
+## Syscall Transport
+
+- `status_t arch_syscall_init(const boot_info_t *boot_info)`
+- `status_t syscall_init(const boot_info_t *boot_info)`
+- `status_t syscall_register(BOOT_U64 op, syscall_handler_t handler, const char *owner)`
+- `status_t syscall_dispatch(const syscall_request_t *req, syscall_response_t *resp)`
+- `status_t syscall_invoke_kernel(..., syscall_response_t *resp)`
+- `BOOT_U64 syscall_abi_info_word(void)`
+- `int syscall_trap_entry_ready(void)`
+- `void syscall_dump_table(void)`
+
 ## Network Domain
 
 - `status_t net_enumerate(const boot_info_t *boot_info)`

@@ -37,6 +37,14 @@ This page highlights where execution paths diverge between `x86_64`, `arm64`, an
 - `arm64`: generic virtual timer (`CNTV_*`).
 - `riscv64`: backend present but constrained by current interrupt-controller maturity.
 
+## Syscall Trap Entry Backend
+
+- Transport ABI and dispatcher are common across all architectures.
+- Current phase keeps per-arch trap-entry hook (`arch_syscall_init`) intentionally deferred.
+- Result:
+  - consistent syscall numbering/dispatch contract exists now
+  - architecture trap entry wiring can be enabled later without changing the transport ABI
+
 ## MMU Backend Granule/Shape
 
 - `x86_64`: 2 MiB large-page style backend in current implementation.

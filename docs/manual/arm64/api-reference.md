@@ -122,3 +122,11 @@ Function details:
 - Purpose: arm generic virtual timer setup and acknowledgment path.
 - Divergence:
   - Uses architected timer registers (`CNTFRQ`, `CNTV_TVAL`, `CNTV_CTL`).
+
+## Syscall Trap Hook
+
+### `status_t arch_syscall_init(const boot_info_t *boot_info)`
+- File: `arch/arm64/syscall/syscall.c`
+- Purpose: arm64 syscall trap-entry backend hook for transport ABI.
+- Current phase behavior:
+  - returns `STATUS_DEFERRED` while dedicated trap-entry plumbing is staged.

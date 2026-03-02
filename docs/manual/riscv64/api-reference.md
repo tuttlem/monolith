@@ -116,3 +116,11 @@ Divergence notes:
 - Purpose: riscv64 timer backend wiring for generic timebase.
 - Divergence:
   - Timer IRQ/controller interaction remains minimal while controller backend is stubbed.
+
+## Syscall Trap Hook
+
+### `status_t arch_syscall_init(const boot_info_t *boot_info)`
+- File: `arch/riscv64/syscall/syscall.c`
+- Purpose: riscv64 syscall trap-entry backend hook for transport ABI.
+- Current phase behavior:
+  - returns `STATUS_DEFERRED` while dedicated trap-entry plumbing is staged.

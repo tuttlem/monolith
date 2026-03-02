@@ -521,6 +521,35 @@ if (d != 0) {
 ### `void capability_profile_print(void)`
 - Purpose: print active profile and domain gate states.
 
+## Syscall Transport (`syscall.h`, `arch_syscall.h`)
+
+### `status_t arch_syscall_init(const boot_info_t *boot_info)`
+- Purpose: architecture hook for syscall trap-entry backend setup.
+- Returns:
+  - `STATUS_OK` when trap entry is active.
+  - `STATUS_DEFERRED` when trap entry is intentionally not wired yet.
+
+### `status_t syscall_init(const boot_info_t *boot_info)`
+- Purpose: initialize generic syscall transport dispatcher and register substrate reserved handlers.
+
+### `status_t syscall_register(BOOT_U64 op, syscall_handler_t handler, const char *owner)`
+- Purpose: register one operation handler into syscall dispatch table.
+
+### `status_t syscall_dispatch(const syscall_request_t *req, syscall_response_t *resp)`
+- Purpose: validate and dispatch one syscall transport request.
+
+### `status_t syscall_invoke_kernel(..., syscall_response_t *resp)`
+- Purpose: kernel-side invocation helper for transport bring-up and tests.
+
+### `BOOT_U64 syscall_abi_info_word(void)`
+- Purpose: read packed ABI/version/feature info word.
+
+### `int syscall_trap_entry_ready(void)`
+- Purpose: report whether architecture trap-entry syscall path is active.
+
+### `void syscall_dump_table(void)`
+- Purpose: print active syscall handler table for diagnostics.
+
 ## Network Domain (`net.h`)
 
 ### `status_t net_enumerate(const boot_info_t *boot_info)`

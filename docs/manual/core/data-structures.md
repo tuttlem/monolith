@@ -362,6 +362,28 @@ typedef struct boot_info boot_info_t;
   - `link_up`: link state placeholder (`0/1`).
   - `tx_queue_count`, `rx_queue_count`: queue-capability summary placeholders.
 
+## Syscall Transport Types (`syscall.h`)
+
+### `syscall_request_t`
+- Struct purpose: architecture-neutral syscall transport request frame.
+- Members:
+  - `abi_version`: transport ABI version expected by caller.
+  - `op`: operation selector ID.
+  - `args[6]`: generic argument slots.
+  - `arch_id`: caller architecture ID context.
+  - `flags`: transport flags/reserved bits.
+
+### `syscall_response_t`
+- Struct purpose: unified syscall return tuple.
+- Members:
+  - `status`: operation status (`status_t` contract).
+  - `value`: optional primary return value.
+
+### `syscall_handler_t`
+- Signature:
+  - `typedef status_t (*syscall_handler_t)(const syscall_request_t *req, syscall_response_t *resp);`
+- Purpose: registered dispatcher callback type for one operation ID.
+
 ## Audio Baseline Types (`audio.h`)
 
 ### `audio_device_info_t`
