@@ -99,6 +99,17 @@ This page tells readers where each implemented hardware substrate area is docume
 - Boot integration:
   - `core/boot-sequence.md`
 
+## Syscall Transport
+
+- Common transport contract:
+  - `core/syscall-transport.md`
+  - `core/api-reference.md`
+  - `core/data-structures.md`
+- Architecture hooks:
+  - `x86_64/api-reference.md`
+  - `arm64/api-reference.md`
+  - `riscv64/api-reference.md`
+
 ## Operational Configuration and Diagnostics
 
 - Config and flags:
