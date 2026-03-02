@@ -1,0 +1,47 @@
+# Base Platform Specifications
+
+This directory defines the target hardware substrate for Monolith as a reusable kernel base, not a full OS.
+
+Architectures in scope:
+- `x86_64`
+- `arm64`
+- `riscv64`
+
+## Design Objectives
+
+1. Freeze stable kernel-facing interfaces.
+2. Keep architecture-specific code behind strict backend boundaries.
+3. Reach feature parity at the substrate layer before OS policy work.
+4. Ensure each layer has explicit init order and acceptance tests.
+
+## Ordered Execution Plan
+
+1. [000 Foundation and Rules](000-foundation.md)
+2. [010 Stable Core Interfaces and Contracts](010-core-interfaces.md)
+3. [020 Status, Assertions, and Panic Policy](020-status-panic-policy.md)
+4. [030 Configuration and Feature Flag Model](030-config-feature-flags.md)
+5. [040 Architecture CPU Layer (`arch_cpu`)](040-arch-cpu.md)
+6. [050 Exception and Interrupt Framework](050-exception-interrupt-framework.md)
+7. [060 Interrupt Controller Drivers](060-interrupt-controllers.md)
+8. [070 Time System: Clocksource + Clockevent](070-time-system.md)
+9. [080 MMU Mapping API](080-mmu-mapping-api.md)
+10. [090 CPU-Local Data and Per-CPU Runtime](090-per-cpu.md)
+11. [100 SMP Bootstrap Skeleton](100-smp-bootstrap.md)
+12. [110 Unified Device Discovery (ACPI/DT)](110-device-discovery.md)
+13. [120 Device Model Baseline](120-device-model.md)
+14. [130 Syscall ABI Skeleton](130-syscall-abi.md)
+15. [140 Scheduler Scaffolding](140-scheduler-scaffolding.md)
+16. [150 VFS Contract (Minimal)](150-vfs-contract.md)
+17. [160 Build/Test and Bring-up Discipline](160-build-test-discipline.md)
+18. [Architecture Roadmap and Parity Matrix](170-roadmap-by-arch.md)
+19. [OS Layer Next Steps](200-os-layer-next-steps.md)
+
+## Current State vs Target
+
+Current code already has:
+- `boot_info_t` handoff
+- status model (`status_t`)
+- early memory init + page allocator + kmalloc
+- interrupt dispatch and timer skeleton
+
+These specs define what must be added/refined to make this a durable starting platform for multiple OS designs.
