@@ -82,6 +82,15 @@ This page tells readers where each implemented hardware substrate area is docume
 - Architecture divergence and source availability:
   - `core/architecture-divergence.md`
 
+## Device Model
+
+- Common model and API:
+  - `core/device-model.md`
+  - `core/api-reference.md`
+  - `core/data-structures.md`
+- Boot integration:
+  - `core/boot-sequence.md`
+
 ## Operational Configuration and Diagnostics
 
 - Config and flags:

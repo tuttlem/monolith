@@ -1,6 +1,7 @@
 #include "kernel.h"
 #include "arch_cpu.h"
 #include "config.h"
+#include "device_model.h"
 #include "diag/boot_info.h"
 #include "hw_desc.h"
 #include "interrupts.h"
@@ -63,9 +64,13 @@ void kmain(const boot_info_t *boot_info) {
   status_t heap_status;
   status_t percpu_status;
   status_t discovery_status;
+  status_t device_status;
+  status_t driver_reg_status;
   status_t smp_status;
   status_t irq_status;
   status_t timer_status;
+  status_t console_status;
+  const hw_desc_t *hw;
 
   arch_puts("HELLO FROM CORE KERNEL (" CORE_ARCH_NAME ") We good!\n");
   if (boot_info == (const boot_info_t *)0) {
@@ -82,8 +87,14 @@ void kmain(const boot_info_t *boot_info) {
   mem_status = arch_mm_early_init(mutable_boot_info);
   page_status = page_alloc_init(mutable_boot_info);
   heap_status = kmalloc_init(mutable_boot_info);
-  irq_status = interrupts_init(boot_info);
-  timer_status = timer_init(boot_info);
+  driver_registry_reset();
+  driver_set_boot_info(boot_info);
+  driver_reg_status = device_model_register_builtin_drivers();
+  hw = hw_desc_get();
+  device_status = driver_probe_all(hw);
+  irq_status = driver_class_last_status("irqc");
+  timer_status = driver_class_last_status("timer");
+  console_status = driver_class_last_status("console");
   kprintf("time: now_ns=%llu ticks=%llu hz=%llu\n", time_now_ns(), time_ticks(), time_hz());
 
   if (!status_is_ok(cpu_status) && cpu_status != STATUS_DEFERRED) {
@@ -101,6 +112,12 @@ void kmain(const boot_info_t *boot_info) {
   if (!status_is_ok(smp_status) && smp_status != STATUS_DEFERRED) {
     kprintf("smp_init: %s (%d)\n", status_str(smp_status), smp_status);
   }
+  if (!status_is_ok(driver_reg_status) && driver_reg_status != STATUS_DEFERRED) {
+    kprintf("device_model_register_builtin_drivers: %s (%d)\n", status_str(driver_reg_status), driver_reg_status);
+  }
+  if (!status_is_ok(device_status) && device_status != STATUS_DEFERRED) {
+    kprintf("driver_probe_all: %s (%d)\n", status_str(device_status), device_status);
+  }
   if (!status_is_ok(page_status) && page_status != STATUS_DEFERRED) {
     kprintf("page_alloc_init: %s (%d)\n", status_str(page_status), page_status);
   }
@@ -112,6 +129,9 @@ void kmain(const boot_info_t *boot_info) {
   }
   if (!status_is_ok(timer_status) && timer_status != STATUS_DEFERRED) {
     kprintf("timer_init: %s (%d)\n", status_str(timer_status), timer_status);
+  }
+  if (!status_is_ok(console_status) && console_status != STATUS_DEFERRED) {
+    kprintf("console_init: %s (%d)\n", status_str(console_status), console_status);
   }
 
 #if MONOLITH_TIMER_SELFTEST
@@ -179,7 +199,6 @@ void kmain(const boot_info_t *boot_info) {
   kprintf("Starting Monolith (%s) . . . \n", boot_info_arch_name(boot_info->arch_id));
   kprintf("smp: possible=%llu online=%llu\n", smp_cpu_count_possible(), smp_cpu_count_online());
   {
-    const hw_desc_t *hw = hw_desc_get();
     if (hw != (const hw_desc_t *)0) {
       kprintf("hw: source=0x%llx cpus=%llu irqc=%llu timers=%llu mmio=%llu uarts=%llu\n", hw->source_mask,
               hw->cpu_count, hw->irq_controller_count, hw->timer_count, hw->mmio_region_count, hw->uart_count);

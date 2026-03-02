@@ -32,8 +32,8 @@ Current expected order in `kmain`:
 2. `percpu_init_boot_cpu`
 3. `arch_mm_early_init`
 4. allocators (`page_alloc_init`, `kmalloc_init`)
-5. `interrupts_init`
-6. `timer_init`
+5. device model registration/probe (`driver_registry_reset`, `device_model_register_builtin_drivers`, `driver_probe_all`)
+6. IRQ/timer come through device-model classes (`irqc`, `timer`)
 
 ## Design Constraints for Interface Changes
 

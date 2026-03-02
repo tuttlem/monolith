@@ -67,6 +67,15 @@
 - `const hw_desc_t *hw_desc_get(void)`
 - `BOOT_U64 hw_desc_cpu_count_hint(void)`
 
+## Device Model
+
+- `status_t driver_set_boot_info(const boot_info_t *boot_info)`
+- `void driver_registry_reset(void)`
+- `status_t driver_register(const driver_t *drv)`
+- `status_t driver_probe_all(const hw_desc_t *hw)`
+- `status_t driver_class_last_status(const char *class_name)`
+- `status_t device_model_register_builtin_drivers(void)`
+
 ## Interrupts
 
 - `status_t arch_irq_init(const boot_info_t *boot_info)`

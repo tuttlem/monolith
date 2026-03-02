@@ -18,8 +18,14 @@ Initialization order is fixed and intentional:
 5. `arch_mm_early_init(boot_info_mut)` (wrapper over `arch_memory_init`)
 6. `page_alloc_init(boot_info_mut)`
 7. `kmalloc_init(boot_info_mut)`
-8. `interrupts_init(boot_info)`
-9. `timer_init(boot_info)`
+8. `driver_registry_reset()`
+9. `driver_set_boot_info(boot_info)`
+10. `device_model_register_builtin_drivers()`
+11. `driver_probe_all(hw_desc_get())` in class order:
+    - `irqc` (calls IRQ backend init)
+    - `timer` (calls timer backend init)
+    - `console`
+    - `early`
 
 Then optional self-tests/diagnostics run (macro-controlled), then the kernel idles in `arch_halt()` loop.
 
@@ -32,8 +38,9 @@ Then optional self-tests/diagnostics run (macro-controlled), then the kernel idl
 - `arch_mm_early_init` may change page table root and records final VM state in `boot_info`.
 - `page_alloc_init` depends on usable memory regions in `boot_info.memory_regions`.
 - `kmalloc_init` depends on page allocator availability.
-- `interrupts_init` sets the CPU interrupt backend and handler table; dispatch updates per-CPU IRQ nesting.
-- `timer_init` registers a timer IRQ handler and enables interrupts when successful; timer IRQ updates per-CPU local tick count.
+- Device model setup provides deterministic static-driver registration before probing.
+- `irqc` class init sets the CPU interrupt backend and handler table; dispatch updates per-CPU IRQ nesting.
+- `timer` class init registers a timer IRQ handler and enables interrupts when successful; timer IRQ updates per-CPU local tick count.
 
 ## Deferred vs Hard Failure
 
