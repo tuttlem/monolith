@@ -1,4 +1,5 @@
 #include "arch_interrupts.h"
+#include "arch/x86_64/pic.h"
 #include "interrupts.h"
 #include "panic.h"
 
@@ -222,7 +223,7 @@ status_t arch_interrupts_init(const boot_info_t *boot_info) {
   g_idtr.base = (BOOT_U64)(BOOT_UPTR)&g_idt[0];
   lidt(&g_idtr);
   __asm__ volatile("cli" : : : "memory");
-  return STATUS_OK;
+  return x86_64_pic_controller_init(boot_info);
 }
 
 void arch_interrupts_enable(void) { __asm__ volatile("sti" : : : "memory"); }

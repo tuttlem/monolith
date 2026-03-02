@@ -1,6 +1,7 @@
 #include "interrupts.h"
 #include "arch_irq.h"
 #include "config.h"
+#include "irq_controller.h"
 #include "panic.h"
 
 static const char g_irq_owner_anon[] = "anonymous";
@@ -228,6 +229,7 @@ status_t interrupts_init(const boot_info_t *boot_info) {
 
   g_interrupts.initialized = 0;
   g_interrupts.arch_id = boot_info->arch_id;
+  irq_controller_reset();
   for (i = 0; i < INTERRUPT_MAX_VECTORS; ++i) {
     g_interrupts.slots[i].fn = (interrupt_handler_t)0;
     g_interrupts.slots[i].ctx = (void *)0;
@@ -238,6 +240,10 @@ status_t interrupts_init(const boot_info_t *boot_info) {
   st = arch_irq_init(boot_info);
   if (st != STATUS_OK && st != STATUS_DEFERRED) {
     return st;
+  }
+
+  if (irq_controller_name() != (const char *)0) {
+    kprintf("irq-controller: %s\n", irq_controller_name());
   }
 
   g_interrupts.initialized = 1;
