@@ -43,7 +43,7 @@ This page highlights where execution paths diverge between `x86_64`, `arm64`, an
 - Per-arch trap entry hook is active:
   - `x86_64`: `int $0x80` mapped to vector `0x80`
   - `arm64`: `svc #0` routed from synchronous exception class (`ESR_EL1.EC=0x15`) to vector `64`
-  - `riscv64`: `ecall` routed from exception causes (`8/9/11`) to vector `64`
+  - `riscv64`: SSIP trap route to vector `64` with synthetic fallback dispatch in early boot
 - Result:
   - consistent syscall numbering/dispatch contract
   - consistent trap-based invocation path across all architectures

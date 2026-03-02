@@ -47,7 +47,7 @@ Architecture hook:
 - Architecture trap entry glue is active on all supported architectures:
   - `x86_64`: `int $0x80` -> vector `0x80`
   - `arm64`: `svc #0` -> synthetic syscall vector `64` from synchronous trap decode
-  - `riscv64`: `ecall` -> synthetic syscall vector `64` from exception-cause decode
+  - `riscv64`: SSIP-triggered trap path to vector `64` with deterministic early-boot fallback dispatch
 - `syscall_invoke_kernel` and `syscall_invoke_trap` both dispatch through the same registered handlers.
 
 ## ABI Info Encoding

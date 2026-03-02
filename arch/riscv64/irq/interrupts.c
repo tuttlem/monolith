@@ -27,17 +27,22 @@ BOOT_U64 riscv64_trap_c(BOOT_U64 scause, BOOT_U64 sepc, BOOT_U64 stval, BOOT_U64
   BOOT_U64 is_interrupt = (scause >> 63) & 1ULL;
   BOOT_U64 cause_code = scause & ((1ULL << 63) - 1ULL);
   BOOT_U64 vector;
+  BOOT_U64 next_sepc = sepc;
+  int syscall_trap = 0;
 
   if (is_interrupt != 0ULL) {
     if (cause_code == 1ULL && syscall_trap_mailbox_active()) {
       __asm__ volatile("csrci sip, 2" : : : "memory");
+      (void)syscall_trap_mailbox_consume();
       vector = 64ULL;
+      syscall_trap = 1;
     } else {
       vector = 32ULL + cause_code;
     }
-  } else if (cause_code == 3ULL && syscall_trap_mailbox_active()) {
-    vector = 64ULL;
-  } else if (cause_code == 8ULL || cause_code == 9ULL || cause_code == 11ULL) {
+  } else if (cause_code == 2ULL && syscall_trap_mailbox_active()) {
+    (void)syscall_trap_mailbox_consume();
+    next_sepc = sepc + 4ULL;
+    syscall_trap = 1;
     vector = 64ULL;
   } else {
     vector = cause_code;
@@ -50,15 +55,12 @@ BOOT_U64 riscv64_trap_c(BOOT_U64 scause, BOOT_U64 sepc, BOOT_U64 stval, BOOT_U64
   frame.ip = sepc;
   frame.sp = sp_at_trap;
   frame.flags = sstatus;
-  interrupts_dispatch(&frame);
+  if (!syscall_trap) {
+    interrupts_dispatch(&frame);
+  }
 
-  /*
-   * ECALL is synchronous and should resume at the next instruction.
-   * If sepc is not advanced, the trap instruction is re-executed forever.
-   */
-  if (is_interrupt == 0ULL &&
-      (cause_code == 3ULL || cause_code == 8ULL || cause_code == 9ULL || cause_code == 11ULL)) {
-    return sepc + 4ULL;
+  if (syscall_trap) {
+    return next_sepc;
   }
 
   return sepc;

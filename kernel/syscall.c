@@ -32,18 +32,23 @@ static struct {
   syscall_response_t resp;
 } g_syscall_trap_mailbox;
 
-static void syscall_trap_handler(const interrupt_frame_t *frame, void *ctx) {
+status_t syscall_trap_mailbox_consume(void) {
   status_t st;
-  (void)frame;
-  (void)ctx;
   if (g_syscall_trap_mailbox.active == 0ULL) {
-    return;
+    return STATUS_DEFERRED;
   }
   st = syscall_dispatch(&g_syscall_trap_mailbox.req, &g_syscall_trap_mailbox.resp);
   if (st != STATUS_OK && g_syscall_trap_mailbox.resp.status == STATUS_OK) {
     g_syscall_trap_mailbox.resp.status = st;
   }
   g_syscall_trap_mailbox.active = 0ULL;
+  return st;
+}
+
+static void syscall_trap_handler(const interrupt_frame_t *frame, void *ctx) {
+  (void)frame;
+  (void)ctx;
+  (void)syscall_trap_mailbox_consume();
 }
 
 static status_t syscall_handle_abi_info(const syscall_request_t *req, syscall_response_t *resp) {

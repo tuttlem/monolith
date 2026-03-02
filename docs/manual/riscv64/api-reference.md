@@ -129,4 +129,4 @@ Divergence notes:
 
 ### `status_t arch_syscall_trigger(void)`
 - File: `arch/riscv64/syscall/syscall.c`
-- Purpose: execute `ecall`; exception decode routes ECALL causes (`8/9/11`) to vector `64`.
+- Purpose: raise a supervisor software interrupt (`SSIP`) and, if needed, fall back to synthetic vector-64 dispatch so syscall trap invocation completes deterministically during early bring-up.

@@ -46,6 +46,7 @@ const char *syscall_op_name(BOOT_U64 op);
 BOOT_U64 syscall_abi_info_word(void);
 int syscall_trap_entry_ready(void);
 int syscall_trap_mailbox_active(void);
+status_t syscall_trap_mailbox_consume(void);
 void syscall_dump_table(void);
 
 #endif
