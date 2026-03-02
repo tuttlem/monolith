@@ -9,6 +9,7 @@
 #include "interrupts.h"
 #include "kmalloc.h"
 #include "arch_mm.h"
+#include "device_report.h"
 #include "panic.h"
 #include "page_alloc.h"
 #include "pci.h"
@@ -229,6 +230,10 @@ void kmain(const boot_info_t *boot_info) {
     }
   }
   device_bus_dump();
+  device_report_dump_all();
+  device_report_dump_class(DEVICE_CLASS_BLOCK);
+  device_report_dump_class(DEVICE_CLASS_INPUT);
+  device_report_dump_class(DEVICE_CLASS_DISPLAY);
   kprintf("pci: devices=%llu\n", pci_device_count());
   kprintf("usb: hosts=%llu devices=%llu\n", usb_host_count(), usb_device_count());
   kprintf("domains: block=%llu input=%llu display=%llu\n", block_device_count(), input_device_count(),

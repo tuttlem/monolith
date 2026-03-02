@@ -25,13 +25,14 @@ Use this as the reference for boot handoff, memory initialization, MMU mapping, 
 14. [PCI Enumeration](core/pci-enumeration.md)
 15. [USB Enumeration Skeleton](core/usb-enumeration.md)
 16. [Device Domain Baseline](core/device-domains.md)
-17. [Core Boot Sequence](core/boot-sequence.md)
-18. [Boot ABI (`boot_info_t`)](core/boot-info-abi.md)
-19. [Core API Reference](core/api-reference.md)
-20. [Core Data Structures and Enums](core/data-structures.md)
-21. [Architecture Divergence Guide](core/architecture-divergence.md)
-22. [Implementation Coverage](core/implementation-coverage.md)
-23. [API Cheatsheet](core/api-cheatsheet.md)
+17. [Device Reporting and Introspection](core/device-reporting.md)
+18. [Core Boot Sequence](core/boot-sequence.md)
+19. [Boot ABI (`boot_info_t`)](core/boot-info-abi.md)
+20. [Core API Reference](core/api-reference.md)
+21. [Core Data Structures and Enums](core/data-structures.md)
+22. [Architecture Divergence Guide](core/architecture-divergence.md)
+23. [Implementation Coverage](core/implementation-coverage.md)
+24. [API Cheatsheet](core/api-cheatsheet.md)
 
 ## Architecture-Specific Manuals
 

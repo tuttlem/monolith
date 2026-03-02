@@ -335,6 +335,18 @@ typedef struct boot_info boot_info_t;
   - `type`: bus type enum.
   - `name`: bus label.
 
+## Device Reporting Types (`device_report.h`)
+
+### `device_report_entry_t`
+- Struct purpose: stable read-only snapshot of core identity/class fields for one device.
+- Members:
+  - `id`, `parent_id`, `bus_id`: graph identity and topology linkage.
+  - `name`: display label.
+  - `class_id`: generic class enum.
+  - `vendor_id`, `device_id`: vendor/device identity values when known.
+  - `class_code`, `subclass_code`, `prog_if`: bus-specific class tuple values.
+  - `resource_count`: number of resources attached to source device.
+
 ## Hardware Discovery Structures (`hw_desc.h`)
 
 ### `hw_cpu_desc_t`
