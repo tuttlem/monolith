@@ -1,6 +1,7 @@
 #include "kernel.h"
 #include "arch_cpu.h"
 #include "config.h"
+#include "capability_profile.h"
 #include "device_bus.h"
 #include "device_domains.h"
 #include "device_model.h"
@@ -82,6 +83,7 @@ void kmain(const boot_info_t *boot_info) {
   const hw_desc_t *hw;
 
   arch_puts("HELLO FROM CORE KERNEL (" CORE_ARCH_NAME ") We good!\n");
+  capability_profile_print();
   if (boot_info == (const boot_info_t *)0) {
     arch_puts("boot_info: null\n");
     goto spin;
