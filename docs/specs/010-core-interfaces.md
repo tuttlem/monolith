@@ -62,3 +62,19 @@ Target sequence after boot handoff:
 - all generic kernel modules compile without architecture-specific includes
 - all architecture backends compile against same header signatures
 - documented contract for every public function
+
+## Implementation Notes (Current Repository)
+
+`010-core-interfaces` is implemented with a compatibility-preserving freeze:
+- `kernel/include/arch_cpu.h` (new stable CPU interface + version constants)
+- `kernel/include/arch_irq.h` (new stable IRQ interface + version constants)
+- `kernel/include/arch_mm.h` (new stable MM early-init interface + version constants)
+- `kernel/include/arch_timer.h` (version constants added)
+- `kernel/include/arch_interrupts.h` retained as compatibility header
+
+Generic kernel callsites now target stable names:
+- `kmain` uses `arch_cpu_early_init` and `arch_mm_early_init`
+- interrupt core uses `arch_irq_*`
+
+Backend files keep existing `arch_interrupts_*` and `arch_memory_init` symbols for now.
+This avoids churn and preserves behavior while freezing generic interface contracts.

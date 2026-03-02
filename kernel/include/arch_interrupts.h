@@ -1,10 +1,8 @@
 #ifndef KERNEL_ARCH_INTERRUPTS_H
 #define KERNEL_ARCH_INTERRUPTS_H
 
-#include "kernel.h"
+#include "arch_irq.h"
 
-status_t arch_interrupts_init(const boot_info_t *boot_info);
-void arch_interrupts_enable(void);
-void arch_interrupts_disable(void);
+/* Compatibility header: prefer including arch_irq.h in new code. */
 
 #endif

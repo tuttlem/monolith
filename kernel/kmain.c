@@ -1,8 +1,9 @@
 #include "kernel.h"
+#include "arch_cpu.h"
 #include "diag/boot_info.h"
 #include "interrupts.h"
 #include "kmalloc.h"
-#include "memory_init.h"
+#include "arch_mm.h"
 #include "page_alloc.h"
 #include "timer.h"
 
@@ -75,6 +76,7 @@ static int timer_progress_selftest(BOOT_U64 spins) {
 void kmain(const boot_info_t *boot_info) {
   boot_info_t *mutable_boot_info;
   status_t mem_status;
+  status_t cpu_status;
   status_t page_status;
   status_t heap_status;
   status_t irq_status;
@@ -87,14 +89,18 @@ void kmain(const boot_info_t *boot_info) {
   }
 
   mutable_boot_info = (boot_info_t *)boot_info;
-  mem_status = arch_memory_init(mutable_boot_info);
+  cpu_status = arch_cpu_early_init(boot_info);
+  mem_status = arch_mm_early_init(mutable_boot_info);
   page_status = page_alloc_init(mutable_boot_info);
   heap_status = kmalloc_init(mutable_boot_info);
   irq_status = interrupts_init(boot_info);
   timer_status = timer_init(boot_info);
 
+  if (!status_is_ok(cpu_status) && cpu_status != STATUS_DEFERRED) {
+    kprintf("arch_cpu_early_init: %s (%d)\n", status_str(cpu_status), cpu_status);
+  }
   if (!status_is_ok(mem_status) && mem_status != STATUS_DEFERRED) {
-    kprintf("arch_memory_init: %s (%d)\n", status_str(mem_status), mem_status);
+    kprintf("arch_mm_early_init: %s (%d)\n", status_str(mem_status), mem_status);
   }
   if (!status_is_ok(page_status) && page_status != STATUS_DEFERRED) {
     kprintf("page_alloc_init: %s (%d)\n", status_str(page_status), page_status);
