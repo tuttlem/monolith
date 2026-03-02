@@ -49,6 +49,12 @@ This page highlights where execution paths diverge between `x86_64`, `arm64`, an
 - `arm64`: deferred in current phase.
 - `riscv64`: deferred in current phase.
 
+## USB Enumeration Backend
+
+- All architectures currently use the same skeleton path.
+- USB hosts are derived from enumerated PCI USB controller class codes.
+- Full controller operation and class drivers are deferred.
+
 ## SMP Bootstrap Behavior
 
 - `x86_64`: UEFI MP Services enumeration and AP startup.
