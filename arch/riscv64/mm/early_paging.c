@@ -15,7 +15,7 @@
 #define RISCV64_GIB (1024ULL * 1024ULL * 1024ULL)
 #define RISCV64_IDENTITY_GIB 4ULL
 
-static BOOT_U64 g_root[512] __attribute__((aligned(4096)));
+BOOT_U64 g_root[512] __attribute__((aligned(4096)));
 
 static BOOT_U64 read_satp(void) {
   BOOT_U64 v;

@@ -18,9 +18,9 @@
 #define ARM64_TTBR_ASID_MASK 0xFFFF000000000000ULL
 #define ARM64_TTBR_BADDR_MASK 0x0000FFFFFFFFF000ULL
 
-static BOOT_U64 g_l0[512] __attribute__((aligned(4096)));
-static BOOT_U64 g_l1[512] __attribute__((aligned(4096)));
-static BOOT_U64 g_l2[ARM64_IDENTITY_GIB][512] __attribute__((aligned(4096)));
+BOOT_U64 g_l0[512] __attribute__((aligned(4096)));
+BOOT_U64 g_l1[512] __attribute__((aligned(4096)));
+BOOT_U64 g_l2[ARM64_IDENTITY_GIB][512] __attribute__((aligned(4096)));
 
 static BOOT_U64 read_ttbr0_el1(void) {
   BOOT_U64 v;
