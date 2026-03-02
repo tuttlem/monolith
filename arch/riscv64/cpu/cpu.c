@@ -38,6 +38,17 @@ BOOT_U64 arch_cycle_counter(void) {
   return v;
 }
 
+status_t arch_cpu_set_local_base(BOOT_U64 base) {
+  __asm__ volatile("mv tp, %0" : : "r"(base) : "memory");
+  return STATUS_OK;
+}
+
+BOOT_U64 arch_cpu_get_local_base(void) {
+  BOOT_U64 base = 0;
+  __asm__ volatile("mv %0, tp" : "=r"(base));
+  return base;
+}
+
 void arch_barrier_full(void) { __asm__ volatile("fence rw, rw" : : : "memory"); }
 
 void arch_barrier_read(void) { __asm__ volatile("fence r, r" : : : "memory"); }

@@ -41,6 +41,17 @@ BOOT_U64 arch_cycle_counter(void) {
   return v;
 }
 
+status_t arch_cpu_set_local_base(BOOT_U64 base) {
+  __asm__ volatile("msr tpidr_el1, %0" : : "r"(base) : "memory");
+  return STATUS_OK;
+}
+
+BOOT_U64 arch_cpu_get_local_base(void) {
+  BOOT_U64 base = 0;
+  __asm__ volatile("mrs %0, tpidr_el1" : "=r"(base));
+  return base;
+}
+
 void arch_barrier_full(void) { __asm__ volatile("dsb sy" : : : "memory"); }
 
 void arch_barrier_read(void) { __asm__ volatile("dmb ishld" : : : "memory"); }
