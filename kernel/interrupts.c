@@ -1,5 +1,5 @@
 #include "interrupts.h"
-#include "arch_interrupts.h"
+#include "arch_irq.h"
 
 #ifndef MONOLITH_IRQ_LOG_UNHANDLED
 #define MONOLITH_IRQ_LOG_UNHANDLED 1
@@ -87,7 +87,7 @@ status_t interrupts_init(const boot_info_t *boot_info) {
     g_interrupts.unhandled_once[i] = 0ULL;
   }
 
-  st = arch_interrupts_init(boot_info);
+  st = arch_irq_init(boot_info);
   if (st != STATUS_OK && st != STATUS_DEFERRED) {
     return st;
   }
@@ -182,12 +182,12 @@ void interrupts_enable(void) {
   if (g_interrupts.initialized == 0) {
     return;
   }
-  arch_interrupts_enable();
+  arch_irq_enable();
 }
 
 void interrupts_disable(void) {
   if (g_interrupts.initialized == 0) {
     return;
   }
-  arch_interrupts_disable();
+  arch_irq_disable();
 }
