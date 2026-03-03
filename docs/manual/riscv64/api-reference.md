@@ -130,3 +130,13 @@ Divergence notes:
 ### `status_t arch_syscall_trigger(void)`
 - File: `arch/riscv64/syscall/syscall.c`
 - Purpose: raise a supervisor software interrupt (`SSIP`) and, if needed, fall back to synthetic vector-64 dispatch so syscall trap invocation completes deterministically during early bring-up.
+
+## User-Mode Backend Hook
+
+### `status_t arch_user_mode_set_kernel_stack(void *kernel_stack_top)`
+### `status_t arch_user_mode_prepare_frame(arch_user_frame_t *frame)`
+### `__attribute__((noreturn)) void arch_user_mode_enter(arch_user_entry_t entry, void *arg, BOOT_U64 user_sp)`
+- File: `arch/riscv64/user/user_mode.c`
+- Purpose: riscv64 backend implementation point for the architecture-neutral user-mode contract.
+- Current status:
+  - compile-safe stub path (`STATUS_NOT_SUPPORTED`) until full S-mode->U-mode transition backend is enabled.

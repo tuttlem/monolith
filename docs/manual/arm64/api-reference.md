@@ -136,3 +136,13 @@ Function details:
 ### `status_t arch_syscall_trigger(void)`
 - File: `arch/arm64/syscall/syscall.c`
 - Purpose: execute `svc #0`; arm64 sync-trap decode routes SVC to vector `64`.
+
+## User-Mode Backend Hook
+
+### `status_t arch_user_mode_set_kernel_stack(void *kernel_stack_top)`
+### `status_t arch_user_mode_prepare_frame(arch_user_frame_t *frame)`
+### `__attribute__((noreturn)) void arch_user_mode_enter(arch_user_entry_t entry, void *arg, BOOT_U64 user_sp)`
+- File: `arch/arm64/user/user_mode.c`
+- Purpose: arm64 backend implementation point for the architecture-neutral user-mode contract.
+- Current status:
+  - compile-safe stub path (`STATUS_NOT_SUPPORTED`) until full EL1->EL0 transition backend is enabled.

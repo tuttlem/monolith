@@ -727,6 +727,33 @@ if (d != 0) {
 ### `void syscall_dump_table(void)`
 - Purpose: print active syscall handler table for diagnostics.
 
+## User-Mode Entry Contract (`arch_user_mode.h`)
+
+### `status_t arch_user_mode_set_kernel_stack(void *kernel_stack_top)`
+- Purpose: configure architecture return-stack state used when traps/syscalls return from user mode.
+- Parameters:
+  - `kernel_stack_top`: top-of-stack pointer for kernel return path.
+- Returns:
+  - `STATUS_OK` when configured.
+  - `STATUS_NOT_SUPPORTED` when backend is not yet wired.
+  - `STATUS_INVALID_ARG` when arguments are invalid for backend policy.
+
+### `status_t arch_user_mode_prepare_frame(arch_user_frame_t *frame)`
+- Purpose: optional frame-preparation hook for architectures that require explicit launch-frame shaping.
+- Parameters:
+  - `frame`: in/out launch frame.
+- Returns:
+  - `STATUS_OK` when frame updated.
+  - `STATUS_NOT_SUPPORTED` when backend does not use frame path.
+
+### `__attribute__((noreturn)) void arch_user_mode_enter(arch_user_entry_t entry, void *arg, BOOT_U64 user_sp)`
+- Purpose: architecture-defined transition into user context.
+- Parameters:
+  - `entry`: user entry function/program counter.
+  - `arg`: entry argument in architecture ABI slot `arg0`.
+  - `user_sp`: initial user stack pointer.
+- Returns: never returns.
+
 ## Network Domain (`net.h`)
 
 ### `status_t net_enumerate(const boot_info_t *boot_info)`
