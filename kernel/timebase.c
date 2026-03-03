@@ -5,6 +5,7 @@
 #include "interrupts.h"
 #include "irq_controller.h"
 #include "percpu.h"
+#include "trace.h"
 
 typedef struct {
   BOOT_U64 initialized;
@@ -82,6 +83,9 @@ static void time_irq_handler(const interrupt_frame_t *frame, void *ctx) {
     cpu->local_tick_count += 1ULL;
   }
   g_time.ticks += 1ULL;
+  if (g_time.hz != 0ULL && (g_time.ticks % g_time.hz) == 0ULL) {
+    trace_emit(TRACE_CLASS_TIMER, g_time.ticks, g_time.hz, frame->vector);
+  }
   if (g_time.clockevent.ack != (void (*)(BOOT_U64))0) {
     g_time.clockevent.ack(frame->vector);
   }

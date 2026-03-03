@@ -249,6 +249,20 @@ interrupts_register_handler_owned(32, tick_handler, 0, "timer");
 ### `BOOT_U64 irq_domain_alloc_count(void)`
 - Purpose: return number of active IRQ allocations in the generic domain table.
 
+## Observability (`trace.h`)
+
+### `status_t trace_init(const boot_info_t *boot_info)`
+- Purpose: initialize trace ring state for early boot diagnostics.
+
+### `void trace_emit(trace_class_t cls, BOOT_U64 a0, BOOT_U64 a1, BOOT_U64 a2)`
+- Purpose: append one timestamped trace event to ring buffer.
+
+### `status_t trace_dump(trace_sink_t sink)`
+- Purpose: dump buffered events to a selected sink callback.
+
+### `void trace_sink_kprintf(const trace_record_t *record)`
+- Purpose: default sink that prints formatted events with `kprintf`.
+
 ## Scheduler Scaffolding (`scheduler.h`)
 
 ### `status_t sched_init(void)`

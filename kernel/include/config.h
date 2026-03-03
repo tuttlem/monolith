@@ -65,6 +65,10 @@
 #define MONOLITH_FEATURE_DISCOVERY_DTB 1
 #endif
 
+#ifndef MONOLITH_FEATURE_TRACE
+#define MONOLITH_FEATURE_TRACE 1
+#endif
+
 /* Capability profiles and per-domain feature gates */
 #define MONOLITH_CAP_PROFILE_MINIMAL 1
 #define MONOLITH_CAP_PROFILE_HEADLESS 2
