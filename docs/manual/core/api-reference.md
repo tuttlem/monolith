@@ -414,6 +414,17 @@ mm_map(0xffff800000200000ULL, 0x00200000ULL, mm_page_size(), MMU_PROT_READ | MMU
 ### `const char *personality_active_name(void)`
 - Purpose: query currently active personality identity.
 
+## Driver Helpers (`driver_queue.h`, `driver_irq_helper.h`, `driver_retry.h`)
+
+### `driver_ring_init`, `driver_ring_push`, `driver_ring_pop`, `driver_ring_count`
+- Purpose: queue/ring helpers for descriptor-style driver paths.
+
+### `driver_irq_complete(const interrupt_frame_t *frame)`
+- Purpose: generic interrupt completion helper using vector-to-IRQ mapping and EOI.
+
+### `driver_retry_begin`, `driver_retry_next`
+- Purpose: bounded retry helper with architecture-friendly relax between attempts.
+
 ### Architecture MM backend entry points
 - `BOOT_U64 arch_mm_page_size(void)`
 - `status_t arch_mm_map_page(mm_virt_addr_t va, mm_phys_addr_t pa, BOOT_U64 prot_flags)`
