@@ -229,15 +229,26 @@ status_t dma_get_constraints(BOOT_U64 device_id, dma_constraints_t *out_constrai
 }
 
 #define IOMMU_MAX_DOMAINS 16U
+#define IOMMU_MAX_MAPS 256U
 
 typedef struct {
   BOOT_U64 active;
   BOOT_U64 passthrough;
 } iommu_domain_state_t;
 
+typedef struct {
+  BOOT_U64 active;
+  iommu_domain_t domain;
+  iova_t iova;
+  phys_addr_t pa;
+  BOOT_U64 len;
+  iommu_perm_t perm;
+} iommu_map_entry_t;
+
 static struct {
   BOOT_U64 initialized;
   iommu_domain_state_t domains[IOMMU_MAX_DOMAINS];
+  iommu_map_entry_t maps[IOMMU_MAX_MAPS];
 } g_iommu;
 
 status_t iommu_init(const boot_info_t *boot_info) {
@@ -250,7 +261,15 @@ status_t iommu_init(const boot_info_t *boot_info) {
     g_iommu.domains[i].active = 0ULL;
     g_iommu.domains[i].passthrough = 1ULL;
   }
-  return STATUS_DEFERRED;
+  for (i = 0; i < IOMMU_MAX_MAPS; ++i) {
+    g_iommu.maps[i].active = 0ULL;
+    g_iommu.maps[i].domain = 0ULL;
+    g_iommu.maps[i].iova = 0ULL;
+    g_iommu.maps[i].pa = 0ULL;
+    g_iommu.maps[i].len = 0ULL;
+    g_iommu.maps[i].perm = 0ULL;
+  }
+  return STATUS_OK;
 }
 
 status_t iommu_domain_create(iommu_domain_t *out_domain) {
@@ -295,29 +314,61 @@ status_t iommu_detach(iommu_domain_t domain, BOOT_U64 device_id) {
 }
 
 status_t iommu_map(iommu_domain_t domain, iova_t iova, phys_addr_t pa, BOOT_U64 len, iommu_perm_t perm) {
-  (void)iova;
-  (void)pa;
-  (void)len;
-  (void)perm;
+  BOOT_U64 i;
   if (!g_iommu.initialized) {
     return STATUS_DEFERRED;
   }
   if (domain >= IOMMU_MAX_DOMAINS || !g_iommu.domains[domain].active) {
     return STATUS_NOT_FOUND;
   }
-  return STATUS_DEFERRED;
+  if (len == 0ULL) {
+    return STATUS_INVALID_ARG;
+  }
+  for (i = 0; i < IOMMU_MAX_MAPS; ++i) {
+    if (g_iommu.maps[i].active != 0ULL && g_iommu.maps[i].domain == domain && g_iommu.maps[i].iova == iova) {
+      g_iommu.maps[i].pa = pa;
+      g_iommu.maps[i].len = len;
+      g_iommu.maps[i].perm = perm;
+      return STATUS_OK;
+    }
+  }
+  for (i = 0; i < IOMMU_MAX_MAPS; ++i) {
+    if (g_iommu.maps[i].active == 0ULL) {
+      g_iommu.maps[i].active = 1ULL;
+      g_iommu.maps[i].domain = domain;
+      g_iommu.maps[i].iova = iova;
+      g_iommu.maps[i].pa = pa;
+      g_iommu.maps[i].len = len;
+      g_iommu.maps[i].perm = perm;
+      return STATUS_OK;
+    }
+  }
+  return STATUS_NO_MEMORY;
 }
 
 status_t iommu_unmap(iommu_domain_t domain, iova_t iova, BOOT_U64 len) {
-  (void)iova;
-  (void)len;
+  BOOT_U64 i;
   if (!g_iommu.initialized) {
     return STATUS_DEFERRED;
   }
   if (domain >= IOMMU_MAX_DOMAINS || !g_iommu.domains[domain].active) {
     return STATUS_NOT_FOUND;
   }
-  return STATUS_DEFERRED;
+  if (len == 0ULL) {
+    return STATUS_INVALID_ARG;
+  }
+  for (i = 0; i < IOMMU_MAX_MAPS; ++i) {
+    if (g_iommu.maps[i].active != 0ULL && g_iommu.maps[i].domain == domain && g_iommu.maps[i].iova == iova) {
+      g_iommu.maps[i].active = 0ULL;
+      g_iommu.maps[i].domain = 0ULL;
+      g_iommu.maps[i].iova = 0ULL;
+      g_iommu.maps[i].pa = 0ULL;
+      g_iommu.maps[i].len = 0ULL;
+      g_iommu.maps[i].perm = 0ULL;
+      return STATUS_OK;
+    }
+  }
+  return STATUS_NOT_FOUND;
 }
 
 status_t iommu_set_passthrough(iommu_domain_t domain, int enabled) {

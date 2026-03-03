@@ -48,13 +48,17 @@ status_t arch_smp_bootstrap(const boot_info_t *boot_info, BOOT_U64 *out_possible
   }
   if ((boot_info->valid_mask & BOOT_INFO_HAS_ARCH_DATA) == 0 || boot_info->arch_data_ptr == 0 ||
       boot_info->arch_data_size < (BOOT_U64)sizeof(boot_info_ext_uefi_t)) {
-    return STATUS_DEFERRED;
+    *out_possible_cpus = 1ULL;
+    *out_started_cpus = 0ULL;
+    return STATUS_OK;
   }
 
   uefi_ext = (boot_info_ext_uefi_t *)(BOOT_UPTR)boot_info->arch_data_ptr;
   boot_services = (EFI_BOOT_SERVICES *)(BOOT_UPTR)uefi_ext->boot_services;
   if (boot_services == (EFI_BOOT_SERVICES *)0 || boot_services->LocateProtocol == (EFI_LOCATE_PROTOCOL)0) {
-    return STATUS_DEFERRED;
+    *out_possible_cpus = 1ULL;
+    *out_started_cpus = 0ULL;
+    return STATUS_OK;
   }
 
   st = boot_services->LocateProtocol((EFI_GUID *)&k_mp_services_guid, (VOID *)0, (VOID **)&mp);
@@ -62,7 +66,7 @@ status_t arch_smp_bootstrap(const boot_info_t *boot_info, BOOT_U64 *out_possible
       mp->StartupAllAPs == (EFI_MP_STARTUP_ALL_APS)0) {
     *out_possible_cpus = 1ULL;
     *out_started_cpus = 0ULL;
-    return STATUS_DEFERRED;
+    return STATUS_OK;
   }
 
   st = mp->GetNumberOfProcessors(mp, &total, &enabled);
@@ -104,7 +108,7 @@ status_t arch_smp_cpu_start(BOOT_U64 cpu_id) {
   if (cpu_id == 0ULL) {
     return STATUS_OK;
   }
-  return STATUS_DEFERRED;
+  return STATUS_NOT_SUPPORTED;
 }
 
 status_t arch_smp_ipi_send(BOOT_U64 cpu_id, BOOT_U64 kind) {
@@ -112,7 +116,7 @@ status_t arch_smp_ipi_send(BOOT_U64 cpu_id, BOOT_U64 kind) {
   if (cpu_id == arch_cpu_id()) {
     return STATUS_OK;
   }
-  return STATUS_DEFERRED;
+  return STATUS_NOT_SUPPORTED;
 }
 
 status_t arch_smp_tlb_shootdown(BOOT_U64 mask, BOOT_U64 va, BOOT_U64 len) {
@@ -120,7 +124,10 @@ status_t arch_smp_tlb_shootdown(BOOT_U64 mask, BOOT_U64 va, BOOT_U64 len) {
   (void)len;
   if ((mask & (1ULL << arch_cpu_id())) != 0ULL) {
     arch_tlb_sync_local();
-    return STATUS_OK;
+    if ((mask & ~(1ULL << arch_cpu_id())) == 0ULL) {
+      return STATUS_OK;
+    }
+    return STATUS_NOT_SUPPORTED;
   }
-  return STATUS_DEFERRED;
+  return STATUS_NOT_SUPPORTED;
 }

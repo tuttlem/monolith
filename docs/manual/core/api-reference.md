@@ -240,7 +240,7 @@ interrupts_register_handler_owned(32, tick_handler, 0, "timer");
 
 ### `status_t irq_alloc_msi(BOOT_U64 device_id, BOOT_U64 nvec, irq_desc_t *out_vec)`
 - Purpose: request MSI/MSI-X vectors through a generic contract.
-- Remarks: currently returns `STATUS_DEFERRED` until controller backends add MSI support.
+- Remarks: returns reserved MSI descriptors immediately; backend-specific message programming remains separate.
 
 ### `status_t irq_configure(const irq_desc_t *irq, irq_cfg_t cfg)`
 ### `status_t irq_set_affinity(const irq_desc_t *irq, cpu_mask_t mask)`
@@ -544,7 +544,7 @@ if (buf != 0) {
   - `out_possible_cpus`: discovered total CPUs.
   - `out_started_cpus`: successfully started AP CPUs.
 - Returns:
-  - `STATUS_OK`, `STATUS_DEFERRED`, or failure.
+  - `STATUS_OK` on baseline completion, or failure.
 
 ### `status_t smp_init(const boot_info_t *boot_info)`
 ### `status_t smp_cpu_start(BOOT_U64 cpu_id)`
@@ -561,7 +561,7 @@ if (buf != 0) {
 ### `status_t ipi_send(BOOT_U64 cpu_id, ipi_kind_t kind)`
 ### `status_t tlb_shootdown(cpu_mask_t mask, virt_addr_t va, BOOT_U64 len)`
 - Purpose: generic SMP cross-CPU signal and translation-shootdown contracts.
-- Remarks: local CPU operations are active now; remote operations return explicit deferred status until full backend support is enabled.
+- Remarks: local CPU operations are active now; remote operations return `STATUS_NOT_SUPPORTED` until full backend support is enabled.
 
 ## Hardware Discovery (`hw_desc.h`)
 
@@ -622,8 +622,7 @@ if (d != 0) {
 - Parameters:
   - `boot_info`: handoff context, used for architecture selection.
 - Returns:
-  - `STATUS_OK` when enumeration backend ran successfully.
-  - `STATUS_DEFERRED` when backend is not implemented on this architecture.
+  - `STATUS_OK` when enumeration pass completes (device count may be zero on architectures without active scanner backend).
 
 ### `BOOT_U64 pci_device_count(void)`
 - Purpose: report number of PCI functions discovered in last enumeration pass.

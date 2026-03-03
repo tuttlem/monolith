@@ -22,4 +22,4 @@ Header: `kernel/include/irq_domain.h`
 ## Notes
 
 - Current implementation provides line-IRQ allocation via `irq_controller_map`.
-- MSI allocation is intentionally `STATUS_DEFERRED` until controller backends are upgraded.
+- MSI allocation now returns descriptor reservations immediately (`flags` includes MSI marker), so higher layers can bind vectors/capabilities without a controller-specific API leak.

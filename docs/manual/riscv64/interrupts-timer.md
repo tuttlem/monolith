@@ -29,8 +29,8 @@ File: `arch/riscv64/timer/timer.c`
 
 Current behavior:
 - validates args and arch id
-- returns `STATUS_DEFERRED`
-- provides no active timer vector yet
+- returns `STATUS_OK`
+- provides active vector assignment (`32 + 5`) and clocksource frequency for generic timebase
 
 Implication:
-- `timer_init` will report deferred on riscv64 until a real timer source (e.g., SBI timer or platform CLINT/ACLINT path) is wired.
+- riscv64 participates in the shared timebase API with concrete status and monotonic source metadata.

@@ -52,10 +52,10 @@ Current backend files:
 Current backend status:
 - x86_64: uses UEFI MP Services protocol when available; attempts AP callback startup path.
 - arm64: uses UEFI MP Services protocol when available; attempts AP callback startup path.
-- riscv64: parses DTB CPU topology for `possible` count and reports deferred startup until SBI HSM path is added.
-- all architectures: local-CPU IPI and local TLB sync paths return `STATUS_OK`; remote operations are explicit `STATUS_DEFERRED` until full controller/HSM startup flow is added.
+- riscv64: parses DTB CPU topology for `possible` count and reports active baseline status with explicit unsupported returns for unimplemented remote start/IPI paths.
+- all architectures: local-CPU IPI and local TLB sync paths return `STATUS_OK`; remote operations return explicit `STATUS_NOT_SUPPORTED` until full controller/HSM startup flow is added.
 
 Status semantics:
 - `STATUS_OK`: backend performed startup flow (or single-CPU platform)
-- `STATUS_DEFERRED`: startup mechanism unavailable on current firmware/platform
+- `STATUS_NOT_SUPPORTED`: operation is defined but remote backend mechanism is not available on current platform path
 - `STATUS_TRY_AGAIN`: startup mechanism present but bootstrap attempt failed

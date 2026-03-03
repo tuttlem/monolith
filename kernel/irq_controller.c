@@ -1,6 +1,8 @@
 #include "irq_controller.h"
 #include "irq_domain.h"
 
+#define IRQ_DESC_FLAG_MSI 0x1ULL
+
 static struct {
   BOOT_U64 registered;
   const char *name;
@@ -149,10 +151,33 @@ status_t irq_alloc_line(BOOT_U64 device_id, BOOT_U64 hwirq, irq_desc_t *out) {
 }
 
 status_t irq_alloc_msi(BOOT_U64 device_id, BOOT_U64 nvec, irq_desc_t *out_vec) {
-  (void)device_id;
-  (void)nvec;
-  (void)out_vec;
-  return STATUS_DEFERRED;
+  BOOT_U64 i;
+
+  if (!g_irq_domain.initialized) {
+    return STATUS_DEFERRED;
+  }
+  if (out_vec == (irq_desc_t *)0 || nvec == 0ULL) {
+    return STATUS_INVALID_ARG;
+  }
+  if (g_irq_domain.alloc_count + nvec > IRQ_DOMAIN_MAX_ALLOCS) {
+    return STATUS_NO_MEMORY;
+  }
+
+  for (i = 0ULL; i < nvec; ++i) {
+    irq_desc_t *slot = &g_irq_domain.allocs[g_irq_domain.alloc_count];
+    slot->global_irq = g_irq_domain.alloc_count;
+    slot->hwirq = 0ULL;
+    slot->vector = 0ULL;
+    slot->flags = IRQ_DESC_FLAG_MSI;
+    slot->owner_device_id = device_id;
+    out_vec[i].global_irq = slot->global_irq;
+    out_vec[i].hwirq = slot->hwirq;
+    out_vec[i].vector = slot->vector;
+    out_vec[i].flags = slot->flags;
+    out_vec[i].owner_device_id = slot->owner_device_id;
+    g_irq_domain.alloc_count += 1ULL;
+  }
+  return STATUS_OK;
 }
 
 status_t irq_configure(const irq_desc_t *irq, irq_cfg_t cfg) {

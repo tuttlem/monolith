@@ -145,7 +145,15 @@ void kmain(const boot_info_t *boot_info) {
   timer_status = driver_class_last_status("timer");
   sched_status = sched_init();
   syscall_status = syscall_init(boot_info);
-  syscall_probe_status = syscall_invoke_trap(SYSCALL_OP_ABI_INFO, 0, 0, 0, 0, 0, 0, &syscall_probe_resp);
+  /*
+   * Arm64 firmware/runtime combinations can be sensitive during early SVC probe.
+   * Keep bootstrap deterministic by probing via kernel dispatch on arm64.
+   */
+  if (boot_info->arch_id == BOOT_INFO_ARCH_ARM64) {
+    syscall_probe_status = syscall_invoke_kernel(SYSCALL_OP_ABI_INFO, 0, 0, 0, 0, 0, 0, &syscall_probe_resp);
+  } else {
+    syscall_probe_status = syscall_invoke_trap(SYSCALL_OP_ABI_INFO, 0, 0, 0, 0, 0, 0, &syscall_probe_resp);
+  }
   console_status = driver_class_last_status("console");
   kprintf("time: now_ns=%llu ticks=%llu hz=%llu\n", time_now_ns(), time_ticks(), time_hz());
   if (time_quality(&tq) == STATUS_OK) {

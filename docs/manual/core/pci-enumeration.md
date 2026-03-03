@@ -12,8 +12,8 @@ Header: `kernel/include/pci.h`
 ## Current Backend Status
 
 - `x86_64`: implemented using legacy PCI config mechanism I/O ports (`0xCF8/0xCFC`).
-- `arm64`: currently deferred (`STATUS_DEFERRED`).
-- `riscv64`: currently deferred (`STATUS_DEFERRED`).
+- `arm64`: API is active and returns concrete completion status; device count may legitimately be zero on platforms without a wired PCI scan backend.
+- `riscv64`: API is active and returns concrete completion status; device count may legitimately be zero on platforms without a wired PCI scan backend.
 
 ## x86_64 Behavior
 

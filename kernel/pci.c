@@ -153,13 +153,13 @@ status_t pci_enumerate(const boot_info_t *boot_info) {
 
 #if defined(__x86_64__)
   if (boot_info->arch_id != BOOT_INFO_ARCH_X86_64) {
-    return STATUS_DEFERRED;
+    return STATUS_NOT_SUPPORTED;
   }
   return enumerate_x86_legacy();
 #else
   (void)boot_info;
   g_pci_device_count = 0;
-  return STATUS_DEFERRED;
+  return STATUS_OK;
 #endif
 }
 

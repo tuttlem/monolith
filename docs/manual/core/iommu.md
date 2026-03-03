@@ -22,4 +22,4 @@ Header: `kernel/include/iommu.h`
 
 ## Notes
 
-- Baseline implementation currently reports `STATUS_DEFERRED` for map/unmap while preserving full API compatibility.
+- Baseline implementation now provides active domain/map bookkeeping (`iommu_init`, `iommu_map`, `iommu_unmap` return concrete statuses), which allows OS layers to rely on stable map lifecycle semantics even before hardware-specific remapper programming is added.

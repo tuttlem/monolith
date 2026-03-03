@@ -55,7 +55,7 @@ Divergence notes:
   - `out_started_cpus`: receives number of APs started.
 - Returns:
   - `STATUS_OK` if path runs successfully.
-  - `STATUS_DEFERRED` if MP Services unavailable.
+  - `STATUS_OK` with single-CPU baseline if MP Services unavailable.
   - error status on hard failure.
 - Example:
 ```c

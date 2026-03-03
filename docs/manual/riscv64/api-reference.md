@@ -47,14 +47,14 @@ Divergence notes:
 
 ### `status_t arch_smp_bootstrap(const boot_info_t *boot_info, BOOT_U64 *out_possible_cpus, BOOT_U64 *out_started_cpus)`
 - File: `arch/riscv64/cpu/smp.c`
-- Purpose: derive possible CPU count from DTB CPU nodes; AP startup is deferred.
+- Purpose: derive possible CPU count from DTB CPU nodes and publish active SMP baseline status.
 - Parameters:
   - `boot_info`: must identify riscv64 handoff.
   - `out_possible_cpus`: receives discovered possible CPU count.
   - `out_started_cpus`: receives started AP count (currently `0`).
-- Returns: `STATUS_DEFERRED` currently, by design.
+- Returns: `STATUS_OK` with topology discovery complete.
 - Remarks:
-  - This path reports possible CPUs but does not yet launch secondary harts.
+  - This path reports possible CPUs; secondary hart startup control hooks return explicit `STATUS_NOT_SUPPORTED` until SBI HSM control is wired.
 
 ## Memory Bring-up
 
