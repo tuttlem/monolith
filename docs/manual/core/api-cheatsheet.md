@@ -235,6 +235,14 @@
 - `status_t cpu_context_init(cpu_context_t *ctx, void (*entry)(void *), void *arg, void *stack_top)`
 - `status_t cpu_context_switch(cpu_context_t *from, cpu_context_t *to)`
 
+## Personality Hooks
+
+- `status_t personality_register(const personality_ops_t *ops)`
+- `status_t personality_activate(personality_id_t id)`
+- `status_t personality_exec(const exec_image_t *img, exec_result_t *out)`
+- `personality_id_t personality_active_id(void)`
+- `const char *personality_active_name(void)`
+
 ## Time
 
 - `status_t timer_init(const boot_info_t *boot_info)`
