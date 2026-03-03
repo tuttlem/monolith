@@ -29,6 +29,17 @@ Translate the specs into an execution matrix so progress is measurable per archi
 | network baseline domain | recommended | recommended | recommended | P2 |
 | audio baseline domain | optional | optional | optional | P2 |
 | syscall skeleton | required | required | required | P1 |
+| hardware resource manager | required | required | required | P0 |
+| IRQ domains + MSI abstraction | required | required | required | P0 |
+| DMA mapping API | required | required | required | P0 |
+| IOMMU subsystem | recommended | recommended | recommended | P1 |
+| clock/reset framework | recommended | required | required | P1 |
+| CPU context facilities | required | required | required | P1 |
+| execution personality hooks | required | required | required | P1 |
+| driver helper kits | required | required | required | P1 |
+| observability substrate | required | required | required | P1 |
+| time system completion | required | required | required | P0 |
+| SMP completion | recommended | recommended | recommended | P1 |
 | scheduler scaffolding | required | required | required | P1 |
 | VFS tiny contract | required | required | required | P1 |
 
@@ -55,10 +66,18 @@ Translate the specs into an execution matrix so progress is measurable per archi
 - exits with bus-level enumeration plus profile-based optional domains
 
 ### Wave 6 (P1 kernel scaffolding)
-- specs `130`, `140`, `150`
+- specs `130`, `131` through `139`
+- exits with policy-neutral execution/runtime substrate and reusable driver primitives
+
+### Wave 7 (P0/P1 convergence hardening)
+- specs `141`, `142`, `143`
+- exits with observability + time quality + multicore substrate closure
+
+### Wave 8 (OS-facing scaffolding, optional for substrate milestone)
+- specs `140`, `150`
 - exits with syscall/task/VFS skeletons for OS experimentation
 
-### Wave 7 (discipline lock-in)
+### Wave 9 (discipline lock-in)
 - spec `160`
 - exits with CI quality gates and milestone closure
 
@@ -81,7 +100,7 @@ This order optimizes debugging velocity while enforcing final parity.
 
 ## Base vs OS-Layer Boundary
 
-- Base milestone: focus on `010` through `129`, then `160`.
-- OS-layer milestone: `130`, `140`, `150`.
+- Base milestone: focus on `010` through `139`, then `141`, `142`, `143`, then `160`.
+- OS-layer milestone: `140`, `150` (plus downstream-specific evolution).
 
 See [200-os-layer-next-steps.md](200-os-layer-next-steps.md) for the post-base implementation guide.
