@@ -1,6 +1,8 @@
 #include "smp.h"
 #include "arch_cpu.h"
 #include "arch_smp.h"
+#include "cpu_caps.h"
+#include "cpu_context.h"
 #include "config.h"
 #include "hw_desc.h"
 #include "percpu.h"
@@ -120,4 +122,74 @@ void smp_secondary_entry(BOOT_U64 cpu_id) {
   for (;;) {
     arch_cpu_halt();
   }
+}
+
+status_t cpu_caps_query(cpu_caps_t *out_caps) {
+  if (out_caps == (cpu_caps_t *)0) {
+    return STATUS_INVALID_ARG;
+  }
+
+#if defined(__x86_64__)
+  out_caps->arch_id = BOOT_INFO_ARCH_X86_64;
+  out_caps->has_fp = 1ULL;
+  out_caps->has_simd = 1ULL;
+  out_caps->has_virtualization = 1ULL;
+  out_caps->has_atomic = 1ULL;
+#elif defined(__aarch64__)
+  out_caps->arch_id = BOOT_INFO_ARCH_ARM64;
+  out_caps->has_fp = 1ULL;
+  out_caps->has_simd = 1ULL;
+  out_caps->has_virtualization = 1ULL;
+  out_caps->has_atomic = 1ULL;
+#elif defined(__riscv)
+  out_caps->arch_id = BOOT_INFO_ARCH_RISCV64;
+  out_caps->has_fp = 0ULL;
+  out_caps->has_simd = 0ULL;
+  out_caps->has_virtualization = 0ULL;
+  out_caps->has_atomic = 1ULL;
+#else
+  out_caps->arch_id = BOOT_INFO_ARCH_UNKNOWN;
+  out_caps->has_fp = 0ULL;
+  out_caps->has_simd = 0ULL;
+  out_caps->has_virtualization = 0ULL;
+  out_caps->has_atomic = 0ULL;
+#endif
+
+  out_caps->has_cycle_counter = (arch_cycle_counter() != 0ULL) ? 1ULL : 0ULL;
+  return STATUS_OK;
+}
+
+status_t cpu_context_init(cpu_context_t *ctx, void (*entry)(void *), void *arg, void *stack_top) {
+  if (ctx == (cpu_context_t *)0 || entry == (void (*)(void *))0 || stack_top == (void *)0) {
+    return STATUS_INVALID_ARG;
+  }
+  ctx->sp = (BOOT_U64)(BOOT_UPTR)stack_top;
+  ctx->ip = (BOOT_U64)(BOOT_UPTR)entry;
+  ctx->arg = (BOOT_U64)(BOOT_UPTR)arg;
+  ctx->flags = 0ULL;
+  return STATUS_OK;
+}
+
+status_t cpu_context_switch(cpu_context_t *from, cpu_context_t *to) {
+  cpu_context_t tmp;
+
+  if (from == (cpu_context_t *)0 || to == (cpu_context_t *)0) {
+    return STATUS_INVALID_ARG;
+  }
+
+  tmp.sp = from->sp;
+  tmp.ip = from->ip;
+  tmp.arg = from->arg;
+  tmp.flags = from->flags;
+
+  from->sp = to->sp;
+  from->ip = to->ip;
+  from->arg = to->arg;
+  from->flags = to->flags;
+
+  to->sp = tmp.sp;
+  to->ip = tmp.ip;
+  to->arg = tmp.arg;
+  to->flags = tmp.flags;
+  return STATUS_OK;
 }
