@@ -1,6 +1,7 @@
 #include "syscall.h"
 #include "arch_syscall.h"
 #include "interrupts.h"
+#include "personality.h"
 #include "print.h"
 #include "timebase.h"
 
@@ -25,6 +26,10 @@ static struct {
 
 static const char g_syscall_owner_core[] = "core";
 static const char g_syscall_owner_trap[] = "syscall-trap";
+
+static const personality_ops_t *g_personalities[PERSONALITY_MAX];
+static BOOT_U64 g_personality_count;
+static personality_id_t g_active_personality = (personality_id_t)(~0ULL);
 
 static struct {
   BOOT_U64 active;
@@ -113,10 +118,15 @@ void syscall_reset(void) {
   g_syscall.slot_count = 0;
   g_syscall.trap_vector = 0;
   g_syscall_trap_mailbox.active = 0;
+  g_personality_count = 0;
+  g_active_personality = (personality_id_t)(~0ULL);
   for (i = 0; i < SYSCALL_MAX_HANDLERS; ++i) {
     g_syscall.slots[i].op = 0;
     g_syscall.slots[i].handler = (syscall_handler_t)0;
     g_syscall.slots[i].owner = (const char *)0;
+  }
+  for (i = 0; i < PERSONALITY_MAX; ++i) {
+    g_personalities[i] = (const personality_ops_t *)0;
   }
 }
 
@@ -329,6 +339,75 @@ int syscall_trap_entry_ready(void) {
 }
 
 int syscall_trap_mailbox_active(void) { return g_syscall_trap_mailbox.active != 0ULL; }
+
+status_t personality_register(const personality_ops_t *ops) {
+  BOOT_U64 i;
+
+  if (ops == (const personality_ops_t *)0 || ops->name == (const char *)0) {
+    return STATUS_INVALID_ARG;
+  }
+  for (i = 0; i < g_personality_count; ++i) {
+    if (g_personalities[i] != (const personality_ops_t *)0 && g_personalities[i]->id == ops->id) {
+      return STATUS_BUSY;
+    }
+  }
+  if (g_personality_count >= PERSONALITY_MAX) {
+    return STATUS_NO_MEMORY;
+  }
+  g_personalities[g_personality_count] = ops;
+  g_personality_count += 1ULL;
+  return STATUS_OK;
+}
+
+status_t personality_activate(personality_id_t id) {
+  BOOT_U64 i;
+
+  for (i = 0; i < g_personality_count; ++i) {
+    const personality_ops_t *ops = g_personalities[i];
+    if (ops != (const personality_ops_t *)0 && ops->id == id) {
+      if (ops->on_activate != (status_t (*)(void))0) {
+        status_t st = ops->on_activate();
+        if (st != STATUS_OK) {
+          return st;
+        }
+      }
+      g_active_personality = id;
+      return STATUS_OK;
+    }
+  }
+  return STATUS_NOT_FOUND;
+}
+
+status_t personality_exec(const exec_image_t *img, exec_result_t *out) {
+  BOOT_U64 i;
+
+  if (img == (const exec_image_t *)0 || out == (exec_result_t *)0) {
+    return STATUS_INVALID_ARG;
+  }
+  for (i = 0; i < g_personality_count; ++i) {
+    const personality_ops_t *ops = g_personalities[i];
+    if (ops != (const personality_ops_t *)0 && ops->id == g_active_personality) {
+      if (ops->on_exec == (status_t (*)(const exec_image_t *, exec_result_t *))0) {
+        return STATUS_NOT_SUPPORTED;
+      }
+      return ops->on_exec(img, out);
+    }
+  }
+  return STATUS_DEFERRED;
+}
+
+personality_id_t personality_active_id(void) { return g_active_personality; }
+
+const char *personality_active_name(void) {
+  BOOT_U64 i;
+  for (i = 0; i < g_personality_count; ++i) {
+    const personality_ops_t *ops = g_personalities[i];
+    if (ops != (const personality_ops_t *)0 && ops->id == g_active_personality) {
+      return ops->name;
+    }
+  }
+  return "<none>";
+}
 
 void syscall_dump_table(void) {
   BOOT_U64 i;

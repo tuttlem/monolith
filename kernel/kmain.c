@@ -21,6 +21,7 @@
 #include "page_alloc.h"
 #include "pci.h"
 #include "percpu.h"
+#include "personality.h"
 #include "smp.h"
 #include "syscall.h"
 #include "timebase.h"
@@ -203,6 +204,7 @@ void kmain(const boot_info_t *boot_info) {
   if (!status_is_ok(syscall_status) && syscall_status != STATUS_DEFERRED) {
     kprintf("syscall_init: %s (%d)\n", status_str(syscall_status), syscall_status);
   }
+  kprintf("personality: active=%s id=0x%llx\n", personality_active_name(), personality_active_id());
   if (!status_is_ok(syscall_probe_status) && syscall_probe_status != STATUS_DEFERRED) {
     kprintf("syscall abi probe call: %s (%d)\n", status_str(syscall_probe_status), syscall_probe_status);
   } else if (status_is_ok(syscall_probe_status)) {

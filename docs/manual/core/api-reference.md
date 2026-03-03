@@ -403,6 +403,17 @@ mm_map(0xffff800000200000ULL, 0x00200000ULL, mm_page_size(), MMU_PROT_READ | MMU
 ### `status_t cpu_context_switch(cpu_context_t *from, cpu_context_t *to)`
 - Purpose: context-management hook for scheduler/runtime scaffolding.
 
+## Execution Personality Hooks (`personality.h`)
+
+### `status_t personality_register(const personality_ops_t *ops)`
+### `status_t personality_activate(personality_id_t id)`
+### `status_t personality_exec(const exec_image_t *img, exec_result_t *out)`
+- Purpose: register, activate, and dispatch runtime personality handlers.
+
+### `personality_id_t personality_active_id(void)`
+### `const char *personality_active_name(void)`
+- Purpose: query currently active personality identity.
+
 ### Architecture MM backend entry points
 - `BOOT_U64 arch_mm_page_size(void)`
 - `status_t arch_mm_map_page(mm_virt_addr_t va, mm_phys_addr_t pa, BOOT_U64 prot_flags)`
