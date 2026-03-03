@@ -1,5 +1,7 @@
 #include "arch_smp.h"
+#include "cpu_context.h"
 #include "percpu.h"
+#include "scheduler.h"
 #include "smp.h"
 #include "uefi.h"
 
@@ -85,4 +87,14 @@ status_t arch_smp_bootstrap(const boot_info_t *boot_info, BOOT_U64 *out_possible
   }
 
   return STATUS_OK;
+}
+
+status_t arch_context_switch(task_t *from, task_t *to) {
+  if (from == (task_t *)0 || to == (task_t *)0) {
+    return STATUS_INVALID_ARG;
+  }
+  if (from->arch_ctx == (void *)0 || to->arch_ctx == (void *)0) {
+    return STATUS_INVALID_ARG;
+  }
+  return cpu_context_switch((cpu_context_t *)from->arch_ctx, (cpu_context_t *)to->arch_ctx);
 }

@@ -24,6 +24,7 @@
 #include "personality.h"
 #include "smp.h"
 #include "syscall.h"
+#include "scheduler.h"
 #include "timebase.h"
 #include "timer.h"
 #include "usb.h"
@@ -91,6 +92,7 @@ void kmain(const boot_info_t *boot_info) {
   status_t irq_status;
   status_t irq_domain_status;
   status_t timer_status;
+  status_t sched_status;
   status_t dma_status;
   status_t iommu_status;
   status_t syscall_status;
@@ -133,6 +135,7 @@ void kmain(const boot_info_t *boot_info) {
   irq_status = driver_class_last_status("irqc");
   irq_domain_status = irq_domain_init(boot_info);
   timer_status = driver_class_last_status("timer");
+  sched_status = sched_init();
   syscall_status = syscall_init(boot_info);
   syscall_probe_status = syscall_invoke_trap(SYSCALL_OP_ABI_INFO, 0, 0, 0, 0, 0, 0, &syscall_probe_resp);
   console_status = driver_class_last_status("console");
@@ -200,6 +203,13 @@ void kmain(const boot_info_t *boot_info) {
   }
   if (!status_is_ok(timer_status) && timer_status != STATUS_DEFERRED) {
     kprintf("timer_init: %s (%d)\n", status_str(timer_status), timer_status);
+  }
+  if (!status_is_ok(sched_status) && sched_status != STATUS_DEFERRED) {
+    kprintf("sched_init: %s (%d)\n", status_str(sched_status), sched_status);
+  } else if (status_is_ok(sched_status)) {
+    task_t *cur = sched_current();
+    kprintf("sched: init ok current_tid=%llu\n", cur != (task_t *)0 ? cur->tid : 0ULL);
+    sched_tick();
   }
   if (!status_is_ok(syscall_status) && syscall_status != STATUS_DEFERRED) {
     kprintf("syscall_init: %s (%d)\n", status_str(syscall_status), syscall_status);
