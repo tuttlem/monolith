@@ -14,6 +14,7 @@
 #include "kmalloc.h"
 #include "arch_mm.h"
 #include "device_report.h"
+#include "dma.h"
 #include "net.h"
 #include "panic.h"
 #include "page_alloc.h"
@@ -88,6 +89,7 @@ void kmain(const boot_info_t *boot_info) {
   status_t irq_status;
   status_t irq_domain_status;
   status_t timer_status;
+  status_t dma_status;
   status_t syscall_status;
   status_t syscall_probe_status;
   status_t console_status;
@@ -117,6 +119,7 @@ void kmain(const boot_info_t *boot_info) {
   audio_status = audio_enumerate(boot_info);
   smp_status = smp_init(boot_info);
   mem_status = arch_mm_early_init(mutable_boot_info);
+  dma_status = dma_init(boot_info);
   page_status = page_alloc_init(mutable_boot_info);
   heap_status = kmalloc_init(mutable_boot_info);
   driver_registry_reset();
@@ -136,6 +139,9 @@ void kmain(const boot_info_t *boot_info) {
   }
   if (!status_is_ok(mem_status) && mem_status != STATUS_DEFERRED) {
     kprintf("arch_mm_early_init: %s (%d)\n", status_str(mem_status), mem_status);
+  }
+  if (!status_is_ok(dma_status) && dma_status != STATUS_DEFERRED) {
+    kprintf("dma_init: %s (%d)\n", status_str(dma_status), dma_status);
   }
   if (!status_is_ok(percpu_status) && percpu_status != STATUS_DEFERRED) {
     kprintf("percpu_init_boot_cpu: %s (%d)\n", status_str(percpu_status), percpu_status);

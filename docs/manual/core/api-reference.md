@@ -340,6 +340,23 @@ mm_map(0xffff800000200000ULL, 0x00200000ULL, mm_page_size(), MMU_PROT_READ | MMU
   - `prot_flags`: new protection flags.
 - Returns: status or page size.
 
+## DMA API (`dma.h`)
+
+### `status_t dma_init(const boot_info_t *boot_info)`
+- Purpose: initialize DMA mapping subsystem state.
+
+### `status_t dma_map(BOOT_U64 device_id, void *cpu_ptr, BOOT_U64 len, dma_dir_t dir, dma_addr_t *out)`
+### `status_t dma_unmap(BOOT_U64 device_id, dma_addr_t addr, BOOT_U64 len, dma_dir_t dir)`
+- Purpose: map/unmap CPU buffers for device DMA transactions.
+
+### `status_t dma_sync_for_device(BOOT_U64 device_id, dma_addr_t addr, BOOT_U64 len, dma_dir_t dir)`
+### `status_t dma_sync_for_cpu(BOOT_U64 device_id, dma_addr_t addr, BOOT_U64 len, dma_dir_t dir)`
+- Purpose: synchronize DMA buffers for non-coherent paths.
+
+### `status_t dma_set_constraints(BOOT_U64 device_id, const dma_constraints_t *constraints)`
+### `status_t dma_get_constraints(BOOT_U64 device_id, dma_constraints_t *out_constraints)`
+- Purpose: configure/query per-device DMA addressing constraints.
+
 ### Architecture MM backend entry points
 - `BOOT_U64 arch_mm_page_size(void)`
 - `status_t arch_mm_map_page(mm_virt_addr_t va, mm_phys_addr_t pa, BOOT_U64 prot_flags)`
