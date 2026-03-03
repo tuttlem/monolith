@@ -4,6 +4,7 @@
 #include "personality.h"
 #include "print.h"
 #include "timebase.h"
+#include "trace.h"
 
 #define SYSCALL_MAX_HANDLERS 64U
 #define SYSCALL_DEBUG_LOG_MAX 255U
@@ -223,12 +224,14 @@ status_t syscall_dispatch(const syscall_request_t *req, syscall_response_t *resp
   for (i = 0; i < g_syscall.slot_count; ++i) {
     if (g_syscall.slots[i].op == req->op) {
       status_t st = g_syscall.slots[i].handler(req, resp);
+      trace_emit(TRACE_CLASS_SYSCALL, req->op, (BOOT_U64)st, resp->value);
       return st;
     }
   }
 
   resp->status = STATUS_NOT_SUPPORTED;
   resp->value = 0;
+  trace_emit(TRACE_CLASS_SYSCALL, req->op, (BOOT_U64)STATUS_NOT_SUPPORTED, 0ULL);
   return STATUS_NOT_SUPPORTED;
 }
 

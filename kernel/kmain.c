@@ -27,6 +27,7 @@
 #include "scheduler.h"
 #include "timebase.h"
 #include "timer.h"
+#include "trace.h"
 #include "usb.h"
 
 #ifndef CORE_ARCH_NAME
@@ -93,6 +94,7 @@ void kmain(const boot_info_t *boot_info) {
   status_t irq_domain_status;
   status_t timer_status;
   status_t sched_status;
+  status_t trace_status;
   status_t dma_status;
   status_t iommu_status;
   status_t syscall_status;
@@ -110,6 +112,10 @@ void kmain(const boot_info_t *boot_info) {
   }
 
   panic_set_context(boot_info);
+  trace_status = trace_init(boot_info);
+  if (status_is_ok(trace_status)) {
+    trace_emit(TRACE_CLASS_DEVICE, 0xB007ULL, boot_info->arch_id, boot_info->abi_version);
+  }
   mutable_boot_info = (boot_info_t *)boot_info;
   cpu_status = arch_cpu_early_init(boot_info);
   percpu_status = percpu_init_boot_cpu(boot_info);
@@ -132,6 +138,7 @@ void kmain(const boot_info_t *boot_info) {
   driver_set_boot_info(boot_info);
   driver_reg_status = device_model_register_builtin_drivers();
   device_status = driver_probe_all(hw);
+  trace_emit(TRACE_CLASS_DEVICE, (BOOT_U64)device_status, device_bus_count(), boot_info->arch_id);
   irq_status = driver_class_last_status("irqc");
   irq_domain_status = irq_domain_init(boot_info);
   timer_status = driver_class_last_status("timer");
@@ -213,6 +220,9 @@ void kmain(const boot_info_t *boot_info) {
   }
   if (!status_is_ok(syscall_status) && syscall_status != STATUS_DEFERRED) {
     kprintf("syscall_init: %s (%d)\n", status_str(syscall_status), syscall_status);
+  }
+  if (!status_is_ok(trace_status) && trace_status != STATUS_DEFERRED) {
+    kprintf("trace_init: %s (%d)\n", status_str(trace_status), trace_status);
   }
   kprintf("personality: active=%s id=0x%llx\n", personality_active_name(), personality_active_id());
   if (!status_is_ok(syscall_probe_status) && syscall_probe_status != STATUS_DEFERRED) {

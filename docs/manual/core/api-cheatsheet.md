@@ -69,6 +69,13 @@
 - `void sched_tick(void)`
 - `status_t arch_context_switch(task_t *from, task_t *to)`
 
+## Observability
+
+- `status_t trace_init(const boot_info_t *boot_info)`
+- `void trace_emit(trace_class_t cls, BOOT_U64 a0, BOOT_U64 a1, BOOT_U64 a2)`
+- `status_t trace_dump(trace_sink_t sink)`
+- `void trace_sink_kprintf(const trace_record_t *record)`
+
 ## Device Discovery
 
 - `status_t hw_discovery_init(const boot_info_t *boot_info)`

@@ -5,6 +5,7 @@
 #include "irq_controller.h"
 #include "panic.h"
 #include "percpu.h"
+#include "trace.h"
 
 static const char g_irq_owner_anon[] = "anonymous";
 
@@ -342,6 +343,8 @@ void interrupts_dispatch(const interrupt_frame_t *frame) {
     return;
   }
 
+  trace_emit(TRACE_CLASS_IRQ_ENTRY, frame->vector, frame->error_code, frame->arch_id);
+
   cpu = percpu_current();
   if (cpu != (percpu_t *)0) {
     cpu->irq_nesting += 1ULL;
@@ -359,6 +362,7 @@ void interrupts_dispatch(const interrupt_frame_t *frame) {
   }
 
 out:
+  trace_emit(TRACE_CLASS_IRQ_EXIT, frame->vector, frame->error_code, frame->arch_id);
   if (cpu != (percpu_t *)0 && cpu->irq_nesting != 0ULL) {
     cpu->irq_nesting -= 1ULL;
   }

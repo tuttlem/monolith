@@ -117,6 +117,10 @@ $(BUILD_X64)/kernel/scheduler.o: kernel/scheduler.c kernel/include/scheduler.h k
 	@mkdir -p $(@D)
 	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
 
+$(BUILD_X64)/kernel/trace.o: kernel/trace.c kernel/include/trace.h kernel/include/timebase.h arch/x86_64/arch.mk
+	@mkdir -p $(@D)
+	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
+
 $(BUILD_X64)/kernel/net.o: kernel/net.c kernel/include/net.h kernel/include/device_bus.h arch/x86_64/arch.mk
 	@mkdir -p $(@D)
 	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
@@ -185,7 +189,7 @@ $(BUILD_X64)/arch/x86_64/mm/mmu_backend.o: arch/x86_64/mm/mmu_backend.c kernel/i
 	@mkdir -p $(@D)
 	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_X64)/BOOTX64.EFI: $(BUILD_X64)/boot/efi_main.o $(BUILD_X64)/kernel/kmain.o $(BUILD_X64)/kernel/print.o $(BUILD_X64)/kernel/status.o $(BUILD_X64)/kernel/percpu.o $(BUILD_X64)/kernel/smp.o $(BUILD_X64)/kernel/discovery/hw_discovery.o $(BUILD_X64)/kernel/discovery/acpi_parser.o $(BUILD_X64)/kernel/discovery/dtb_parser.o $(BUILD_X64)/kernel/panic.o $(BUILD_X64)/kernel/timebase.o $(BUILD_X64)/kernel/irq_controller.o $(BUILD_X64)/kernel/device_model.o $(BUILD_X64)/kernel/device_bus.o $(BUILD_X64)/kernel/pci.o $(BUILD_X64)/kernel/usb.o $(BUILD_X64)/kernel/device_domains.o $(BUILD_X64)/kernel/device_report.o $(BUILD_X64)/kernel/capability_profile.o $(BUILD_X64)/kernel/syscall.o $(BUILD_X64)/kernel/scheduler.o $(BUILD_X64)/kernel/net.o $(BUILD_X64)/kernel/audio.o $(BUILD_X64)/kernel/interrupts.o $(BUILD_X64)/kernel/timer.o $(BUILD_X64)/kernel/diag/boot_info.o $(BUILD_X64)/kernel/mm/page_alloc.o $(BUILD_X64)/kernel/mm/kmalloc.o $(BUILD_X64)/kernel/mm/mmu.o $(BUILD_X64)/arch/x86_64/cpu/cpu.o $(BUILD_X64)/arch/x86_64/cpu/smp.o $(BUILD_X64)/arch/x86_64/syscall/syscall.o $(BUILD_X64)/arch/x86_64/mm/memory_init.o $(BUILD_X64)/arch/x86_64/mm/early_paging.o $(BUILD_X64)/arch/x86_64/mm/mmu_backend.o $(BUILD_X64)/arch/x86_64/irq/interrupts.o $(BUILD_X64)/arch/x86_64/irq/pic.o $(BUILD_X64)/arch/x86_64/timer/timer.o
+$(BUILD_X64)/BOOTX64.EFI: $(BUILD_X64)/boot/efi_main.o $(BUILD_X64)/kernel/kmain.o $(BUILD_X64)/kernel/print.o $(BUILD_X64)/kernel/status.o $(BUILD_X64)/kernel/percpu.o $(BUILD_X64)/kernel/smp.o $(BUILD_X64)/kernel/discovery/hw_discovery.o $(BUILD_X64)/kernel/discovery/acpi_parser.o $(BUILD_X64)/kernel/discovery/dtb_parser.o $(BUILD_X64)/kernel/panic.o $(BUILD_X64)/kernel/timebase.o $(BUILD_X64)/kernel/irq_controller.o $(BUILD_X64)/kernel/device_model.o $(BUILD_X64)/kernel/device_bus.o $(BUILD_X64)/kernel/pci.o $(BUILD_X64)/kernel/usb.o $(BUILD_X64)/kernel/device_domains.o $(BUILD_X64)/kernel/device_report.o $(BUILD_X64)/kernel/capability_profile.o $(BUILD_X64)/kernel/syscall.o $(BUILD_X64)/kernel/scheduler.o $(BUILD_X64)/kernel/trace.o $(BUILD_X64)/kernel/net.o $(BUILD_X64)/kernel/audio.o $(BUILD_X64)/kernel/interrupts.o $(BUILD_X64)/kernel/timer.o $(BUILD_X64)/kernel/diag/boot_info.o $(BUILD_X64)/kernel/mm/page_alloc.o $(BUILD_X64)/kernel/mm/kmalloc.o $(BUILD_X64)/kernel/mm/mmu.o $(BUILD_X64)/arch/x86_64/cpu/cpu.o $(BUILD_X64)/arch/x86_64/cpu/smp.o $(BUILD_X64)/arch/x86_64/syscall/syscall.o $(BUILD_X64)/arch/x86_64/mm/memory_init.o $(BUILD_X64)/arch/x86_64/mm/early_paging.o $(BUILD_X64)/arch/x86_64/mm/mmu_backend.o $(BUILD_X64)/arch/x86_64/irq/interrupts.o $(BUILD_X64)/arch/x86_64/irq/pic.o $(BUILD_X64)/arch/x86_64/timer/timer.o
 	@mkdir -p $(@D)
 	@command -v $(LLD_LINK) >/dev/null 2>&1 || { echo "error: $(LLD_LINK) not found. Install lld."; exit 1; }
 	$(LLD_LINK) $(X64_UEFI_LDFLAGS) /out:$@ $^
@@ -279,6 +283,10 @@ $(BUILD_A64)/kernel/scheduler.o: kernel/scheduler.c kernel/include/scheduler.h k
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
 
+$(BUILD_A64)/kernel/trace.o: kernel/trace.c kernel/include/trace.h kernel/include/timebase.h arch/arm64/arch.mk
+	@mkdir -p $(@D)
+	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
+
 $(BUILD_A64)/kernel/net.o: kernel/net.c kernel/include/net.h kernel/include/device_bus.h arch/arm64/arch.mk
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
@@ -351,7 +359,7 @@ $(BUILD_A64)/arch/arm64/mm/mmu_backend.o: arch/arm64/mm/mmu_backend.c kernel/inc
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_A64)/BOOTAA64.EFI: $(BUILD_A64)/boot/efi_main.o $(BUILD_A64)/kernel/kmain.o $(BUILD_A64)/kernel/print.o $(BUILD_A64)/kernel/status.o $(BUILD_A64)/kernel/percpu.o $(BUILD_A64)/kernel/smp.o $(BUILD_A64)/kernel/discovery/hw_discovery.o $(BUILD_A64)/kernel/discovery/acpi_parser.o $(BUILD_A64)/kernel/discovery/dtb_parser.o $(BUILD_A64)/kernel/panic.o $(BUILD_A64)/kernel/timebase.o $(BUILD_A64)/kernel/irq_controller.o $(BUILD_A64)/kernel/device_model.o $(BUILD_A64)/kernel/device_bus.o $(BUILD_A64)/kernel/pci.o $(BUILD_A64)/kernel/usb.o $(BUILD_A64)/kernel/device_domains.o $(BUILD_A64)/kernel/device_report.o $(BUILD_A64)/kernel/capability_profile.o $(BUILD_A64)/kernel/syscall.o $(BUILD_A64)/kernel/scheduler.o $(BUILD_A64)/kernel/net.o $(BUILD_A64)/kernel/audio.o $(BUILD_A64)/kernel/interrupts.o $(BUILD_A64)/kernel/timer.o $(BUILD_A64)/kernel/diag/boot_info.o $(BUILD_A64)/kernel/mm/page_alloc.o $(BUILD_A64)/kernel/mm/kmalloc.o $(BUILD_A64)/kernel/mm/mmu.o $(BUILD_A64)/arch/arm64/cpu/cpu.o $(BUILD_A64)/arch/arm64/cpu/smp.o $(BUILD_A64)/arch/arm64/syscall/syscall.o $(BUILD_A64)/arch/arm64/mm/memory_init.o $(BUILD_A64)/arch/arm64/mm/early_paging.o $(BUILD_A64)/arch/arm64/mm/mmu_backend.o $(BUILD_A64)/arch/arm64/irq/interrupts.o $(BUILD_A64)/arch/arm64/irq/gicv2.o $(BUILD_A64)/arch/arm64/irq/entry.o $(BUILD_A64)/arch/arm64/timer/timer.o
+$(BUILD_A64)/BOOTAA64.EFI: $(BUILD_A64)/boot/efi_main.o $(BUILD_A64)/kernel/kmain.o $(BUILD_A64)/kernel/print.o $(BUILD_A64)/kernel/status.o $(BUILD_A64)/kernel/percpu.o $(BUILD_A64)/kernel/smp.o $(BUILD_A64)/kernel/discovery/hw_discovery.o $(BUILD_A64)/kernel/discovery/acpi_parser.o $(BUILD_A64)/kernel/discovery/dtb_parser.o $(BUILD_A64)/kernel/panic.o $(BUILD_A64)/kernel/timebase.o $(BUILD_A64)/kernel/irq_controller.o $(BUILD_A64)/kernel/device_model.o $(BUILD_A64)/kernel/device_bus.o $(BUILD_A64)/kernel/pci.o $(BUILD_A64)/kernel/usb.o $(BUILD_A64)/kernel/device_domains.o $(BUILD_A64)/kernel/device_report.o $(BUILD_A64)/kernel/capability_profile.o $(BUILD_A64)/kernel/syscall.o $(BUILD_A64)/kernel/scheduler.o $(BUILD_A64)/kernel/trace.o $(BUILD_A64)/kernel/net.o $(BUILD_A64)/kernel/audio.o $(BUILD_A64)/kernel/interrupts.o $(BUILD_A64)/kernel/timer.o $(BUILD_A64)/kernel/diag/boot_info.o $(BUILD_A64)/kernel/mm/page_alloc.o $(BUILD_A64)/kernel/mm/kmalloc.o $(BUILD_A64)/kernel/mm/mmu.o $(BUILD_A64)/arch/arm64/cpu/cpu.o $(BUILD_A64)/arch/arm64/cpu/smp.o $(BUILD_A64)/arch/arm64/syscall/syscall.o $(BUILD_A64)/arch/arm64/mm/memory_init.o $(BUILD_A64)/arch/arm64/mm/early_paging.o $(BUILD_A64)/arch/arm64/mm/mmu_backend.o $(BUILD_A64)/arch/arm64/irq/interrupts.o $(BUILD_A64)/arch/arm64/irq/gicv2.o $(BUILD_A64)/arch/arm64/irq/entry.o $(BUILD_A64)/arch/arm64/timer/timer.o
 	@mkdir -p $(@D)
 	@command -v $(LLD_LINK) >/dev/null 2>&1 || { echo "error: $(LLD_LINK) not found. Install lld."; exit 1; }
 	$(LLD_LINK) $(A64_UEFI_LDFLAGS) /out:$@ $^
@@ -360,7 +368,7 @@ $(BUILD_A64)/uefi.img: $(BUILD_A64)/BOOTAA64.EFI scripts/mk-uefi-image.sh
 	@mkdir -p $(@D)
 	@./scripts/mk-uefi-image.sh arm64 $(BUILD_A64)/BOOTAA64.EFI $@
 
-RISCV64_SRCS := kernel/kmain.c kernel/print.c kernel/status.c kernel/percpu.c kernel/smp.c kernel/discovery/hw_discovery.c kernel/discovery/acpi_parser.c kernel/discovery/dtb_parser.c kernel/panic.c kernel/timebase.c kernel/irq_controller.c kernel/device_model.c kernel/device_bus.c kernel/pci.c kernel/usb.c kernel/device_domains.c kernel/device_report.c kernel/capability_profile.c kernel/syscall.c kernel/scheduler.c kernel/net.c kernel/audio.c kernel/interrupts.c kernel/timer.c kernel/diag/boot_info.c kernel/mm/page_alloc.c kernel/mm/kmalloc.c kernel/mm/mmu.c arch/riscv64/cpu/cpu.c arch/riscv64/cpu/smp.c arch/riscv64/syscall/syscall.c arch/riscv64/mm/memory_init.c arch/riscv64/mm/early_paging.c arch/riscv64/mm/mmu_backend.c arch/riscv64/irq/interrupts.c arch/riscv64/irq/controller_stub.c arch/riscv64/timer/timer.c arch/riscv64/boot/main.c arch/riscv64/boot/console.c lib/memset.c lib/memcpy.c lib/strlen.c
+RISCV64_SRCS := kernel/kmain.c kernel/print.c kernel/status.c kernel/percpu.c kernel/smp.c kernel/discovery/hw_discovery.c kernel/discovery/acpi_parser.c kernel/discovery/dtb_parser.c kernel/panic.c kernel/timebase.c kernel/irq_controller.c kernel/device_model.c kernel/device_bus.c kernel/pci.c kernel/usb.c kernel/device_domains.c kernel/device_report.c kernel/capability_profile.c kernel/syscall.c kernel/scheduler.c kernel/trace.c kernel/net.c kernel/audio.c kernel/interrupts.c kernel/timer.c kernel/diag/boot_info.c kernel/mm/page_alloc.c kernel/mm/kmalloc.c kernel/mm/mmu.c arch/riscv64/cpu/cpu.c arch/riscv64/cpu/smp.c arch/riscv64/syscall/syscall.c arch/riscv64/mm/memory_init.c arch/riscv64/mm/early_paging.c arch/riscv64/mm/mmu_backend.c arch/riscv64/irq/interrupts.c arch/riscv64/irq/controller_stub.c arch/riscv64/timer/timer.c arch/riscv64/boot/main.c arch/riscv64/boot/console.c lib/memset.c lib/memcpy.c lib/strlen.c
 RISCV64_OBJS := $(patsubst %.c,$(BUILD_RISCV64)/%.o,$(RISCV64_SRCS)) $(BUILD_RISCV64)/arch/riscv64/start.o $(BUILD_RISCV64)/arch/riscv64/irq/entry.o
 
 $(BUILD_RISCV64)/kernel.elf: $(RISCV64_OBJS) arch/riscv64/linker.ld
