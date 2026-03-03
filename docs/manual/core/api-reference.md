@@ -754,6 +754,23 @@ if (d != 0) {
   - `user_sp`: initial user stack pointer.
 - Returns: never returns.
 
+## User Task Bootstrap (`user_task.h`)
+
+### `status_t user_stack_alloc(BOOT_U64 size, BOOT_U64 *out_base)`
+- Purpose: allocate contiguous page-backed memory for a user stack region.
+- Parameters:
+  - `size`: requested byte size; must be page aligned.
+  - `out_base`: output base address.
+
+### `status_t user_window_map(BOOT_U64 base, BOOT_U64 size, BOOT_U64 prot)`
+- Purpose: apply user-window protection and synchronize TLB for launch window setup.
+
+### `status_t user_task_bootstrap_prepare(const boot_info_t *boot_info, user_task_bootstrap_t *out_ctx)`
+- Purpose: prepare minimal launch context (user window, stack, initial `user_sp`, kernel return stack hint).
+- Parameters:
+  - `boot_info`: current handoff descriptor.
+  - `out_ctx`: output launch context.
+
 ## Network Domain (`net.h`)
 
 ### `status_t net_enumerate(const boot_info_t *boot_info)`
