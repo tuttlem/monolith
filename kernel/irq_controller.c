@@ -1,10 +1,17 @@
 #include "irq_controller.h"
+#include "irq_domain.h"
 
 static struct {
   BOOT_U64 registered;
   const char *name;
   irq_controller_ops_t ops;
 } g_irqc;
+
+static struct {
+  BOOT_U64 initialized;
+  BOOT_U64 alloc_count;
+  irq_desc_t allocs[IRQ_DOMAIN_MAX_ALLOCS];
+} g_irq_domain;
 
 void irq_controller_reset(void) {
   g_irqc.registered = 0;
@@ -15,6 +22,8 @@ void irq_controller_reset(void) {
   g_irqc.ops.eoi_irq = (void (*)(BOOT_U64))0;
   g_irqc.ops.map_irq = (status_t(*)(BOOT_U64, BOOT_U64 *))0;
   g_irqc.ops.vector_to_irq = (status_t(*)(BOOT_U64, BOOT_U64 *))0;
+  g_irq_domain.initialized = 0;
+  g_irq_domain.alloc_count = 0;
 }
 
 status_t irq_controller_register(const char *name, const irq_controller_ops_t *ops) {
@@ -86,3 +95,76 @@ status_t irq_controller_vector_to_irq(BOOT_U64 vector, BOOT_U64 *out_irq) {
   }
   return g_irqc.ops.vector_to_irq(vector, out_irq);
 }
+
+status_t irq_domain_init(const boot_info_t *boot_info) {
+  BOOT_U64 i;
+
+  if (boot_info == (const boot_info_t *)0) {
+    return STATUS_INVALID_ARG;
+  }
+  g_irq_domain.initialized = 1;
+  g_irq_domain.alloc_count = 0;
+  for (i = 0; i < IRQ_DOMAIN_MAX_ALLOCS; ++i) {
+    g_irq_domain.allocs[i].global_irq = 0;
+    g_irq_domain.allocs[i].hwirq = 0;
+    g_irq_domain.allocs[i].vector = 0;
+    g_irq_domain.allocs[i].flags = 0;
+    g_irq_domain.allocs[i].owner_device_id = 0;
+  }
+  return STATUS_OK;
+}
+
+status_t irq_alloc_line(BOOT_U64 device_id, BOOT_U64 hwirq, irq_desc_t *out) {
+  irq_desc_t *slot;
+  BOOT_U64 vector;
+  status_t st;
+
+  if (!g_irq_domain.initialized) {
+    return STATUS_DEFERRED;
+  }
+  if (out == (irq_desc_t *)0) {
+    return STATUS_INVALID_ARG;
+  }
+  if (g_irq_domain.alloc_count >= IRQ_DOMAIN_MAX_ALLOCS) {
+    return STATUS_NO_MEMORY;
+  }
+
+  st = irq_controller_map(hwirq, &vector);
+  if (st != STATUS_OK) {
+    return st;
+  }
+  slot = &g_irq_domain.allocs[g_irq_domain.alloc_count];
+  slot->global_irq = g_irq_domain.alloc_count;
+  slot->hwirq = hwirq;
+  slot->vector = vector;
+  slot->flags = 0;
+  slot->owner_device_id = device_id;
+  out->global_irq = slot->global_irq;
+  out->hwirq = slot->hwirq;
+  out->vector = slot->vector;
+  out->flags = slot->flags;
+  out->owner_device_id = slot->owner_device_id;
+  g_irq_domain.alloc_count += 1ULL;
+  return STATUS_OK;
+}
+
+status_t irq_alloc_msi(BOOT_U64 device_id, BOOT_U64 nvec, irq_desc_t *out_vec) {
+  (void)device_id;
+  (void)nvec;
+  (void)out_vec;
+  return STATUS_DEFERRED;
+}
+
+status_t irq_configure(const irq_desc_t *irq, irq_cfg_t cfg) {
+  (void)irq;
+  (void)cfg;
+  return STATUS_OK;
+}
+
+status_t irq_set_affinity(const irq_desc_t *irq, cpu_mask_t mask) {
+  (void)irq;
+  (void)mask;
+  return STATUS_OK;
+}
+
+BOOT_U64 irq_domain_alloc_count(void) { return g_irq_domain.alloc_count; }

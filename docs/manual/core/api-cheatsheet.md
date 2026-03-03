@@ -185,6 +185,15 @@
 - `BOOT_U64 hw_resource_count(BOOT_U64 device_id, hw_resource_type_t type)`
 - `status_t hw_resource_view(BOOT_U64 device_id, device_resource_view_t *out)`
 
+## IRQ Domain
+
+- `status_t irq_domain_init(const boot_info_t *boot_info)`
+- `status_t irq_alloc_line(BOOT_U64 device_id, BOOT_U64 hwirq, irq_desc_t *out)`
+- `status_t irq_alloc_msi(BOOT_U64 device_id, BOOT_U64 nvec, irq_desc_t *out_vec)`
+- `status_t irq_configure(const irq_desc_t *irq, irq_cfg_t cfg)`
+- `status_t irq_set_affinity(const irq_desc_t *irq, cpu_mask_t mask)`
+- `BOOT_U64 irq_domain_alloc_count(void)`
+
 ## Time
 
 - `status_t timer_init(const boot_info_t *boot_info)`
