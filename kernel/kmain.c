@@ -30,6 +30,7 @@
 #include "trace.h"
 #include "usb.h"
 #include "uaccess.h"
+#include "user_task.h"
 
 #ifndef CORE_ARCH_NAME
 #define CORE_ARCH_NAME "unknown"
@@ -101,6 +102,7 @@ void kmain(const boot_info_t *boot_info) {
   status_t syscall_status;
   status_t syscall_probe_status;
   status_t uaccess_negative_status;
+  status_t user_bootstrap_status;
   status_t console_status;
   time_quality_t tq;
   const hw_desc_t *hw;
@@ -159,6 +161,11 @@ void kmain(const boot_info_t *boot_info) {
   (void)uaccess_set_user_window(0x2000ULL, 0x1000ULL);
   uaccess_negative_status = syscall_invoke_kernel(SYSCALL_OP_DEBUG_LOG, 0x1000ULL, 5ULL, 0, 0, 0, 0, &syscall_probe_resp);
   (void)uaccess_set_user_window(0ULL, 0ULL);
+  {
+    user_task_bootstrap_t user_ctx;
+    user_bootstrap_status = user_task_bootstrap_prepare(boot_info, &user_ctx);
+    kprintf("usermode: launching init task st=%s (%d)\n", status_str(user_bootstrap_status), user_bootstrap_status);
+  }
   console_status = driver_class_last_status("console");
   kprintf("time: now_ns=%llu ticks=%llu hz=%llu\n", time_now_ns(), time_ticks(), time_hz());
   if (time_quality(&tq) == STATUS_OK) {

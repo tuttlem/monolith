@@ -53,3 +53,15 @@ This sequence is a reference bring-up mechanism. It is not process policy.
 If a decision changes OS semantics (signals, file descriptors, process hierarchy, permissions model), it belongs outside Monolith.
 
 If a decision is required to safely transition privilege level or move bytes across user/kernel boundary, it belongs inside Monolith.
+
+## Validation Matrix
+
+Use the deterministic tri-arch matrix target:
+
+```bash
+make usermode-matrix
+```
+
+This runs:
+- baseline smoke (`smoke-x86_64`, `smoke-arm64`, `smoke-riscv64`)
+- user-mode substrate smoke (`smoke-usermode-x86_64`, `smoke-usermode-arm64`, `smoke-usermode-riscv64`)

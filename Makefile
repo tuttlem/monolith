@@ -2,9 +2,9 @@ SHELL := /usr/bin/env bash
 
 .PHONY: all \
   print-config \
-  x86_64-uefi run-x86_64 gdb-x86_64 smoke-x86_64 \
-  arm64-uefi run-arm64 gdb-arm64 smoke-arm64 \
-  riscv64 run-riscv64 gdb-riscv64 smoke-riscv64 \
+  x86_64-uefi run-x86_64 gdb-x86_64 smoke-x86_64 smoke-usermode-x86_64 \
+  arm64-uefi run-arm64 gdb-arm64 smoke-arm64 smoke-usermode-arm64 \
+  riscv64 run-riscv64 gdb-riscv64 smoke-riscv64 smoke-usermode-riscv64 usermode-matrix \
   clean
 
 X64_CC ?= clang
@@ -422,6 +422,9 @@ gdb-x86_64: x86_64-uefi
 smoke-x86_64: x86_64-uefi
 	@./scripts/smoke-x86_64.sh
 
+smoke-usermode-x86_64: x86_64-uefi
+	@./scripts/smoke-usermode-x86_64.sh
+
 run-arm64: arm64-uefi
 	@./scripts/run-qemu.sh arm64
 
@@ -431,6 +434,9 @@ gdb-arm64: arm64-uefi
 smoke-arm64: arm64-uefi
 	@./scripts/smoke-arm64.sh
 
+smoke-usermode-arm64: arm64-uefi
+	@./scripts/smoke-usermode-arm64.sh
+
 run-riscv64: riscv64
 	@./scripts/run-qemu.sh riscv64
 
@@ -439,6 +445,12 @@ gdb-riscv64: riscv64
 
 smoke-riscv64: riscv64
 	@./scripts/smoke-riscv64.sh
+
+smoke-usermode-riscv64: riscv64
+	@./scripts/smoke-usermode-riscv64.sh
+
+usermode-matrix: x86_64-uefi arm64-uefi riscv64 smoke-x86_64 smoke-arm64 smoke-riscv64 smoke-usermode-x86_64 smoke-usermode-arm64 smoke-usermode-riscv64
+	@echo "usermode-matrix: PASS"
 
 clean:
 	rm -rf build
