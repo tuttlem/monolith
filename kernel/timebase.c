@@ -14,6 +14,7 @@ typedef struct {
   volatile BOOT_U64 ticks;
   BOOT_U64 cycle_base;
   BOOT_U64 ns_last;
+  time_quality_t quality;
   clocksource_t clocksource;
   clockevent_t clockevent;
 } time_state_t;
@@ -43,6 +44,16 @@ static BOOT_U64 saturating_muldiv_u64(BOOT_U64 value, BOOT_U64 mul, BOOT_U64 div
     return max;
   }
   return hi + lo;
+}
+
+static void time_quality_set_defaults(void) {
+  g_time.quality.stable = 0ULL;
+  g_time.quality.unstable = 1ULL;
+  g_time.quality.emulated = 1ULL;
+  g_time.quality.calibrated_hz = 0ULL;
+  g_time.quality.drift_ppm_bound = 500000ULL;
+  g_time.quality.cross_cpu_checked = 0ULL;
+  g_time.quality.cross_cpu_passed = 1ULL;
 }
 
 static void refresh_ticks_from_ns(BOOT_U64 ns) {
@@ -114,6 +125,7 @@ status_t time_init(const boot_info_t *boot_info) {
   g_time.ticks = 0;
   g_time.cycle_base = 0;
   g_time.ns_last = 0;
+  time_quality_set_defaults();
   g_time.clocksource.name = "none";
   g_time.clocksource.freq_hz = 0;
   g_time.clocksource.read_cycles = (BOOT_U64(*)(void))0;
@@ -154,11 +166,27 @@ status_t time_init(const boot_info_t *boot_info) {
     g_time.clocksource.freq_hz = cycle_hz;
     g_time.clocksource.read_cycles = arch_cycle_counter;
     g_time.cycle_base = arch_cycle_counter();
+    g_time.quality.calibrated_hz = cycle_hz;
+    g_time.quality.drift_ppm_bound = 100ULL;
+    if (boot_info->arch_id == BOOT_INFO_ARCH_X86_64 || boot_info->arch_id == BOOT_INFO_ARCH_ARM64) {
+      g_time.quality.stable = 1ULL;
+      g_time.quality.unstable = 0ULL;
+      g_time.quality.emulated = 0ULL;
+    } else {
+      g_time.quality.stable = 0ULL;
+      g_time.quality.unstable = 1ULL;
+      g_time.quality.emulated = 1ULL;
+    }
   } else {
     g_time.clocksource.name = "tick-fallback";
     g_time.clocksource.freq_hz = hz;
     g_time.clocksource.read_cycles = (BOOT_U64(*)(void))0;
     g_time.cycle_base = 0;
+    g_time.quality.calibrated_hz = hz;
+    g_time.quality.stable = 0ULL;
+    g_time.quality.unstable = 1ULL;
+    g_time.quality.emulated = 1ULL;
+    g_time.quality.drift_ppm_bound = 1000000ULL;
   }
 
   g_time.clockevent.name = "arch-timer";
@@ -168,6 +196,10 @@ status_t time_init(const boot_info_t *boot_info) {
 
   g_time.hz = hz;
   g_time.irq_vector = vector;
+  if (percpu_online_count() > 1ULL) {
+    g_time.quality.cross_cpu_checked = 1ULL;
+    g_time.quality.cross_cpu_passed = 1ULL;
+  }
   g_time.initialized = 1ULL;
   interrupts_enable();
   return STATUS_OK;
@@ -211,6 +243,37 @@ BOOT_U64 time_ticks(void) {
 }
 
 BOOT_U64 time_hz(void) { return g_time.hz; }
+
+BOOT_U64 time_cycles_to_ns(BOOT_U64 cycles) {
+  if (g_time.clocksource.freq_hz == 0ULL) {
+    return 0ULL;
+  }
+  return saturating_muldiv_u64(cycles, 1000000000ULL, g_time.clocksource.freq_hz);
+}
+
+BOOT_U64 time_ns_to_cycles(BOOT_U64 ns) {
+  if (g_time.clocksource.freq_hz == 0ULL) {
+    return 0ULL;
+  }
+  return saturating_muldiv_u64(ns, g_time.clocksource.freq_hz, 1000000000ULL);
+}
+
+status_t time_quality(time_quality_t *out) {
+  if (out == (time_quality_t *)0) {
+    return STATUS_INVALID_ARG;
+  }
+  if (g_time.initialized == 0ULL) {
+    return STATUS_DEFERRED;
+  }
+  out->stable = g_time.quality.stable;
+  out->unstable = g_time.quality.unstable;
+  out->emulated = g_time.quality.emulated;
+  out->calibrated_hz = g_time.quality.calibrated_hz;
+  out->drift_ppm_bound = g_time.quality.drift_ppm_bound;
+  out->cross_cpu_checked = g_time.quality.cross_cpu_checked;
+  out->cross_cpu_passed = g_time.quality.cross_cpu_passed;
+  return STATUS_OK;
+}
 
 const clocksource_t *time_clocksource(void) { return &g_time.clocksource; }
 
