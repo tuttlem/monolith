@@ -143,4 +143,6 @@ Divergence notes:
 - File: `arch/x86_64/user/user_mode.c`
 - Purpose: x86_64 backend implementation point for the architecture-neutral user-mode contract.
 - Current status:
-  - compile-safe stub path (`STATUS_NOT_SUPPORTED`) until full privilege-transition backend is enabled.
+  - `arch_user_mode_set_kernel_stack` is active and validates stack wiring.
+  - `arch_user_mode_prepare_frame` normalizes launch stack alignment.
+  - `arch_user_mode_enter` is a deterministic launch trampoline and does not yet perform CPL3 transition.
