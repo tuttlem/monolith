@@ -1,4 +1,6 @@
 #include "arch_smp.h"
+#include "cpu_context.h"
+#include "scheduler.h"
 
 #define FDT_MAGIC 0xd00dfeedU
 #define FDT_BEGIN_NODE 1U
@@ -143,4 +145,14 @@ status_t arch_smp_bootstrap(const boot_info_t *boot_info, BOOT_U64 *out_possible
   *out_possible_cpus = riscv64_dtb_cpu_count((const void *)(BOOT_UPTR)boot_info->dtb_ptr);
   *out_started_cpus = 0ULL;
   return STATUS_DEFERRED;
+}
+
+status_t arch_context_switch(task_t *from, task_t *to) {
+  if (from == (task_t *)0 || to == (task_t *)0) {
+    return STATUS_INVALID_ARG;
+  }
+  if (from->arch_ctx == (void *)0 || to->arch_ctx == (void *)0) {
+    return STATUS_INVALID_ARG;
+  }
+  return cpu_context_switch((cpu_context_t *)from->arch_ctx, (cpu_context_t *)to->arch_ctx);
 }

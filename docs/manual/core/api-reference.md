@@ -249,6 +249,24 @@ interrupts_register_handler_owned(32, tick_handler, 0, "timer");
 ### `BOOT_U64 irq_domain_alloc_count(void)`
 - Purpose: return number of active IRQ allocations in the generic domain table.
 
+## Scheduler Scaffolding (`scheduler.h`)
+
+### `status_t sched_init(void)`
+- Purpose: initialize minimal scheduler state and internal idle task.
+
+### `task_t *sched_current(void)`
+- Purpose: return currently active task pointer.
+
+### `status_t sched_add(task_t *task)`
+- Purpose: add one runnable task to the scheduler run queue.
+
+### `void sched_tick(void)`
+- Purpose: timer-driven scheduling hook to rotate runnable tasks.
+
+### `status_t arch_context_switch(task_t *from, task_t *to)`
+- Purpose: architecture switch hook for task context handoff.
+- Remarks: current backends call `cpu_context_switch` for deterministic bootstrap behavior.
+
 ## Hardware Resource Manager (`hw_resource.h`)
 
 ### `status_t hw_resource_init(const boot_info_t *boot_info)`

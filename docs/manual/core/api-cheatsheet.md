@@ -61,6 +61,14 @@
 - `void smp_secondary_entry(BOOT_U64 cpu_id)`
 - `status_t arch_smp_bootstrap(const boot_info_t *boot_info, BOOT_U64 *out_possible_cpus, BOOT_U64 *out_started_cpus)`
 
+## Scheduler
+
+- `status_t sched_init(void)`
+- `task_t *sched_current(void)`
+- `status_t sched_add(task_t *task)`
+- `void sched_tick(void)`
+- `status_t arch_context_switch(task_t *from, task_t *to)`
+
 ## Device Discovery
 
 - `status_t hw_discovery_init(const boot_info_t *boot_info)`
