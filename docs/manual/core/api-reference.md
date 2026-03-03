@@ -265,14 +265,23 @@ interrupts_register_handler_owned(32, tick_handler, 0, "timer");
 
 ## Scheduler Scaffolding (`scheduler.h`)
 
+### `status_t sched_register_backend(const scheduler_ops_t *ops)`
+- Purpose: register alternate scheduler backend operations before scheduler initialization.
+
 ### `status_t sched_init(void)`
-- Purpose: initialize minimal scheduler state and internal idle task.
+- Purpose: initialize scheduler backend and internal idle task for bootstrap.
 
 ### `task_t *sched_current(void)`
 - Purpose: return currently active task pointer.
 
+### `status_t sched_set_foreground(task_t *task)`
+- Purpose: update scheduler foreground task hint through active backend.
+
 ### `status_t sched_add(task_t *task)`
 - Purpose: add one runnable task to the scheduler run queue.
+
+### `void sched_on_exit(task_t *task, BOOT_U64 code)`
+- Purpose: notify active scheduler backend that a task exited.
 
 ### `void sched_tick(void)`
 - Purpose: timer-driven scheduling hook to rotate runnable tasks.
