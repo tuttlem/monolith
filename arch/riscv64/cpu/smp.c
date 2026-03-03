@@ -1,4 +1,5 @@
 #include "arch_smp.h"
+#include "arch_cpu.h"
 #include "cpu_context.h"
 #include "scheduler.h"
 
@@ -155,4 +156,29 @@ status_t arch_context_switch(task_t *from, task_t *to) {
     return STATUS_INVALID_ARG;
   }
   return cpu_context_switch((cpu_context_t *)from->arch_ctx, (cpu_context_t *)to->arch_ctx);
+}
+
+status_t arch_smp_cpu_start(BOOT_U64 cpu_id) {
+  if (cpu_id == 0ULL) {
+    return STATUS_OK;
+  }
+  return STATUS_DEFERRED;
+}
+
+status_t arch_smp_ipi_send(BOOT_U64 cpu_id, BOOT_U64 kind) {
+  (void)kind;
+  if (cpu_id == arch_cpu_id()) {
+    return STATUS_OK;
+  }
+  return STATUS_DEFERRED;
+}
+
+status_t arch_smp_tlb_shootdown(BOOT_U64 mask, BOOT_U64 va, BOOT_U64 len) {
+  (void)va;
+  (void)len;
+  if ((mask & (1ULL << arch_cpu_id())) != 0ULL) {
+    arch_tlb_sync_local();
+    return STATUS_OK;
+  }
+  return STATUS_DEFERRED;
 }
