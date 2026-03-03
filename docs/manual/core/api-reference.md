@@ -374,6 +374,24 @@ mm_map(0xffff800000200000ULL, 0x00200000ULL, mm_page_size(), MMU_PROT_READ | MMU
 ### `status_t iommu_set_passthrough(iommu_domain_t domain, int enabled)`
 - Purpose: switch a domain between passthrough and translated mode.
 
+## Clock/Reset/Power APIs (`clock.h`, `reset.h`, `power_domain.h`)
+
+### `status_t clock_enable(clock_id_t clk)`
+### `status_t clock_disable(clock_id_t clk)`
+### `status_t clock_set_rate(clock_id_t clk, BOOT_U64 hz)`
+### `status_t clock_get_rate(clock_id_t clk, BOOT_U64 *out_hz)`
+- Purpose: generic clock control and rate query helpers.
+
+### `status_t reset_assert(reset_id_t rst)`
+### `status_t reset_deassert(reset_id_t rst)`
+### `status_t reset_pulse(reset_id_t rst)`
+- Purpose: generic reset control operations.
+
+### `status_t power_domain_on(power_domain_id_t pd)`
+### `status_t power_domain_off(power_domain_id_t pd)`
+### `status_t power_domain_status(power_domain_id_t pd, BOOT_U64 *out_on)`
+- Purpose: generic power-domain state operations.
+
 ### Architecture MM backend entry points
 - `BOOT_U64 arch_mm_page_size(void)`
 - `status_t arch_mm_map_page(mm_virt_addr_t va, mm_phys_addr_t pa, BOOT_U64 prot_flags)`
