@@ -41,19 +41,19 @@ $(BUILD_X64)/kernel/kmain.o: kernel/kmain.c kernel/include/kernel.h arch/x86_64/
 	@mkdir -p $(@D)
 	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_X64)/kernel/print.o: kernel/print.c kernel/include/kernel.h kernel/include/print.h arch/x86_64/arch.mk
+$(BUILD_X64)/kernel/print.o: kernel/core/print.c kernel/include/kernel.h kernel/include/print.h arch/x86_64/arch.mk
 	@mkdir -p $(@D)
 	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_X64)/kernel/status.o: kernel/status.c kernel/include/status.h arch/x86_64/arch.mk
+$(BUILD_X64)/kernel/status.o: kernel/core/status.c kernel/include/status.h arch/x86_64/arch.mk
 	@mkdir -p $(@D)
 	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_X64)/kernel/percpu.o: kernel/percpu.c kernel/include/percpu.h kernel/include/arch_cpu.h arch/x86_64/arch.mk
+$(BUILD_X64)/kernel/percpu.o: kernel/runtime/percpu.c kernel/include/percpu.h kernel/include/arch_cpu.h arch/x86_64/arch.mk
 	@mkdir -p $(@D)
 	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_X64)/kernel/smp.o: kernel/smp.c kernel/include/smp.h kernel/include/arch_smp.h kernel/include/percpu.h arch/x86_64/arch.mk
+$(BUILD_X64)/kernel/smp.o: kernel/runtime/smp.c kernel/include/smp.h kernel/include/arch_smp.h kernel/include/percpu.h arch/x86_64/arch.mk
 	@mkdir -p $(@D)
 	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
 
@@ -69,63 +69,63 @@ $(BUILD_X64)/kernel/discovery/dtb_parser.o: kernel/discovery/dtb_parser.c kernel
 	@mkdir -p $(@D)
 	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_X64)/kernel/panic.o: kernel/panic.c kernel/include/panic.h kernel/include/arch_cpu.h kernel/include/arch_irq.h arch/x86_64/arch.mk
+$(BUILD_X64)/kernel/panic.o: kernel/core/panic.c kernel/include/panic.h kernel/include/arch_cpu.h kernel/include/arch_irq.h arch/x86_64/arch.mk
 	@mkdir -p $(@D)
 	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_X64)/kernel/timebase.o: kernel/timebase.c kernel/include/timebase.h kernel/include/arch_cpu.h kernel/include/arch_timer.h kernel/include/interrupts.h arch/x86_64/arch.mk
+$(BUILD_X64)/kernel/timebase.o: kernel/runtime/timebase.c kernel/include/timebase.h kernel/include/arch_cpu.h kernel/include/arch_timer.h kernel/include/interrupts.h arch/x86_64/arch.mk
 	@mkdir -p $(@D)
 	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_X64)/kernel/irq_controller.o: kernel/irq_controller.c kernel/include/irq_controller.h arch/x86_64/arch.mk
+$(BUILD_X64)/kernel/irq_controller.o: kernel/runtime/irq_controller.c kernel/include/irq_controller.h arch/x86_64/arch.mk
 	@mkdir -p $(@D)
 	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_X64)/kernel/device_model.o: kernel/device_model.c kernel/include/device_model.h kernel/include/hw_desc.h arch/x86_64/arch.mk
+$(BUILD_X64)/kernel/device_model.o: kernel/device/device_model.c kernel/include/device_model.h kernel/include/hw_desc.h arch/x86_64/arch.mk
 	@mkdir -p $(@D)
 	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_X64)/kernel/device_bus.o: kernel/device_bus.c kernel/include/device_bus.h kernel/include/hw_desc.h arch/x86_64/arch.mk
+$(BUILD_X64)/kernel/device_bus.o: kernel/device/device_bus.c kernel/include/device_bus.h kernel/include/hw_desc.h arch/x86_64/arch.mk
 	@mkdir -p $(@D)
 	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_X64)/kernel/pci.o: kernel/pci.c kernel/include/pci.h kernel/include/device_bus.h arch/x86_64/arch.mk
+$(BUILD_X64)/kernel/pci.o: kernel/device/pci.c kernel/include/pci.h kernel/include/device_bus.h arch/x86_64/arch.mk
 	@mkdir -p $(@D)
 	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_X64)/kernel/usb.o: kernel/usb.c kernel/include/usb.h kernel/include/device_bus.h arch/x86_64/arch.mk
+$(BUILD_X64)/kernel/usb.o: kernel/device/usb.c kernel/include/usb.h kernel/include/device_bus.h arch/x86_64/arch.mk
 	@mkdir -p $(@D)
 	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_X64)/kernel/device_domains.o: kernel/device_domains.c kernel/include/device_domains.h kernel/include/device_bus.h arch/x86_64/arch.mk
+$(BUILD_X64)/kernel/device_domains.o: kernel/device/device_domains.c kernel/include/device_domains.h kernel/include/device_bus.h arch/x86_64/arch.mk
 	@mkdir -p $(@D)
 	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_X64)/kernel/device_report.o: kernel/device_report.c kernel/include/device_report.h kernel/include/device_bus.h arch/x86_64/arch.mk
+$(BUILD_X64)/kernel/device_report.o: kernel/device/device_report.c kernel/include/device_report.h kernel/include/device_bus.h arch/x86_64/arch.mk
 	@mkdir -p $(@D)
 	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_X64)/kernel/capability_profile.o: kernel/capability_profile.c kernel/include/capability_profile.h kernel/include/config.h arch/x86_64/arch.mk
+$(BUILD_X64)/kernel/capability_profile.o: kernel/device/capability_profile.c kernel/include/capability_profile.h kernel/include/config.h arch/x86_64/arch.mk
 	@mkdir -p $(@D)
 	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_X64)/kernel/syscall.o: kernel/syscall.c kernel/include/syscall.h kernel/include/arch_syscall.h arch/x86_64/arch.mk
+$(BUILD_X64)/kernel/syscall.o: kernel/runtime/syscall.c kernel/include/syscall.h kernel/include/arch_syscall.h arch/x86_64/arch.mk
 	@mkdir -p $(@D)
 	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_X64)/kernel/scheduler.o: kernel/scheduler.c kernel/include/scheduler.h kernel/include/cpu_context.h arch/x86_64/arch.mk
+$(BUILD_X64)/kernel/scheduler.o: kernel/runtime/scheduler.c kernel/include/scheduler.h kernel/include/cpu_context.h arch/x86_64/arch.mk
 	@mkdir -p $(@D)
 	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_X64)/kernel/trace.o: kernel/trace.c kernel/include/trace.h kernel/include/timebase.h arch/x86_64/arch.mk
+$(BUILD_X64)/kernel/trace.o: kernel/runtime/trace.c kernel/include/trace.h kernel/include/timebase.h arch/x86_64/arch.mk
 	@mkdir -p $(@D)
 	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_X64)/kernel/net.o: kernel/net.c kernel/include/net.h kernel/include/device_bus.h arch/x86_64/arch.mk
+$(BUILD_X64)/kernel/net.o: kernel/device/net.c kernel/include/net.h kernel/include/device_bus.h arch/x86_64/arch.mk
 	@mkdir -p $(@D)
 	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_X64)/kernel/audio.o: kernel/audio.c kernel/include/audio.h kernel/include/device_bus.h arch/x86_64/arch.mk
+$(BUILD_X64)/kernel/audio.o: kernel/device/audio.c kernel/include/audio.h kernel/include/device_bus.h arch/x86_64/arch.mk
 	@mkdir -p $(@D)
 	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
 
@@ -145,11 +145,11 @@ $(BUILD_X64)/arch/x86_64/irq/pic.o: arch/x86_64/irq/pic.c kernel/include/arch/x8
 	@mkdir -p $(@D)
 	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_X64)/kernel/interrupts.o: kernel/interrupts.c kernel/include/interrupts.h kernel/include/arch_interrupts.h arch/x86_64/arch.mk
+$(BUILD_X64)/kernel/interrupts.o: kernel/runtime/interrupts.c kernel/include/interrupts.h kernel/include/arch_interrupts.h arch/x86_64/arch.mk
 	@mkdir -p $(@D)
 	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_X64)/kernel/timer.o: kernel/timer.c kernel/include/timer.h kernel/include/arch_timer.h kernel/include/interrupts.h arch/x86_64/arch.mk
+$(BUILD_X64)/kernel/timer.o: kernel/runtime/timer.c kernel/include/timer.h kernel/include/arch_timer.h kernel/include/interrupts.h arch/x86_64/arch.mk
 	@mkdir -p $(@D)
 	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
 
@@ -207,19 +207,19 @@ $(BUILD_A64)/kernel/kmain.o: kernel/kmain.c kernel/include/kernel.h arch/arm64/a
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_A64)/kernel/print.o: kernel/print.c kernel/include/kernel.h kernel/include/print.h arch/arm64/arch.mk
+$(BUILD_A64)/kernel/print.o: kernel/core/print.c kernel/include/kernel.h kernel/include/print.h arch/arm64/arch.mk
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_A64)/kernel/status.o: kernel/status.c kernel/include/status.h arch/arm64/arch.mk
+$(BUILD_A64)/kernel/status.o: kernel/core/status.c kernel/include/status.h arch/arm64/arch.mk
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_A64)/kernel/percpu.o: kernel/percpu.c kernel/include/percpu.h kernel/include/arch_cpu.h arch/arm64/arch.mk
+$(BUILD_A64)/kernel/percpu.o: kernel/runtime/percpu.c kernel/include/percpu.h kernel/include/arch_cpu.h arch/arm64/arch.mk
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_A64)/kernel/smp.o: kernel/smp.c kernel/include/smp.h kernel/include/arch_smp.h kernel/include/percpu.h arch/arm64/arch.mk
+$(BUILD_A64)/kernel/smp.o: kernel/runtime/smp.c kernel/include/smp.h kernel/include/arch_smp.h kernel/include/percpu.h arch/arm64/arch.mk
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
 
@@ -235,63 +235,63 @@ $(BUILD_A64)/kernel/discovery/dtb_parser.o: kernel/discovery/dtb_parser.c kernel
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_A64)/kernel/panic.o: kernel/panic.c kernel/include/panic.h kernel/include/arch_cpu.h kernel/include/arch_irq.h arch/arm64/arch.mk
+$(BUILD_A64)/kernel/panic.o: kernel/core/panic.c kernel/include/panic.h kernel/include/arch_cpu.h kernel/include/arch_irq.h arch/arm64/arch.mk
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_A64)/kernel/timebase.o: kernel/timebase.c kernel/include/timebase.h kernel/include/arch_cpu.h kernel/include/arch_timer.h kernel/include/interrupts.h arch/arm64/arch.mk
+$(BUILD_A64)/kernel/timebase.o: kernel/runtime/timebase.c kernel/include/timebase.h kernel/include/arch_cpu.h kernel/include/arch_timer.h kernel/include/interrupts.h arch/arm64/arch.mk
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_A64)/kernel/irq_controller.o: kernel/irq_controller.c kernel/include/irq_controller.h arch/arm64/arch.mk
+$(BUILD_A64)/kernel/irq_controller.o: kernel/runtime/irq_controller.c kernel/include/irq_controller.h arch/arm64/arch.mk
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_A64)/kernel/device_model.o: kernel/device_model.c kernel/include/device_model.h kernel/include/hw_desc.h arch/arm64/arch.mk
+$(BUILD_A64)/kernel/device_model.o: kernel/device/device_model.c kernel/include/device_model.h kernel/include/hw_desc.h arch/arm64/arch.mk
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_A64)/kernel/device_bus.o: kernel/device_bus.c kernel/include/device_bus.h kernel/include/hw_desc.h arch/arm64/arch.mk
+$(BUILD_A64)/kernel/device_bus.o: kernel/device/device_bus.c kernel/include/device_bus.h kernel/include/hw_desc.h arch/arm64/arch.mk
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_A64)/kernel/pci.o: kernel/pci.c kernel/include/pci.h kernel/include/device_bus.h arch/arm64/arch.mk
+$(BUILD_A64)/kernel/pci.o: kernel/device/pci.c kernel/include/pci.h kernel/include/device_bus.h arch/arm64/arch.mk
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_A64)/kernel/usb.o: kernel/usb.c kernel/include/usb.h kernel/include/device_bus.h arch/arm64/arch.mk
+$(BUILD_A64)/kernel/usb.o: kernel/device/usb.c kernel/include/usb.h kernel/include/device_bus.h arch/arm64/arch.mk
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_A64)/kernel/device_domains.o: kernel/device_domains.c kernel/include/device_domains.h kernel/include/device_bus.h arch/arm64/arch.mk
+$(BUILD_A64)/kernel/device_domains.o: kernel/device/device_domains.c kernel/include/device_domains.h kernel/include/device_bus.h arch/arm64/arch.mk
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_A64)/kernel/device_report.o: kernel/device_report.c kernel/include/device_report.h kernel/include/device_bus.h arch/arm64/arch.mk
+$(BUILD_A64)/kernel/device_report.o: kernel/device/device_report.c kernel/include/device_report.h kernel/include/device_bus.h arch/arm64/arch.mk
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_A64)/kernel/capability_profile.o: kernel/capability_profile.c kernel/include/capability_profile.h kernel/include/config.h arch/arm64/arch.mk
+$(BUILD_A64)/kernel/capability_profile.o: kernel/device/capability_profile.c kernel/include/capability_profile.h kernel/include/config.h arch/arm64/arch.mk
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_A64)/kernel/syscall.o: kernel/syscall.c kernel/include/syscall.h kernel/include/arch_syscall.h arch/arm64/arch.mk
+$(BUILD_A64)/kernel/syscall.o: kernel/runtime/syscall.c kernel/include/syscall.h kernel/include/arch_syscall.h arch/arm64/arch.mk
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_A64)/kernel/scheduler.o: kernel/scheduler.c kernel/include/scheduler.h kernel/include/cpu_context.h arch/arm64/arch.mk
+$(BUILD_A64)/kernel/scheduler.o: kernel/runtime/scheduler.c kernel/include/scheduler.h kernel/include/cpu_context.h arch/arm64/arch.mk
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_A64)/kernel/trace.o: kernel/trace.c kernel/include/trace.h kernel/include/timebase.h arch/arm64/arch.mk
+$(BUILD_A64)/kernel/trace.o: kernel/runtime/trace.c kernel/include/trace.h kernel/include/timebase.h arch/arm64/arch.mk
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_A64)/kernel/net.o: kernel/net.c kernel/include/net.h kernel/include/device_bus.h arch/arm64/arch.mk
+$(BUILD_A64)/kernel/net.o: kernel/device/net.c kernel/include/net.h kernel/include/device_bus.h arch/arm64/arch.mk
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_A64)/kernel/audio.o: kernel/audio.c kernel/include/audio.h kernel/include/device_bus.h arch/arm64/arch.mk
+$(BUILD_A64)/kernel/audio.o: kernel/device/audio.c kernel/include/audio.h kernel/include/device_bus.h arch/arm64/arch.mk
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
 
@@ -311,11 +311,11 @@ $(BUILD_A64)/arch/arm64/irq/gicv2.o: arch/arm64/irq/gicv2.c kernel/include/arch/
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_A64)/kernel/interrupts.o: kernel/interrupts.c kernel/include/interrupts.h kernel/include/arch_interrupts.h arch/arm64/arch.mk
+$(BUILD_A64)/kernel/interrupts.o: kernel/runtime/interrupts.c kernel/include/interrupts.h kernel/include/arch_interrupts.h arch/arm64/arch.mk
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_A64)/kernel/timer.o: kernel/timer.c kernel/include/timer.h kernel/include/arch_timer.h kernel/include/interrupts.h arch/arm64/arch.mk
+$(BUILD_A64)/kernel/timer.o: kernel/runtime/timer.c kernel/include/timer.h kernel/include/arch_timer.h kernel/include/interrupts.h arch/arm64/arch.mk
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
 
@@ -368,7 +368,7 @@ $(BUILD_A64)/uefi.img: $(BUILD_A64)/BOOTAA64.EFI scripts/mk-uefi-image.sh
 	@mkdir -p $(@D)
 	@./scripts/mk-uefi-image.sh arm64 $(BUILD_A64)/BOOTAA64.EFI $@
 
-RISCV64_SRCS := kernel/kmain.c kernel/print.c kernel/status.c kernel/percpu.c kernel/smp.c kernel/discovery/hw_discovery.c kernel/discovery/acpi_parser.c kernel/discovery/dtb_parser.c kernel/panic.c kernel/timebase.c kernel/irq_controller.c kernel/device_model.c kernel/device_bus.c kernel/pci.c kernel/usb.c kernel/device_domains.c kernel/device_report.c kernel/capability_profile.c kernel/syscall.c kernel/scheduler.c kernel/trace.c kernel/net.c kernel/audio.c kernel/interrupts.c kernel/timer.c kernel/diag/boot_info.c kernel/mm/page_alloc.c kernel/mm/kmalloc.c kernel/mm/mmu.c arch/riscv64/cpu/cpu.c arch/riscv64/cpu/smp.c arch/riscv64/syscall/syscall.c arch/riscv64/mm/memory_init.c arch/riscv64/mm/early_paging.c arch/riscv64/mm/mmu_backend.c arch/riscv64/irq/interrupts.c arch/riscv64/irq/controller_stub.c arch/riscv64/timer/timer.c arch/riscv64/boot/main.c arch/riscv64/boot/console.c lib/memset.c lib/memcpy.c lib/strlen.c
+RISCV64_SRCS := kernel/kmain.c kernel/core/print.c kernel/core/status.c kernel/runtime/percpu.c kernel/runtime/smp.c kernel/discovery/hw_discovery.c kernel/discovery/acpi_parser.c kernel/discovery/dtb_parser.c kernel/core/panic.c kernel/runtime/timebase.c kernel/runtime/irq_controller.c kernel/device/device_model.c kernel/device/device_bus.c kernel/device/pci.c kernel/device/usb.c kernel/device/device_domains.c kernel/device/device_report.c kernel/device/capability_profile.c kernel/runtime/syscall.c kernel/runtime/scheduler.c kernel/runtime/trace.c kernel/device/net.c kernel/device/audio.c kernel/runtime/interrupts.c kernel/runtime/timer.c kernel/diag/boot_info.c kernel/mm/page_alloc.c kernel/mm/kmalloc.c kernel/mm/mmu.c arch/riscv64/cpu/cpu.c arch/riscv64/cpu/smp.c arch/riscv64/syscall/syscall.c arch/riscv64/mm/memory_init.c arch/riscv64/mm/early_paging.c arch/riscv64/mm/mmu_backend.c arch/riscv64/irq/interrupts.c arch/riscv64/irq/controller_stub.c arch/riscv64/timer/timer.c arch/riscv64/boot/main.c arch/riscv64/boot/console.c lib/memset.c lib/memcpy.c lib/strlen.c
 RISCV64_OBJS := $(patsubst %.c,$(BUILD_RISCV64)/%.o,$(RISCV64_SRCS)) $(BUILD_RISCV64)/arch/riscv64/start.o $(BUILD_RISCV64)/arch/riscv64/irq/entry.o
 
 $(BUILD_RISCV64)/kernel.elf: $(RISCV64_OBJS) arch/riscv64/linker.ld
