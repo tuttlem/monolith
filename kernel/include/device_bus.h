@@ -16,7 +16,8 @@ typedef enum {
   BUS_TYPE_ROOT = 0,
   BUS_TYPE_PLATFORM = 1,
   BUS_TYPE_PCI = 2,
-  BUS_TYPE_USB = 3
+  BUS_TYPE_USB = 3,
+  BUS_TYPE_VIRTIO = 4
 } bus_type_t;
 
 typedef enum {
@@ -66,6 +67,7 @@ typedef struct {
   BOOT_U64 resource_count;
   device_resource_t resources[DEVICE_BUS_MAX_RESOURCES];
   void *driver_data;
+  BOOT_U64 active;
 } device_t;
 
 typedef struct {
@@ -75,11 +77,15 @@ typedef struct {
   const char *name;
 } bus_t;
 
+typedef void (*device_hotplug_fn_t)(const device_t *dev, void *ctx);
+
 status_t device_bus_init(const boot_info_t *boot_info, const hw_desc_t *hw);
 void device_bus_reset(void);
 
 status_t device_bus_register_bus(const bus_t *bus_template, BOOT_U64 *out_bus_id);
 status_t device_bus_register_device(const device_t *dev_template, BOOT_U64 *out_device_id);
+status_t device_bus_remove_device(BOOT_U64 device_id);
+status_t device_bus_register_hotplug(device_hotplug_fn_t on_add, device_hotplug_fn_t on_remove, void *ctx);
 
 const bus_t *device_bus_get_bus(BOOT_U64 bus_id);
 const device_t *device_bus_get_device(BOOT_U64 device_id);

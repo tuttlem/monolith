@@ -82,6 +82,8 @@
 - `void device_bus_reset(void)`
 - `status_t device_bus_register_bus(const bus_t *bus_template, BOOT_U64 *out_bus_id)`
 - `status_t device_bus_register_device(const device_t *dev_template, BOOT_U64 *out_device_id)`
+- `status_t device_bus_remove_device(BOOT_U64 device_id)`
+- `status_t device_bus_register_hotplug(device_hotplug_fn_t on_add, device_hotplug_fn_t on_remove, void *ctx)`
 - `const bus_t *device_bus_get_bus(BOOT_U64 bus_id)`
 - `const device_t *device_bus_get_device(BOOT_U64 device_id)`
 - `BOOT_U64 device_bus_count(void)`
