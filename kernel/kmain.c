@@ -9,6 +9,7 @@
 #include "diag/boot_info.h"
 #include "hw_desc.h"
 #include "hw_resource.h"
+#include "irq_domain.h"
 #include "interrupts.h"
 #include "kmalloc.h"
 #include "arch_mm.h"
@@ -85,6 +86,7 @@ void kmain(const boot_info_t *boot_info) {
   status_t audio_status;
   status_t resource_status;
   status_t irq_status;
+  status_t irq_domain_status;
   status_t timer_status;
   status_t syscall_status;
   status_t syscall_probe_status;
@@ -122,6 +124,7 @@ void kmain(const boot_info_t *boot_info) {
   driver_reg_status = device_model_register_builtin_drivers();
   device_status = driver_probe_all(hw);
   irq_status = driver_class_last_status("irqc");
+  irq_domain_status = irq_domain_init(boot_info);
   timer_status = driver_class_last_status("timer");
   syscall_status = syscall_init(boot_info);
   syscall_probe_status = syscall_invoke_trap(SYSCALL_OP_ABI_INFO, 0, 0, 0, 0, 0, 0, &syscall_probe_resp);
@@ -178,6 +181,9 @@ void kmain(const boot_info_t *boot_info) {
   }
   if (!status_is_ok(irq_status) && irq_status != STATUS_DEFERRED) {
     kprintf("interrupts_init: %s (%d)\n", status_str(irq_status), irq_status);
+  }
+  if (!status_is_ok(irq_domain_status) && irq_domain_status != STATUS_DEFERRED) {
+    kprintf("irq_domain_init: %s (%d)\n", status_str(irq_domain_status), irq_domain_status);
   }
   if (!status_is_ok(timer_status) && timer_status != STATUS_DEFERRED) {
     kprintf("timer_init: %s (%d)\n", status_str(timer_status), timer_status);

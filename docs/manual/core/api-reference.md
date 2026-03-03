@@ -230,6 +230,25 @@ interrupts_register_handler_owned(32, tick_handler, 0, "timer");
   - `out_vector`, `out_irq`: output mappings.
 - Returns: status for operations returning `status_t`.
 
+## IRQ Domain Layer (`irq_domain.h`)
+
+### `status_t irq_domain_init(const boot_info_t *boot_info)`
+- Purpose: initialize generic IRQ allocation domain state.
+
+### `status_t irq_alloc_line(BOOT_U64 device_id, BOOT_U64 hwirq, irq_desc_t *out)`
+- Purpose: allocate one line IRQ descriptor and map hardware IRQ to vector.
+
+### `status_t irq_alloc_msi(BOOT_U64 device_id, BOOT_U64 nvec, irq_desc_t *out_vec)`
+- Purpose: request MSI/MSI-X vectors through a generic contract.
+- Remarks: currently returns `STATUS_DEFERRED` until controller backends add MSI support.
+
+### `status_t irq_configure(const irq_desc_t *irq, irq_cfg_t cfg)`
+### `status_t irq_set_affinity(const irq_desc_t *irq, cpu_mask_t mask)`
+- Purpose: generic trigger/polarity and affinity control hooks.
+
+### `BOOT_U64 irq_domain_alloc_count(void)`
+- Purpose: return number of active IRQ allocations in the generic domain table.
+
 ## Hardware Resource Manager (`hw_resource.h`)
 
 ### `status_t hw_resource_init(const boot_info_t *boot_info)`
