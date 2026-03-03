@@ -91,4 +91,7 @@ BOOT_U64 device_bus_find_next_by_class(device_class_t class_id, BOOT_U64 after_i
 
 void device_bus_dump(void);
 
+/* Spec 131 hardware-resource manager compatibility layer. */
+status_t device_bus_replace_resources(BOOT_U64 device_id, const device_resource_t *resources, BOOT_U64 count);
+
 #endif

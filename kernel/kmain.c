@@ -8,6 +8,7 @@
 #include "device_model.h"
 #include "diag/boot_info.h"
 #include "hw_desc.h"
+#include "hw_resource.h"
 #include "interrupts.h"
 #include "kmalloc.h"
 #include "arch_mm.h"
@@ -82,6 +83,7 @@ void kmain(const boot_info_t *boot_info) {
   status_t domain_status;
   status_t net_status;
   status_t audio_status;
+  status_t resource_status;
   status_t irq_status;
   status_t timer_status;
   status_t syscall_status;
@@ -105,6 +107,7 @@ void kmain(const boot_info_t *boot_info) {
   discovery_status = hw_discovery_init(boot_info);
   hw = hw_desc_get();
   bus_status = device_bus_init(boot_info, hw);
+  resource_status = hw_resource_init(boot_info);
   pci_status = pci_enumerate(boot_info);
   usb_status = usb_enumerate(boot_info);
   domain_status = device_domains_enumerate(boot_info);
@@ -139,6 +142,9 @@ void kmain(const boot_info_t *boot_info) {
   }
   if (!status_is_ok(bus_status) && bus_status != STATUS_DEFERRED) {
     kprintf("device_bus_init: %s (%d)\n", status_str(bus_status), bus_status);
+  }
+  if (!status_is_ok(resource_status) && resource_status != STATUS_DEFERRED) {
+    kprintf("hw_resource_init: %s (%d)\n", status_str(resource_status), resource_status);
   }
   if (!status_is_ok(pci_status) && pci_status != STATUS_DEFERRED) {
     kprintf("pci_enumerate: %s (%d)\n", status_str(pci_status), pci_status);
