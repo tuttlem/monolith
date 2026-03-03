@@ -16,10 +16,23 @@ typedef struct {
   void (*ack)(BOOT_U64 vector);
 } clockevent_t;
 
+typedef struct {
+  BOOT_U64 stable;
+  BOOT_U64 unstable;
+  BOOT_U64 emulated;
+  BOOT_U64 calibrated_hz;
+  BOOT_U64 drift_ppm_bound;
+  BOOT_U64 cross_cpu_checked;
+  BOOT_U64 cross_cpu_passed;
+} time_quality_t;
+
 status_t time_init(const boot_info_t *boot_info);
 BOOT_U64 time_now_ns(void);
 BOOT_U64 time_ticks(void);
 BOOT_U64 time_hz(void);
+BOOT_U64 time_cycles_to_ns(BOOT_U64 cycles);
+BOOT_U64 time_ns_to_cycles(BOOT_U64 ns);
+status_t time_quality(time_quality_t *out);
 const clocksource_t *time_clocksource(void);
 const clockevent_t *time_clockevent(void);
 

@@ -1,4 +1,4 @@
-# Time System (Spec 070)
+# Time System
 
 API: `kernel/include/timebase.h`  
 Implementation: `kernel/timebase.c`
@@ -15,6 +15,9 @@ The time subsystem combines:
 - `BOOT_U64 time_now_ns(void)`
 - `BOOT_U64 time_ticks(void)`
 - `BOOT_U64 time_hz(void)`
+- `BOOT_U64 time_cycles_to_ns(BOOT_U64 cycles)`
+- `BOOT_U64 time_ns_to_cycles(BOOT_U64 ns)`
+- `status_t time_quality(time_quality_t *out)`
 - `const clocksource_t *time_clocksource(void)`
 - `const clockevent_t *time_clockevent(void)`
 
@@ -36,6 +39,17 @@ Compatibility shim:
 - `time_now_ns` is clamped to never move backwards
 - tick count can be refreshed from cycle-derived nanoseconds for consistency
 - overflow-safe conversion uses saturating mul/div helpers
+
+## Quality Reporting
+
+`time_quality_t` reports current calibration quality:
+- `stable`: time source is treated as stable enough for scheduler/runtime use.
+- `unstable`: backend quality is conservative and should be treated as lower confidence.
+- `emulated`: source is likely virtualized/emulated or fallback-derived.
+- `calibrated_hz`: active source frequency in Hz.
+- `drift_ppm_bound`: estimated drift bound in parts-per-million.
+- `cross_cpu_checked`: whether cross-CPU monotonic probe was attempted.
+- `cross_cpu_passed`: result of cross-CPU monotonic probe.
 
 ## Architecture Hook
 

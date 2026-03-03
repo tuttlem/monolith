@@ -320,11 +320,16 @@ interrupts_register_handler_owned(32, tick_handler, 0, "timer");
 ### `BOOT_U64 time_now_ns(void)`
 ### `BOOT_U64 time_ticks(void)`
 ### `BOOT_U64 time_hz(void)`
+### `BOOT_U64 time_cycles_to_ns(BOOT_U64 cycles)`
+### `BOOT_U64 time_ns_to_cycles(BOOT_U64 ns)`
+### `status_t time_quality(time_quality_t *out)`
 ### `const clocksource_t *time_clocksource(void)`
 ### `const clockevent_t *time_clockevent(void)`
 - Purpose: monotonic time initialization/query API.
 - Parameters:
   - `boot_info`: handoff pointer during init.
+  - `cycles` / `ns`: conversion inputs for timebase helpers.
+  - `out`: destination for quality metadata.
 - Returns:
   - init status.
   - current monotonic nanoseconds/ticks/hz or backend descriptors.
