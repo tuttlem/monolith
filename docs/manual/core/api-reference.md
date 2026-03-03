@@ -535,6 +535,9 @@ if (buf != 0) {
 - Use when: per-CPU ownership and CPU-local state are needed.
 
 ### `status_t arch_smp_bootstrap(const boot_info_t *boot_info, BOOT_U64 *out_possible_cpus, BOOT_U64 *out_started_cpus)`
+- `status_t arch_smp_cpu_start(BOOT_U64 cpu_id)`
+- `status_t arch_smp_ipi_send(BOOT_U64 cpu_id, BOOT_U64 kind)`
+- `status_t arch_smp_tlb_shootdown(BOOT_U64 mask, BOOT_U64 va, BOOT_U64 len)`
 - Purpose: architecture backend for secondary CPU bring-up.
 - Parameters:
   - `boot_info`: handoff pointer.
@@ -544,6 +547,7 @@ if (buf != 0) {
   - `STATUS_OK`, `STATUS_DEFERRED`, or failure.
 
 ### `status_t smp_init(const boot_info_t *boot_info)`
+### `status_t smp_cpu_start(BOOT_U64 cpu_id)`
 ### `BOOT_U64 smp_cpu_count_online(void)`
 ### `BOOT_U64 smp_cpu_count_possible(void)`
 ### `void smp_secondary_entry(BOOT_U64 cpu_id)`
@@ -553,6 +557,11 @@ if (buf != 0) {
   - `cpu_id`: CPU ID for secondary entry registration.
 - Returns: status or counts.
 - Remarks: current secondary policy is register-online then park.
+
+### `status_t ipi_send(BOOT_U64 cpu_id, ipi_kind_t kind)`
+### `status_t tlb_shootdown(cpu_mask_t mask, virt_addr_t va, BOOT_U64 len)`
+- Purpose: generic SMP cross-CPU signal and translation-shootdown contracts.
+- Remarks: local CPU operations are active now; remote operations return explicit deferred status until full backend support is enabled.
 
 ## Hardware Discovery (`hw_desc.h`)
 

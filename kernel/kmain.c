@@ -309,6 +309,11 @@ void kmain(const boot_info_t *boot_info) {
   kprintf("Starting Monolith (%s) . . . \n", boot_info_arch_name(boot_info->arch_id));
   kprintf("smp: possible=%llu online=%llu\n", smp_cpu_count_possible(), smp_cpu_count_online());
   {
+    status_t ipi_st = ipi_send(0ULL, IPI_KIND_RESCHEDULE);
+    status_t tlb_st = tlb_shootdown(1ULL, 0ULL, 4096ULL);
+    kprintf("smp: ipi_self=%s(%d) tlb_local=%s(%d)\n", status_str(ipi_st), ipi_st, status_str(tlb_st), tlb_st);
+  }
+  {
     if (hw != (const hw_desc_t *)0) {
       kprintf("hw: source=0x%llx cpus=%llu irqc=%llu timers=%llu mmio=%llu uarts=%llu\n", hw->source_mask,
               hw->cpu_count, hw->irq_controller_count, hw->timer_count, hw->mmio_region_count, hw->uart_count);

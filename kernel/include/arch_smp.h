@@ -13,5 +13,8 @@
  * - negative error on hard failure
  */
 status_t arch_smp_bootstrap(const boot_info_t *boot_info, BOOT_U64 *out_possible_cpus, BOOT_U64 *out_started_cpus);
+status_t arch_smp_cpu_start(BOOT_U64 cpu_id);
+status_t arch_smp_ipi_send(BOOT_U64 cpu_id, BOOT_U64 kind);
+status_t arch_smp_tlb_shootdown(BOOT_U64 mask, BOOT_U64 va, BOOT_U64 len);
 
 #endif

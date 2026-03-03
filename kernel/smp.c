@@ -14,6 +14,7 @@ static struct {
   BOOT_U64 initialized;
   BOOT_U64 possible_cpus;
   BOOT_U64 online_cpus;
+  BOOT_U64 cpu_online_bitmap;
 } g_smp;
 
 static BOOT_U64 smp_wait_for_online(BOOT_U64 expected) {
@@ -57,6 +58,7 @@ status_t smp_init(const boot_info_t *boot_info) {
 
   g_smp.possible_cpus = possible;
   g_smp.online_cpus = percpu_online_count();
+  g_smp.cpu_online_bitmap = 1ULL;
 
 #if !MONOLITH_FEATURE_SMP
   g_smp.initialized = 1ULL;
@@ -86,6 +88,11 @@ status_t smp_init(const boot_info_t *boot_info) {
 
   online = smp_wait_for_online(1ULL + started);
   g_smp.online_cpus = online;
+  if (online >= 64ULL) {
+    g_smp.cpu_online_bitmap = ~0ULL;
+  } else {
+    g_smp.cpu_online_bitmap = (1ULL << online) - 1ULL;
+  }
   g_smp.initialized = 1ULL;
 
   if (online < 1ULL + started) {
@@ -110,6 +117,46 @@ BOOT_U64 smp_cpu_count_possible(void) {
     return g_smp.possible_cpus;
   }
   return 1ULL;
+}
+
+status_t smp_cpu_start(BOOT_U64 cpu_id) {
+  status_t st;
+
+  if (g_smp.initialized == 0ULL) {
+    return STATUS_DEFERRED;
+  }
+  if (cpu_id >= g_smp.possible_cpus) {
+    return STATUS_NOT_FOUND;
+  }
+  if (cpu_id == 0ULL || cpu_id < percpu_online_count()) {
+    return STATUS_OK;
+  }
+  st = arch_smp_cpu_start(cpu_id);
+  if (st == STATUS_OK && cpu_id < 64ULL) {
+    g_smp.cpu_online_bitmap |= (1ULL << cpu_id);
+    g_smp.online_cpus = percpu_online_count();
+  }
+  return st;
+}
+
+status_t ipi_send(BOOT_U64 cpu_id, ipi_kind_t kind) {
+  if (g_smp.initialized == 0ULL) {
+    return STATUS_DEFERRED;
+  }
+  if (cpu_id >= g_smp.possible_cpus) {
+    return STATUS_NOT_FOUND;
+  }
+  return arch_smp_ipi_send(cpu_id, (BOOT_U64)kind);
+}
+
+status_t tlb_shootdown(cpu_mask_t mask, virt_addr_t va, BOOT_U64 len) {
+  if (g_smp.initialized == 0ULL) {
+    return STATUS_DEFERRED;
+  }
+  if (len == 0ULL) {
+    return STATUS_INVALID_ARG;
+  }
+  return arch_smp_tlb_shootdown((BOOT_U64)mask, (BOOT_U64)va, len);
 }
 
 void smp_secondary_entry(BOOT_U64 cpu_id) {
