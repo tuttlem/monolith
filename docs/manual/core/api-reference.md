@@ -357,6 +357,23 @@ mm_map(0xffff800000200000ULL, 0x00200000ULL, mm_page_size(), MMU_PROT_READ | MMU
 ### `status_t dma_get_constraints(BOOT_U64 device_id, dma_constraints_t *out_constraints)`
 - Purpose: configure/query per-device DMA addressing constraints.
 
+## IOMMU API (`iommu.h`)
+
+### `status_t iommu_init(const boot_info_t *boot_info)`
+- Purpose: initialize optional IOMMU subsystem state.
+
+### `status_t iommu_domain_create(iommu_domain_t *out_domain)`
+### `status_t iommu_attach(iommu_domain_t domain, BOOT_U64 device_id)`
+### `status_t iommu_detach(iommu_domain_t domain, BOOT_U64 device_id)`
+- Purpose: create/attach/detach DMA translation domains for devices.
+
+### `status_t iommu_map(iommu_domain_t domain, iova_t iova, phys_addr_t pa, BOOT_U64 len, iommu_perm_t perm)`
+### `status_t iommu_unmap(iommu_domain_t domain, iova_t iova, BOOT_U64 len)`
+- Purpose: manage IOVA mappings for a domain.
+
+### `status_t iommu_set_passthrough(iommu_domain_t domain, int enabled)`
+- Purpose: switch a domain between passthrough and translated mode.
+
 ### Architecture MM backend entry points
 - `BOOT_U64 arch_mm_page_size(void)`
 - `status_t arch_mm_map_page(mm_virt_addr_t va, mm_phys_addr_t pa, BOOT_U64 prot_flags)`

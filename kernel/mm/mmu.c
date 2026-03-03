@@ -1,5 +1,6 @@
 #include "arch_mm.h"
 #include "dma.h"
+#include "iommu.h"
 
 static int is_aligned(BOOT_U64 value, BOOT_U64 alignment) {
   if (alignment == 0) {
@@ -224,5 +225,108 @@ status_t dma_get_constraints(BOOT_U64 device_id, dma_constraints_t *out_constrai
   out_constraints->max_addr = g_dma.default_constraints.max_addr;
   out_constraints->max_segment_len = g_dma.default_constraints.max_segment_len;
   out_constraints->alignment = g_dma.default_constraints.alignment;
+  return STATUS_OK;
+}
+
+#define IOMMU_MAX_DOMAINS 16U
+
+typedef struct {
+  BOOT_U64 active;
+  BOOT_U64 passthrough;
+} iommu_domain_state_t;
+
+static struct {
+  BOOT_U64 initialized;
+  iommu_domain_state_t domains[IOMMU_MAX_DOMAINS];
+} g_iommu;
+
+status_t iommu_init(const boot_info_t *boot_info) {
+  BOOT_U64 i;
+  if (boot_info == (const boot_info_t *)0) {
+    return STATUS_INVALID_ARG;
+  }
+  g_iommu.initialized = 1ULL;
+  for (i = 0; i < IOMMU_MAX_DOMAINS; ++i) {
+    g_iommu.domains[i].active = 0ULL;
+    g_iommu.domains[i].passthrough = 1ULL;
+  }
+  return STATUS_DEFERRED;
+}
+
+status_t iommu_domain_create(iommu_domain_t *out_domain) {
+  BOOT_U64 i;
+  if (!g_iommu.initialized) {
+    return STATUS_DEFERRED;
+  }
+  if (out_domain == (iommu_domain_t *)0) {
+    return STATUS_INVALID_ARG;
+  }
+  for (i = 0; i < IOMMU_MAX_DOMAINS; ++i) {
+    if (!g_iommu.domains[i].active) {
+      g_iommu.domains[i].active = 1ULL;
+      g_iommu.domains[i].passthrough = 1ULL;
+      *out_domain = i;
+      return STATUS_OK;
+    }
+  }
+  return STATUS_NO_MEMORY;
+}
+
+status_t iommu_attach(iommu_domain_t domain, BOOT_U64 device_id) {
+  (void)device_id;
+  if (!g_iommu.initialized) {
+    return STATUS_DEFERRED;
+  }
+  if (domain >= IOMMU_MAX_DOMAINS || !g_iommu.domains[domain].active) {
+    return STATUS_NOT_FOUND;
+  }
+  return STATUS_OK;
+}
+
+status_t iommu_detach(iommu_domain_t domain, BOOT_U64 device_id) {
+  (void)device_id;
+  if (!g_iommu.initialized) {
+    return STATUS_DEFERRED;
+  }
+  if (domain >= IOMMU_MAX_DOMAINS || !g_iommu.domains[domain].active) {
+    return STATUS_NOT_FOUND;
+  }
+  return STATUS_OK;
+}
+
+status_t iommu_map(iommu_domain_t domain, iova_t iova, phys_addr_t pa, BOOT_U64 len, iommu_perm_t perm) {
+  (void)iova;
+  (void)pa;
+  (void)len;
+  (void)perm;
+  if (!g_iommu.initialized) {
+    return STATUS_DEFERRED;
+  }
+  if (domain >= IOMMU_MAX_DOMAINS || !g_iommu.domains[domain].active) {
+    return STATUS_NOT_FOUND;
+  }
+  return STATUS_DEFERRED;
+}
+
+status_t iommu_unmap(iommu_domain_t domain, iova_t iova, BOOT_U64 len) {
+  (void)iova;
+  (void)len;
+  if (!g_iommu.initialized) {
+    return STATUS_DEFERRED;
+  }
+  if (domain >= IOMMU_MAX_DOMAINS || !g_iommu.domains[domain].active) {
+    return STATUS_NOT_FOUND;
+  }
+  return STATUS_DEFERRED;
+}
+
+status_t iommu_set_passthrough(iommu_domain_t domain, int enabled) {
+  if (!g_iommu.initialized) {
+    return STATUS_DEFERRED;
+  }
+  if (domain >= IOMMU_MAX_DOMAINS || !g_iommu.domains[domain].active) {
+    return STATUS_NOT_FOUND;
+  }
+  g_iommu.domains[domain].passthrough = enabled ? 1ULL : 0ULL;
   return STATUS_OK;
 }
