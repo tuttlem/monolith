@@ -29,6 +29,7 @@
 #include "timer.h"
 #include "trace.h"
 #include "usb.h"
+#include "uaccess.h"
 
 #ifndef CORE_ARCH_NAME
 #define CORE_ARCH_NAME "unknown"
@@ -99,6 +100,7 @@ void kmain(const boot_info_t *boot_info) {
   status_t iommu_status;
   status_t syscall_status;
   status_t syscall_probe_status;
+  status_t uaccess_negative_status;
   status_t console_status;
   time_quality_t tq;
   const hw_desc_t *hw;
@@ -154,6 +156,9 @@ void kmain(const boot_info_t *boot_info) {
   } else {
     syscall_probe_status = syscall_invoke_trap(SYSCALL_OP_ABI_INFO, 0, 0, 0, 0, 0, 0, &syscall_probe_resp);
   }
+  (void)uaccess_set_user_window(0x2000ULL, 0x1000ULL);
+  uaccess_negative_status = syscall_invoke_kernel(SYSCALL_OP_DEBUG_LOG, 0x1000ULL, 5ULL, 0, 0, 0, 0, &syscall_probe_resp);
+  (void)uaccess_set_user_window(0ULL, 0ULL);
   console_status = driver_class_last_status("console");
   kprintf("time: now_ns=%llu ticks=%llu hz=%llu\n", time_now_ns(), time_ticks(), time_hz());
   if (time_quality(&tq) == STATUS_OK) {
@@ -248,6 +253,7 @@ void kmain(const boot_info_t *boot_info) {
   } else {
     kprintf("syscall abi probe: call=%s (%d)\n", status_str(syscall_probe_status), syscall_probe_status);
   }
+  kprintf("uaccess negative probe: %s (%d)\n", status_str(uaccess_negative_status), uaccess_negative_status);
   if (!status_is_ok(console_status) && console_status != STATUS_DEFERRED) {
     kprintf("console_init: %s (%d)\n", status_str(console_status), console_status);
   }

@@ -771,6 +771,17 @@ if (d != 0) {
   - `boot_info`: current handoff descriptor.
   - `out_ctx`: output launch context.
 
+## User Access (`uaccess.h`)
+
+### `status_t uaccess_set_user_window(BOOT_U64 base, BOOT_U64 size)`
+- Purpose: configure active user pointer window used by checked-copy APIs.
+
+### `status_t copy_from_user_checked(void *dst, BOOT_U64 user_src, BOOT_U64 len)`
+- Purpose: copy bytes from user address after range validation.
+
+### `status_t copy_to_user_checked(BOOT_U64 user_dst, const void *src, BOOT_U64 len)`
+- Purpose: copy bytes to user address after range validation.
+
 ## Network Domain (`net.h`)
 
 ### `status_t net_enumerate(const boot_info_t *boot_info)`

@@ -5,6 +5,7 @@
 #include "print.h"
 #include "timebase.h"
 #include "trace.h"
+#include "uaccess.h"
 
 #define SYSCALL_MAX_HANDLERS 64U
 #define SYSCALL_DEBUG_LOG_MAX 255U
@@ -65,18 +66,17 @@ static status_t syscall_handle_abi_info(const syscall_request_t *req, syscall_re
 }
 
 static status_t syscall_handle_debug_log(const syscall_request_t *req, syscall_response_t *resp) {
-  const char *src;
   BOOT_U64 i;
   BOOT_U64 len;
   char line[SYSCALL_DEBUG_LOG_MAX + 1U];
+  status_t st;
 
   if (req == (const syscall_request_t *)0 || resp == (syscall_response_t *)0) {
     return STATUS_INVALID_ARG;
   }
 
-  src = (const char *)(BOOT_UPTR)req->args[0];
   len = req->args[1];
-  if (src == (const char *)0) {
+  if (req->args[0] == 0ULL) {
     resp->status = STATUS_INVALID_ARG;
     resp->value = 0;
     return STATUS_INVALID_ARG;
@@ -84,8 +84,16 @@ static status_t syscall_handle_debug_log(const syscall_request_t *req, syscall_r
   if (len > SYSCALL_DEBUG_LOG_MAX) {
     len = SYSCALL_DEBUG_LOG_MAX;
   }
+
+  st = copy_from_user_checked(line, req->args[0], len);
+  if (st != STATUS_OK) {
+    resp->status = st;
+    resp->value = 0ULL;
+    return st;
+  }
+
   for (i = 0; i < len; ++i) {
-    char ch = src[i];
+    char ch = line[i];
     line[i] = ch;
     if (ch == '\0') {
       break;
@@ -165,6 +173,7 @@ status_t syscall_init(const boot_info_t *boot_info) {
   }
 
   syscall_reset();
+  (void)uaccess_set_user_window(0ULL, 0ULL);
   g_syscall.arch_id = boot_info->arch_id;
   g_syscall.initialized = 1ULL;
 

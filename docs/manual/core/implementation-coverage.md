@@ -116,6 +116,7 @@ This page tells readers where each implemented hardware substrate area is docume
 - Common mechanism boundary and launch sequencing:
   - `core/user-mode-substrate.md`
   - `core/user-task-bootstrap.md`
+  - `core/uaccess.md`
   - `core/syscall-transport.md`
   - `core/memory.md`
   - `core/api-reference.md`
