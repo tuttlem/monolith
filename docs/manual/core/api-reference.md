@@ -230,6 +230,23 @@ interrupts_register_handler_owned(32, tick_handler, 0, "timer");
   - `out_vector`, `out_irq`: output mappings.
 - Returns: status for operations returning `status_t`.
 
+## Hardware Resource Manager (`hw_resource.h`)
+
+### `status_t hw_resource_init(const boot_info_t *boot_info)`
+- Purpose: initialize normalized hardware resource query layer.
+
+### `status_t hw_resource_attach(BOOT_U64 device_id, const hw_resource_t *list, BOOT_U64 count)`
+- Purpose: replace a device resource list using normalized `hw_resource_t` records.
+
+### `status_t hw_resource_get(BOOT_U64 device_id, hw_resource_type_t type, BOOT_U64 index, hw_resource_t *out)`
+- Purpose: fetch one resource from a device by resource type and index.
+
+### `BOOT_U64 hw_resource_count(BOOT_U64 device_id, hw_resource_type_t type)`
+- Purpose: count resources for a device (or all when type is `HW_RESOURCE_NONE`).
+
+### `status_t hw_resource_view(BOOT_U64 device_id, device_resource_view_t *out)`
+- Purpose: read compact per-device resource metadata for diagnostics.
+
 ## Timer and Timebase (`arch_timer.h`, `timer.h`, `timebase.h`)
 
 ### `status_t arch_timer_init(const boot_info_t *boot_info, BOOT_U64 *out_hz, BOOT_U64 *out_irq_vector)`

@@ -1,4 +1,5 @@
 #include "device_bus.h"
+#include "hw_resource.h"
 #include "print.h"
 
 static bus_t g_buses[DEVICE_BUS_MAX_BUSES];
@@ -183,6 +184,35 @@ status_t device_bus_register_device(const device_t *dev_template, BOOT_U64 *out_
     *out_device_id = dst->id;
   }
   g_device_count += 1ULL;
+  return STATUS_OK;
+}
+
+status_t device_bus_replace_resources(BOOT_U64 device_id, const device_resource_t *resources, BOOT_U64 count) {
+  device_t *dst;
+  BOOT_U64 i;
+
+  if (device_id >= g_device_count) {
+    return STATUS_NOT_FOUND;
+  }
+  if (count > 0 && resources == (const device_resource_t *)0) {
+    return STATUS_INVALID_ARG;
+  }
+
+  dst = &g_devices[device_id];
+  if (count > DEVICE_BUS_MAX_RESOURCES) {
+    count = DEVICE_BUS_MAX_RESOURCES;
+  }
+  dst->resource_count = count;
+  for (i = 0; i < DEVICE_BUS_MAX_RESOURCES; ++i) {
+    if (i < count) {
+      dst->resources[i] = resources[i];
+    } else {
+      dst->resources[i].kind = DEVICE_RESOURCE_NONE;
+      dst->resources[i].base = 0;
+      dst->resources[i].size = 0;
+      dst->resources[i].flags = 0;
+    }
+  }
   return STATUS_OK;
 }
 
@@ -438,4 +468,120 @@ void device_bus_dump(void) {
     kprintf("  dev[%llu]: bus=%llu class=%s name=%s resources=%llu\n", d->id, d->bus_id, class_name(d->class_id),
             d->name == (const char *)0 ? "<none>" : d->name, d->resource_count);
   }
+}
+
+static hw_resource_type_t to_hw_type(device_resource_kind_t kind) {
+  switch (kind) {
+  case DEVICE_RESOURCE_MMIO:
+    return HW_RESOURCE_MMIO;
+  case DEVICE_RESOURCE_IRQ:
+    return HW_RESOURCE_IRQ;
+  case DEVICE_RESOURCE_IOPORT:
+    return HW_RESOURCE_IOPORT;
+  case DEVICE_RESOURCE_DMA:
+    return HW_RESOURCE_DMA;
+  default:
+    return HW_RESOURCE_NONE;
+  }
+}
+
+static device_resource_kind_t to_device_kind(hw_resource_type_t type) {
+  switch (type) {
+  case HW_RESOURCE_MMIO:
+    return DEVICE_RESOURCE_MMIO;
+  case HW_RESOURCE_IRQ:
+    return DEVICE_RESOURCE_IRQ;
+  case HW_RESOURCE_IOPORT:
+    return DEVICE_RESOURCE_IOPORT;
+  case HW_RESOURCE_DMA:
+    return DEVICE_RESOURCE_DMA;
+  default:
+    return DEVICE_RESOURCE_NONE;
+  }
+}
+
+status_t hw_resource_init(const boot_info_t *boot_info) {
+  (void)boot_info;
+  return g_initialized ? STATUS_OK : STATUS_DEFERRED;
+}
+
+status_t hw_resource_attach(BOOT_U64 device_id, const hw_resource_t *list, BOOT_U64 count) {
+  device_resource_t resources[DEVICE_BUS_MAX_RESOURCES];
+  BOOT_U64 i;
+
+  if (count > 0 && list == (const hw_resource_t *)0) {
+    return STATUS_INVALID_ARG;
+  }
+  if (count > DEVICE_BUS_MAX_RESOURCES) {
+    count = DEVICE_BUS_MAX_RESOURCES;
+  }
+  for (i = 0; i < count; ++i) {
+    resources[i].kind = to_device_kind(list[i].type);
+    resources[i].base = list[i].base;
+    resources[i].size = list[i].size;
+    resources[i].flags = list[i].flags;
+  }
+  return device_bus_replace_resources(device_id, resources, count);
+}
+
+status_t hw_resource_get(BOOT_U64 device_id, hw_resource_type_t type, BOOT_U64 index, hw_resource_t *out) {
+  const device_t *dev;
+  BOOT_U64 i;
+  BOOT_U64 found = 0;
+
+  if (out == (hw_resource_t *)0) {
+    return STATUS_INVALID_ARG;
+  }
+  dev = device_bus_get_device(device_id);
+  if (dev == (const device_t *)0) {
+    return STATUS_NOT_FOUND;
+  }
+
+  for (i = 0; i < dev->resource_count; ++i) {
+    hw_resource_type_t cur = to_hw_type(dev->resources[i].kind);
+    if (type != HW_RESOURCE_NONE && cur != type) {
+      continue;
+    }
+    if (found == index) {
+      out->type = cur;
+      out->base = dev->resources[i].base;
+      out->size = dev->resources[i].size;
+      out->flags = dev->resources[i].flags;
+      return STATUS_OK;
+    }
+    found += 1ULL;
+  }
+  return STATUS_NOT_FOUND;
+}
+
+BOOT_U64 hw_resource_count(BOOT_U64 device_id, hw_resource_type_t type) {
+  const device_t *dev;
+  BOOT_U64 i;
+  BOOT_U64 count = 0;
+
+  dev = device_bus_get_device(device_id);
+  if (dev == (const device_t *)0) {
+    return 0;
+  }
+  for (i = 0; i < dev->resource_count; ++i) {
+    if (type == HW_RESOURCE_NONE || to_hw_type(dev->resources[i].kind) == type) {
+      count += 1ULL;
+    }
+  }
+  return count;
+}
+
+status_t hw_resource_view(BOOT_U64 device_id, device_resource_view_t *out) {
+  const device_t *dev;
+
+  if (out == (device_resource_view_t *)0) {
+    return STATUS_INVALID_ARG;
+  }
+  dev = device_bus_get_device(device_id);
+  if (dev == (const device_t *)0) {
+    return STATUS_NOT_FOUND;
+  }
+  out->device_id = device_id;
+  out->total_count = dev->resource_count;
+  return STATUS_OK;
 }
