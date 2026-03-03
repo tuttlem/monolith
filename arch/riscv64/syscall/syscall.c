@@ -1,4 +1,5 @@
 #include "arch_syscall.h"
+#include "arch_syscall_abi.h"
 #include "interrupts.h"
 #include "syscall.h"
 
@@ -55,5 +56,30 @@ status_t arch_syscall_trigger(void) {
   if ((old_sstatus & 2ULL) == 0ULL) {
     __asm__ volatile("csrci sstatus, 2" : : : "memory");
   }
+  return STATUS_OK;
+}
+
+status_t arch_syscall_decode(const void *trap_frame, syscall_abi_frame_t *out) {
+  const syscall_abi_frame_t *in;
+  BOOT_U64 i;
+
+  if (trap_frame == (const void *)0 || out == (syscall_abi_frame_t *)0) {
+    return STATUS_INVALID_ARG;
+  }
+  in = (const syscall_abi_frame_t *)trap_frame;
+  out->op = in->op;
+  for (i = 0; i < 6ULL; ++i) {
+    out->args[i] = in->args[i];
+  }
+  return STATUS_OK;
+}
+
+status_t arch_syscall_encode_ret(void *trap_frame, BOOT_U64 value) {
+  syscall_abi_frame_t *out;
+  if (trap_frame == (void *)0) {
+    return STATUS_INVALID_ARG;
+  }
+  out = (syscall_abi_frame_t *)trap_frame;
+  out->args[0] = value;
   return STATUS_OK;
 }

@@ -135,6 +135,11 @@ Divergence notes:
 - File: `arch/x86_64/syscall/syscall.c`
 - Purpose: execute `int $0x80` trap to enter generic syscall dispatch handler.
 
+### `status_t arch_syscall_decode(const void *trap_frame, syscall_abi_frame_t *out)`
+### `status_t arch_syscall_encode_ret(void *trap_frame, BOOT_U64 value)`
+- File: `arch/x86_64/syscall/syscall.c`
+- Purpose: x86_64 syscall ABI helper hooks used by the generic syscall trap path.
+
 ## User-Mode Backend Hook
 
 ### `status_t arch_user_mode_set_kernel_stack(void *kernel_stack_top)`

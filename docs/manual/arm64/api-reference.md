@@ -137,6 +137,11 @@ Function details:
 - File: `arch/arm64/syscall/syscall.c`
 - Purpose: execute `svc #0`; arm64 sync-trap decode routes SVC to vector `64`.
 
+### `status_t arch_syscall_decode(const void *trap_frame, syscall_abi_frame_t *out)`
+### `status_t arch_syscall_encode_ret(void *trap_frame, BOOT_U64 value)`
+- File: `arch/arm64/syscall/syscall.c`
+- Purpose: arm64 syscall ABI helper hooks used by the generic syscall trap path.
+
 ## User-Mode Backend Hook
 
 ### `status_t arch_user_mode_set_kernel_stack(void *kernel_stack_top)`

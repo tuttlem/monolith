@@ -131,6 +131,11 @@ Divergence notes:
 - File: `arch/riscv64/syscall/syscall.c`
 - Purpose: raise a supervisor software interrupt (`SSIP`) and, if needed, fall back to synthetic vector-64 dispatch so syscall trap invocation completes deterministically during early bring-up.
 
+### `status_t arch_syscall_decode(const void *trap_frame, syscall_abi_frame_t *out)`
+### `status_t arch_syscall_encode_ret(void *trap_frame, BOOT_U64 value)`
+- File: `arch/riscv64/syscall/syscall.c`
+- Purpose: riscv64 syscall ABI helper hooks used by the generic syscall trap path.
+
 ## User-Mode Backend Hook
 
 ### `status_t arch_user_mode_set_kernel_stack(void *kernel_stack_top)`

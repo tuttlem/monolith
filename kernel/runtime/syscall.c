@@ -1,5 +1,6 @@
 #include "syscall.h"
 #include "arch_syscall.h"
+#include "arch_syscall_abi.h"
 #include "interrupts.h"
 #include "personality.h"
 #include "print.h"
@@ -35,16 +36,39 @@ static personality_id_t g_active_personality = (personality_id_t)(~0ULL);
 
 static struct {
   BOOT_U64 active;
-  syscall_request_t req;
+  syscall_abi_frame_t frame;
   syscall_response_t resp;
 } g_syscall_trap_mailbox;
 
 status_t syscall_trap_mailbox_consume(void) {
+  syscall_request_t req;
+  syscall_abi_frame_t decoded;
   status_t st;
   if (g_syscall_trap_mailbox.active == 0ULL) {
     return STATUS_DEFERRED;
   }
-  st = syscall_dispatch(&g_syscall_trap_mailbox.req, &g_syscall_trap_mailbox.resp);
+  st = arch_syscall_decode(&g_syscall_trap_mailbox.frame, &decoded);
+  if (st != STATUS_OK) {
+    g_syscall_trap_mailbox.resp.status = st;
+    g_syscall_trap_mailbox.resp.value = 0ULL;
+    g_syscall_trap_mailbox.active = 0ULL;
+    return st;
+  }
+  req.abi_version = g_syscall.abi_version;
+  req.op = decoded.op;
+  req.args[0] = decoded.args[0];
+  req.args[1] = decoded.args[1];
+  req.args[2] = decoded.args[2];
+  req.args[3] = decoded.args[3];
+  req.args[4] = decoded.args[4];
+  req.args[5] = decoded.args[5];
+  req.arch_id = g_syscall.arch_id;
+  req.flags = 0ULL;
+
+  st = syscall_dispatch(&req, &g_syscall_trap_mailbox.resp);
+  if (st == STATUS_OK) {
+    (void)arch_syscall_encode_ret(&g_syscall_trap_mailbox.frame, g_syscall_trap_mailbox.resp.value);
+  }
   if (st != STATUS_OK && g_syscall_trap_mailbox.resp.status == STATUS_OK) {
     g_syscall_trap_mailbox.resp.status = st;
   }
@@ -280,16 +304,13 @@ status_t syscall_invoke_trap(BOOT_U64 op, BOOT_U64 arg0, BOOT_U64 arg1, BOOT_U64
   }
 
   g_syscall_trap_mailbox.active = 1ULL;
-  g_syscall_trap_mailbox.req.abi_version = g_syscall.abi_version;
-  g_syscall_trap_mailbox.req.op = op;
-  g_syscall_trap_mailbox.req.args[0] = arg0;
-  g_syscall_trap_mailbox.req.args[1] = arg1;
-  g_syscall_trap_mailbox.req.args[2] = arg2;
-  g_syscall_trap_mailbox.req.args[3] = arg3;
-  g_syscall_trap_mailbox.req.args[4] = arg4;
-  g_syscall_trap_mailbox.req.args[5] = arg5;
-  g_syscall_trap_mailbox.req.arch_id = g_syscall.arch_id;
-  g_syscall_trap_mailbox.req.flags = 0;
+  g_syscall_trap_mailbox.frame.op = op;
+  g_syscall_trap_mailbox.frame.args[0] = arg0;
+  g_syscall_trap_mailbox.frame.args[1] = arg1;
+  g_syscall_trap_mailbox.frame.args[2] = arg2;
+  g_syscall_trap_mailbox.frame.args[3] = arg3;
+  g_syscall_trap_mailbox.frame.args[4] = arg4;
+  g_syscall_trap_mailbox.frame.args[5] = arg5;
   g_syscall_trap_mailbox.resp.status = STATUS_DEFERRED;
   g_syscall_trap_mailbox.resp.value = 0;
 

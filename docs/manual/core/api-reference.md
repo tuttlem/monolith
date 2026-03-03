@@ -712,6 +712,12 @@ if (d != 0) {
 ### `status_t arch_syscall_trigger(void)`
 - Purpose: execute architecture trap instruction to enter syscall dispatch path.
 
+### `status_t arch_syscall_decode(const void *trap_frame, syscall_abi_frame_t *out)`
+- Purpose: decode syscall operation and arguments from architecture trap ABI frame.
+
+### `status_t arch_syscall_encode_ret(void *trap_frame, BOOT_U64 value)`
+- Purpose: write syscall return value back into architecture trap ABI frame.
+
 ### `status_t syscall_init(const boot_info_t *boot_info)`
 - Purpose: initialize generic syscall transport dispatcher and register substrate reserved handlers.
 

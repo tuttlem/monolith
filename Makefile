@@ -145,7 +145,7 @@ $(BUILD_X64)/arch/x86_64/cpu/smp.o: arch/x86_64/cpu/smp.c kernel/include/arch_sm
 	@mkdir -p $(@D)
 	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_X64)/arch/x86_64/syscall/syscall.o: arch/x86_64/syscall/syscall.c kernel/include/arch_syscall.h arch/x86_64/arch.mk
+$(BUILD_X64)/arch/x86_64/syscall/syscall.o: arch/x86_64/syscall/syscall.c kernel/include/arch_syscall.h kernel/include/arch_syscall_abi.h arch/x86_64/arch.mk
 	@mkdir -p $(@D)
 	$(X64_CC) $(X64_UEFI_CFLAGS) -c $< -o $@
 
@@ -323,7 +323,7 @@ $(BUILD_A64)/arch/arm64/cpu/smp.o: arch/arm64/cpu/smp.c kernel/include/arch_smp.
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
 
-$(BUILD_A64)/arch/arm64/syscall/syscall.o: arch/arm64/syscall/syscall.c kernel/include/arch_syscall.h arch/arm64/arch.mk
+$(BUILD_A64)/arch/arm64/syscall/syscall.o: arch/arm64/syscall/syscall.c kernel/include/arch_syscall.h kernel/include/arch_syscall_abi.h arch/arm64/arch.mk
 	@mkdir -p $(@D)
 	$(A64_CC) $(A64_UEFI_CFLAGS) -c $< -o $@
 
