@@ -229,6 +229,12 @@
 - `status_t power_domain_off(power_domain_id_t pd)`
 - `status_t power_domain_status(power_domain_id_t pd, BOOT_U64 *out_on)`
 
+## CPU Caps/Context
+
+- `status_t cpu_caps_query(cpu_caps_t *out_caps)`
+- `status_t cpu_context_init(cpu_context_t *ctx, void (*entry)(void *), void *arg, void *stack_top)`
+- `status_t cpu_context_switch(cpu_context_t *from, cpu_context_t *to)`
+
 ## Time
 
 - `status_t timer_init(const boot_info_t *boot_info)`

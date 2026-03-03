@@ -392,6 +392,17 @@ mm_map(0xffff800000200000ULL, 0x00200000ULL, mm_page_size(), MMU_PROT_READ | MMU
 ### `status_t power_domain_status(power_domain_id_t pd, BOOT_U64 *out_on)`
 - Purpose: generic power-domain state operations.
 
+## CPU Capabilities and Context (`cpu_caps.h`, `cpu_context.h`)
+
+### `status_t cpu_caps_query(cpu_caps_t *out_caps)`
+- Purpose: return normalized CPU feature presence flags for the running architecture.
+
+### `status_t cpu_context_init(cpu_context_t *ctx, void (*entry)(void *), void *arg, void *stack_top)`
+- Purpose: initialize a context record for a future execution target.
+
+### `status_t cpu_context_switch(cpu_context_t *from, cpu_context_t *to)`
+- Purpose: context-management hook for scheduler/runtime scaffolding.
+
 ### Architecture MM backend entry points
 - `BOOT_U64 arch_mm_page_size(void)`
 - `status_t arch_mm_map_page(mm_virt_addr_t va, mm_phys_addr_t pa, BOOT_U64 prot_flags)`
