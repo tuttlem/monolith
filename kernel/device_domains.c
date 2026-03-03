@@ -1,10 +1,12 @@
 #include "device_domains.h"
 #include "capability_profile.h"
+#include "driver_queue.h"
 #include "print.h"
 
 static BOOT_U64 g_block_count;
 static BOOT_U64 g_input_count;
 static BOOT_U64 g_display_count;
+static driver_ring_t g_block_probe_ring;
 
 static int is_domain_source(const device_t *d) {
   if (d->class_id == DEVICE_CLASS_BLOCK || d->class_id == DEVICE_CLASS_INPUT || d->class_id == DEVICE_CLASS_DISPLAY) {
@@ -54,6 +56,7 @@ status_t device_domains_enumerate(const boot_info_t *boot_info) {
   g_block_count = 0;
   g_input_count = 0;
   g_display_count = 0;
+  driver_ring_init(&g_block_probe_ring, 65ULL);
 
   for (i = 0; i < device_bus_count(); ++i) {
     const device_t *src = device_bus_device_at(i);
@@ -63,13 +66,18 @@ status_t device_domains_enumerate(const boot_info_t *boot_info) {
     }
 
     if (src->class_id == DEVICE_CLASS_PCI_DEVICE && src->class_code == 0x01ULL) {
+      BOOT_U64 block_slot;
       if (!capability_domain_enabled(DEVICE_CLASS_BLOCK)) {
+        continue;
+      }
+      if (!driver_ring_push(&g_block_probe_ring, &block_slot)) {
         continue;
       }
       if (add_domain_device(src, DEVICE_CLASS_BLOCK, "block-device") == STATUS_OK) {
         g_block_count += 1ULL;
         st = STATUS_OK;
       }
+      (void)driver_ring_pop(&g_block_probe_ring, (BOOT_U64 *)0);
       continue;
     }
 

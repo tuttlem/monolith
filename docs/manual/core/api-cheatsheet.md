@@ -243,6 +243,16 @@
 - `personality_id_t personality_active_id(void)`
 - `const char *personality_active_name(void)`
 
+## Driver Helpers
+
+- `driver_ring_init(driver_ring_t *ring, BOOT_U64 capacity)`
+- `driver_ring_push(driver_ring_t *ring, BOOT_U64 *out_slot)`
+- `driver_ring_pop(driver_ring_t *ring, BOOT_U64 *out_slot)`
+- `driver_ring_count(const driver_ring_t *ring)`
+- `driver_irq_complete(const interrupt_frame_t *frame)`
+- `driver_retry_begin(driver_retry_t *ctx, BOOT_U64 max_attempts)`
+- `driver_retry_next(driver_retry_t *ctx)`
+
 ## Time
 
 - `status_t timer_init(const boot_info_t *boot_info)`

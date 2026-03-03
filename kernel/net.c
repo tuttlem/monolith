@@ -1,11 +1,13 @@
 #include "net.h"
 #include "capability_profile.h"
+#include "driver_queue.h"
 #include "print.h"
 
 #define NET_MAX_DEVICES 32U
 
 static BOOT_U64 g_net_count;
 static net_device_info_t g_net_devices[NET_MAX_DEVICES];
+static driver_ring_t g_net_probe_ring;
 
 status_t net_enumerate(const boot_info_t *boot_info) {
   BOOT_U64 i;
@@ -20,11 +22,13 @@ status_t net_enumerate(const boot_info_t *boot_info) {
   }
 
   g_net_count = 0;
+  driver_ring_init(&g_net_probe_ring, NET_MAX_DEVICES + 1ULL);
 
   for (i = 0; i < device_bus_count(); ++i) {
     const device_t *src = device_bus_device_at(i);
     device_t d;
     BOOT_U64 r;
+    BOOT_U64 ring_slot;
 
     if (src == (const device_t *)0 || src->class_id != DEVICE_CLASS_PCI_DEVICE || src->class_code != 0x02ULL) {
       continue;
@@ -56,6 +60,9 @@ status_t net_enumerate(const boot_info_t *boot_info) {
     {
       BOOT_U64 new_id = DEVICE_BUS_ID_NONE;
       if (device_bus_register_device(&d, &new_id) == STATUS_OK) {
+      if (!driver_ring_push(&g_net_probe_ring, &ring_slot)) {
+        continue;
+      }
       if (g_net_count < NET_MAX_DEVICES) {
         g_net_devices[g_net_count].device_id = new_id;
         g_net_devices[g_net_count].parent_id = src->id;
@@ -73,6 +80,7 @@ status_t net_enumerate(const boot_info_t *boot_info) {
       }
       g_net_count += 1ULL;
       st = STATUS_OK;
+      (void)driver_ring_pop(&g_net_probe_ring, (BOOT_U64 *)0);
     }
     }
   }
