@@ -10,6 +10,9 @@ static BOOT_U64 g_initialized;
 
 static BOOT_U64 g_root_bus_id = DEVICE_BUS_ID_NONE;
 static BOOT_U64 g_platform_bus_id = DEVICE_BUS_ID_NONE;
+static device_hotplug_fn_t g_hotplug_on_add;
+static device_hotplug_fn_t g_hotplug_on_remove;
+static void *g_hotplug_ctx;
 
 static void init_empty_device(device_t *dev) {
   BOOT_U64 j;
@@ -26,6 +29,7 @@ static void init_empty_device(device_t *dev) {
   dev->prog_if = 0;
   dev->resource_count = 0;
   dev->driver_data = (void *)0;
+  dev->active = 0;
   for (j = 0; j < DEVICE_BUS_MAX_RESOURCES; ++j) {
     dev->resources[j].kind = DEVICE_RESOURCE_NONE;
     dev->resources[j].base = 0;
@@ -77,6 +81,8 @@ static const char *bus_name(bus_type_t type) {
     return "pci";
   case BUS_TYPE_USB:
     return "usb";
+  case BUS_TYPE_VIRTIO:
+    return "virtio";
   default:
     return "unknown";
   }
@@ -107,6 +113,7 @@ void device_bus_reset(void) {
     g_devices[i].prog_if = 0;
     g_devices[i].resource_count = 0;
     g_devices[i].driver_data = (void *)0;
+    g_devices[i].active = 0;
     for (j = 0; j < DEVICE_BUS_MAX_RESOURCES; ++j) {
       g_devices[i].resources[j].kind = DEVICE_RESOURCE_NONE;
       g_devices[i].resources[j].base = 0;
@@ -120,6 +127,9 @@ void device_bus_reset(void) {
   g_initialized = 0;
   g_root_bus_id = DEVICE_BUS_ID_NONE;
   g_platform_bus_id = DEVICE_BUS_ID_NONE;
+  g_hotplug_on_add = (device_hotplug_fn_t)0;
+  g_hotplug_on_remove = (device_hotplug_fn_t)0;
+  g_hotplug_ctx = (void *)0;
 }
 
 status_t device_bus_register_bus(const bus_t *bus_template, BOOT_U64 *out_bus_id) {
@@ -170,6 +180,7 @@ status_t device_bus_register_device(const device_t *dev_template, BOOT_U64 *out_
   dst->prog_if = dev_template->prog_if;
   dst->resource_count = dev_template->resource_count;
   dst->driver_data = dev_template->driver_data;
+  dst->active = 1;
   dst->id = g_device_count;
   if (dst->resource_count > DEVICE_BUS_MAX_RESOURCES) {
     dst->resource_count = DEVICE_BUS_MAX_RESOURCES;
@@ -183,7 +194,31 @@ status_t device_bus_register_device(const device_t *dev_template, BOOT_U64 *out_
   if (out_device_id != (BOOT_U64 *)0) {
     *out_device_id = dst->id;
   }
+  if (g_hotplug_on_add != (device_hotplug_fn_t)0) {
+    g_hotplug_on_add(dst, g_hotplug_ctx);
+  }
   g_device_count += 1ULL;
+  return STATUS_OK;
+}
+
+status_t device_bus_remove_device(BOOT_U64 device_id) {
+  if (device_id >= g_device_count) {
+    return STATUS_NOT_FOUND;
+  }
+  if (g_devices[device_id].active == 0) {
+    return STATUS_NOT_FOUND;
+  }
+  g_devices[device_id].active = 0;
+  if (g_hotplug_on_remove != (device_hotplug_fn_t)0) {
+    g_hotplug_on_remove(&g_devices[device_id], g_hotplug_ctx);
+  }
+  return STATUS_OK;
+}
+
+status_t device_bus_register_hotplug(device_hotplug_fn_t on_add, device_hotplug_fn_t on_remove, void *ctx) {
+  g_hotplug_on_add = on_add;
+  g_hotplug_on_remove = on_remove;
+  g_hotplug_ctx = ctx;
   return STATUS_OK;
 }
 
@@ -227,22 +262,42 @@ const device_t *device_bus_get_device(BOOT_U64 device_id) {
   if (device_id >= g_device_count) {
     return (const device_t *)0;
   }
+  if (g_devices[device_id].active == 0) {
+    return (const device_t *)0;
+  }
   return &g_devices[device_id];
 }
 
-BOOT_U64 device_bus_count(void) { return g_device_count; }
+BOOT_U64 device_bus_count(void) {
+  BOOT_U64 i;
+  BOOT_U64 count = 0;
+  for (i = 0; i < g_device_count; ++i) {
+    if (g_devices[i].active != 0) {
+      count += 1ULL;
+    }
+  }
+  return count;
+}
 
 const device_t *device_bus_device_at(BOOT_U64 index) {
-  if (index >= g_device_count) {
-    return (const device_t *)0;
+  BOOT_U64 i;
+  BOOT_U64 active = 0;
+  for (i = 0; i < g_device_count; ++i) {
+    if (g_devices[i].active == 0) {
+      continue;
+    }
+    if (active == index) {
+      return &g_devices[i];
+    }
+    active += 1ULL;
   }
-  return &g_devices[index];
+  return (const device_t *)0;
 }
 
 BOOT_U64 device_bus_find_first_by_class(device_class_t class_id) {
   BOOT_U64 i;
   for (i = 0; i < g_device_count; ++i) {
-    if (g_devices[i].class_id == class_id) {
+    if (g_devices[i].active != 0 && g_devices[i].class_id == class_id) {
       return g_devices[i].id;
     }
   }
@@ -252,7 +307,7 @@ BOOT_U64 device_bus_find_first_by_class(device_class_t class_id) {
 BOOT_U64 device_bus_find_next_by_class(device_class_t class_id, BOOT_U64 after_id) {
   BOOT_U64 i;
   for (i = after_id + 1ULL; i < g_device_count; ++i) {
-    if (g_devices[i].class_id == class_id) {
+    if (g_devices[i].active != 0 && g_devices[i].class_id == class_id) {
       return g_devices[i].id;
     }
   }
