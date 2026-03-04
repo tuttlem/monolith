@@ -91,19 +91,19 @@ case "${arch}" in
       echo "error: qemu-system-riscv64 not found. Install qemu-system-misc." >&2
       exit 1
     }
-    img="build/riscv64/kernel.elf"
-    [[ -f "${img}" ]] || {
-      echo "error: missing kernel ${img}. Run 'make riscv64'." >&2
+    kernel_img="build/riscv64/kernel.elf"
+    [[ -f "${kernel_img}" ]] || {
+      echo "error: missing kernel ${kernel_img}. Run 'make riscv64'." >&2
       exit 1
     }
     serial_backend="${QEMU_SERIAL:-stdio}"
     if [[ "${headless}" == "1" ]]; then
       exec qemu-system-riscv64 -machine virt -m 512M -smp "${qemu_smp}" -bios default \
-        -device loader,file="${img}",cpu-num=0 \
+        -kernel "${kernel_img}" \
         -serial "${serial_backend}" -display none -monitor none -no-reboot "$@"
     fi
     exec qemu-system-riscv64 -machine virt -m 512M -smp "${qemu_smp}" -bios default \
-      -device loader,file="${img}",cpu-num=0 \
+      -kernel "${kernel_img}" \
       -serial "${serial_backend}" -monitor none -no-reboot "$@"
     ;;
   *)

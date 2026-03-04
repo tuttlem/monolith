@@ -1,7 +1,6 @@
 .section .text
 .align 11
 .global arm64_vector_table
-.global arm64_trap_common
 
 arm64_vector_table:
   b arm64_vec_curr_sp0_sync
@@ -41,58 +40,42 @@ arm64_vector_table:
   .space 124
 
 arm64_vec_curr_sp0_sync:
-  mov x0, #0
-  b arm64_trap_common
+  b arm64_trap_common_sync
 arm64_vec_curr_sp0_irq:
-  mov x0, #1
-  b arm64_trap_common
+  b arm64_trap_common_irq
 arm64_vec_curr_sp0_fiq:
-  mov x0, #2
-  b arm64_trap_common
+  b arm64_trap_common_fiq
 arm64_vec_curr_sp0_serror:
-  mov x0, #3
-  b arm64_trap_common
+  b arm64_trap_common_serror
 
 arm64_vec_curr_spx_sync:
-  mov x0, #0
-  b arm64_trap_common
+  b arm64_trap_common_sync
 arm64_vec_curr_spx_irq:
-  mov x0, #1
-  b arm64_trap_common
+  b arm64_trap_common_irq
 arm64_vec_curr_spx_fiq:
-  mov x0, #2
-  b arm64_trap_common
+  b arm64_trap_common_fiq
 arm64_vec_curr_spx_serror:
-  mov x0, #3
-  b arm64_trap_common
+  b arm64_trap_common_serror
 
 arm64_vec_lower_a64_sync:
-  mov x0, #0
-  b arm64_trap_common
+  b arm64_trap_common_sync
 arm64_vec_lower_a64_irq:
-  mov x0, #1
-  b arm64_trap_common
+  b arm64_trap_common_irq
 arm64_vec_lower_a64_fiq:
-  mov x0, #2
-  b arm64_trap_common
+  b arm64_trap_common_fiq
 arm64_vec_lower_a64_serror:
-  mov x0, #3
-  b arm64_trap_common
+  b arm64_trap_common_serror
 
 arm64_vec_lower_a32_sync:
-  mov x0, #0
-  b arm64_trap_common
+  b arm64_trap_common_sync
 arm64_vec_lower_a32_irq:
-  mov x0, #1
-  b arm64_trap_common
+  b arm64_trap_common_irq
 arm64_vec_lower_a32_fiq:
-  mov x0, #2
-  b arm64_trap_common
+  b arm64_trap_common_fiq
 arm64_vec_lower_a32_serror:
-  mov x0, #3
-  b arm64_trap_common
+  b arm64_trap_common_serror
 
-arm64_trap_common:
+.macro ARM64_TRAP_SAVE_AND_CALL kind
   sub sp, sp, #256
 
   stp x0, x1, [sp, #0]
@@ -115,11 +98,13 @@ arm64_trap_common:
   add x9, sp, #256
   str x9, [sp, #248]
 
+  mov x0, #\kind
   mrs x1, esr_el1
   mrs x2, elr_el1
   mrs x3, spsr_el1
   mrs x4, far_el1
   ldr x5, [sp, #248]
+  mov x6, sp
   bl arm64_trap_c
   msr elr_el1, x0
 
@@ -142,3 +127,13 @@ arm64_trap_common:
 
   add sp, sp, #256
   eret
+.endm
+
+arm64_trap_common_sync:
+  ARM64_TRAP_SAVE_AND_CALL 0
+arm64_trap_common_irq:
+  ARM64_TRAP_SAVE_AND_CALL 1
+arm64_trap_common_fiq:
+  ARM64_TRAP_SAVE_AND_CALL 2
+arm64_trap_common_serror:
+  ARM64_TRAP_SAVE_AND_CALL 3

@@ -1,8 +1,10 @@
 #include "arch_interrupts.h"
 #include "arch/arm64/gicv2.h"
+#include "arch_cpu.h"
 #include "interrupts.h"
 #include "irq_controller.h"
 #include "panic.h"
+#include "syscall.h"
 
 #define ARM64_TRAP_SYNC 0ULL
 #define ARM64_TRAP_IRQ 1ULL
@@ -32,8 +34,8 @@ void arch_interrupts_enable(void) { __asm__ volatile("msr daifclr, #2" : : : "me
 
 void arch_interrupts_disable(void) { __asm__ volatile("msr daifset, #2" : : : "memory"); }
 
-BOOT_U64 arm64_trap_c(BOOT_U64 trap_kind, BOOT_U64 esr, BOOT_U64 elr, BOOT_U64 spsr, BOOT_U64 far,
-  BOOT_U64 sp_at_trap) {
+BOOT_U64 arm64_trap_c(BOOT_U64 trap_kind, BOOT_U64 esr, BOOT_U64 elr, BOOT_U64 spsr, BOOT_U64 far, BOOT_U64 sp_at_trap,
+                      BOOT_U64 regs_base) {
   interrupt_frame_t frame;
   BOOT_U64 irq = 0;
   BOOT_U64 vector = 0;
@@ -68,6 +70,20 @@ BOOT_U64 arm64_trap_c(BOOT_U64 trap_kind, BOOT_U64 esr, BOOT_U64 elr, BOOT_U64 s
   } else {
     BOOT_U64 ec = (esr >> 26) & 0x3FULL;
     if (ec == 0x15ULL) {
+      BOOT_U64 prev_mode = spsr & 0xFULL;
+      if (prev_mode == 0ULL) {
+        BOOT_U64 ret = 0ULL;
+        BOOT_U64 *regs = (BOOT_U64 *)(BOOT_UPTR)regs_base;
+        if (regs == (BOOT_U64 *)0) {
+          return elr + 4ULL;
+        }
+        st = syscall_handle_user_trap(regs[8], regs[0], regs[1], regs[2], regs[3], regs[4], regs[5], &ret);
+        if (st != STATUS_OK && ret == 0ULL) {
+          ret = (BOOT_U64)st;
+        }
+        regs[0] = ret;
+        return elr + 4ULL;
+      }
       vector = ARM64_SYSCALL_VECTOR;
     } else {
       vector = 0;

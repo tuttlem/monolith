@@ -1,4 +1,4 @@
-.section .text
+.section .text._start
 .global _start
 _start:
   bnez a0, 1f

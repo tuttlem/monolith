@@ -1,4 +1,5 @@
 #include "arch_interrupts.h"
+#include "arch_cpu.h"
 #include "arch/riscv64/irq_controller.h"
 #include "interrupts.h"
 #include "panic.h"
@@ -22,7 +23,7 @@ void arch_interrupts_enable(void) { __asm__ volatile("csrsi sstatus, 2" : : : "m
 void arch_interrupts_disable(void) { __asm__ volatile("csrci sstatus, 2" : : : "memory"); }
 
 BOOT_U64 riscv64_trap_c(BOOT_U64 scause, BOOT_U64 sepc, BOOT_U64 stval, BOOT_U64 sstatus,
-                        BOOT_U64 sp_at_trap) {
+                        BOOT_U64 sp_at_trap, BOOT_U64 regs_base) {
   interrupt_frame_t frame;
   BOOT_U64 is_interrupt = (scause >> 63) & 1ULL;
   BOOT_U64 cause_code = scause & ((1ULL << 63) - 1ULL);
@@ -41,6 +42,20 @@ BOOT_U64 riscv64_trap_c(BOOT_U64 scause, BOOT_U64 sepc, BOOT_U64 stval, BOOT_U64
     }
   } else if (cause_code == 2ULL && syscall_trap_mailbox_active()) {
     (void)syscall_trap_mailbox_consume();
+    next_sepc = sepc + 4ULL;
+    syscall_trap = 1;
+    vector = 64ULL;
+  } else if (cause_code == 8ULL && ((sstatus & 0x100ULL) == 0ULL)) {
+    BOOT_U64 *regs = (BOOT_U64 *)(BOOT_UPTR)regs_base;
+    BOOT_U64 ret = 0ULL;
+    status_t st;
+    if (regs != (BOOT_U64 *)0) {
+      st = syscall_handle_user_trap(regs[15], regs[8], regs[9], regs[10], regs[11], regs[12], regs[13], &ret);
+      if (st != STATUS_OK && ret == 0ULL) {
+        ret = (BOOT_U64)st;
+      }
+      regs[8] = ret;
+    }
     next_sepc = sepc + 4ULL;
     syscall_trap = 1;
     vector = 64ULL;
