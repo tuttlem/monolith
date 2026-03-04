@@ -4,6 +4,7 @@ set -euo pipefail
 log="build/arm64/smoke-usermode.log"
 boot_marker="Starting Monolith (arm64)"
 user_marker="usermode: launching init task"
+probe_marker="sys_debug: usermode: probe trap ok"
 
 make arm64-uefi >/dev/null
 
@@ -25,6 +26,11 @@ if ! tr -d '\r' <"${log}" | grep -Fq "${boot_marker}"; then
 fi
 if ! tr -d '\r' <"${log}" | grep -Fq "${user_marker}"; then
   echo "smoke-usermode-arm64: FAIL (missing user marker)" >&2
+  tail -n 160 "${log}" >&2 || true
+  exit 1
+fi
+if ! tr -d '\r' <"${log}" | grep -Fq "${probe_marker}"; then
+  echo "smoke-usermode-arm64: FAIL (missing probe marker)" >&2
   tail -n 160 "${log}" >&2 || true
   exit 1
 fi

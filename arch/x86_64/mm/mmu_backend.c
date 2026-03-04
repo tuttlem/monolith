@@ -98,6 +98,10 @@ status_t arch_mm_map_page(mm_virt_addr_t va, mm_phys_addr_t pa, BOOT_U64 prot_fl
 
   pdpt_index = (va >> 30) & 0x1FFULL;
   pd_index = (va >> 21) & 0x1FFULL;
+  if ((prot_flags & MMU_PROT_USER) != 0ULL) {
+    g_pml4[0] |= X64_PAGE_USER;
+    g_pdpt[pdpt_index] |= X64_PAGE_USER;
+  }
   entry = (pa & X64_ADDR_MASK_2M) | x64_flags_from_prot(prot_flags);
   g_pd[pdpt_index][pd_index] = entry;
   return STATUS_OK;
@@ -138,6 +142,10 @@ status_t arch_mm_protect_page(mm_virt_addr_t va, BOOT_U64 prot_flags) {
 
   pdpt_index = (va >> 30) & 0x1FFULL;
   pd_index = (va >> 21) & 0x1FFULL;
+  if ((prot_flags & MMU_PROT_USER) != 0ULL) {
+    g_pml4[0] |= X64_PAGE_USER;
+    g_pdpt[pdpt_index] |= X64_PAGE_USER;
+  }
   old_entry = g_pd[pdpt_index][pd_index];
   if ((old_entry & X64_PAGE_PRESENT) == 0) {
     return STATUS_NOT_FOUND;

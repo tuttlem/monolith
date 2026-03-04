@@ -31,9 +31,178 @@
 #include "usb.h"
 #include "uaccess.h"
 #include "user_task.h"
+#include "arch_user_mode.h"
 
 #ifndef CORE_ARCH_NAME
 #define CORE_ARCH_NAME "unknown"
+#endif
+
+#if defined(__x86_64__) || defined(__aarch64__) || defined(__riscv)
+static unsigned char g_usermode_kernel_stack[16384] __attribute__((aligned(16)));
+
+static BOOT_U64 usermode_probe_syscall6(BOOT_U64 op, BOOT_U64 a0, BOOT_U64 a1, BOOT_U64 a2, BOOT_U64 a3, BOOT_U64 a4,
+                                        BOOT_U64 a5) {
+#if defined(__x86_64__)
+  register BOOT_U64 rax __asm__("rax") = op;
+  register BOOT_U64 rdi __asm__("rdi") = a0;
+  register BOOT_U64 rsi __asm__("rsi") = a1;
+  register BOOT_U64 rdx __asm__("rdx") = a2;
+  register BOOT_U64 r10 __asm__("r10") = a3;
+  register BOOT_U64 r8 __asm__("r8") = a4;
+  register BOOT_U64 r9 __asm__("r9") = a5;
+
+  __asm__ volatile("int $0x80"
+                   : "+a"(rax)
+                   : "D"(rdi), "S"(rsi), "d"(rdx), "r"(r10), "r"(r8), "r"(r9)
+                   : "rcx", "r11", "memory");
+  return rax;
+#elif defined(__aarch64__)
+  register BOOT_U64 x0 __asm__("x0") = a0;
+  register BOOT_U64 x1 __asm__("x1") = a1;
+  register BOOT_U64 x2 __asm__("x2") = a2;
+  register BOOT_U64 x3 __asm__("x3") = a3;
+  register BOOT_U64 x4 __asm__("x4") = a4;
+  register BOOT_U64 x5 __asm__("x5") = a5;
+  register BOOT_U64 x8 __asm__("x8") = op;
+
+  __asm__ volatile("svc #0"
+                   : "+r"(x0)
+                   : "r"(x1), "r"(x2), "r"(x3), "r"(x4), "r"(x5), "r"(x8)
+                   : "memory");
+  return x0;
+#elif defined(__riscv)
+  register BOOT_U64 a0reg __asm__("a0") = a0;
+  register BOOT_U64 a1reg __asm__("a1") = a1;
+  register BOOT_U64 a2reg __asm__("a2") = a2;
+  register BOOT_U64 a3reg __asm__("a3") = a3;
+  register BOOT_U64 a4reg __asm__("a4") = a4;
+  register BOOT_U64 a5reg __asm__("a5") = a5;
+  register BOOT_U64 a7reg __asm__("a7") = op;
+
+  __asm__ volatile("ecall"
+                   : "+r"(a0reg)
+                   : "r"(a1reg), "r"(a2reg), "r"(a3reg), "r"(a4reg), "r"(a5reg), "r"(a7reg)
+                   : "memory");
+  return a0reg;
+#else
+  (void)op;
+  (void)a0;
+  (void)a1;
+  (void)a2;
+  (void)a3;
+  (void)a4;
+  (void)a5;
+  return (BOOT_U64)STATUS_NOT_SUPPORTED;
+#endif
+}
+
+__attribute__((noreturn)) static void usermode_probe_entry(void *arg) {
+  volatile BOOT_U64 sink = 0ULL;
+  char msg[] = "usermode: probe trap ok";
+  (void)arg;
+
+  (void)usermode_probe_syscall6(SYSCALL_OP_DEBUG_LOG, (BOOT_U64)(BOOT_UPTR)msg, (BOOT_U64)(sizeof(msg) - 1U), 0ULL,
+                                0ULL, 0ULL, 0ULL);
+
+  for (;;) {
+    sink ^= usermode_probe_syscall6(SYSCALL_OP_TIME_NOW, 0ULL, 0ULL, 0ULL, 0ULL, 0ULL, 0ULL);
+    __asm__ volatile("" : : "r"(sink) : "memory");
+  }
+}
+
+static status_t usermode_probe_launch(const boot_info_t *boot_info) {
+  const BOOT_U64 k_user_stack_bytes = 4096ULL;
+  BOOT_U64 page_size;
+  BOOT_U64 stack_base;
+#if !defined(__riscv)
+  BOOT_U64 stack_page;
+#endif
+  BOOT_U64 user_sp;
+  BOOT_U64 user_entry;
+  BOOT_U64 entry;
+  BOOT_U64 entry_page;
+#if defined(__riscv)
+  BOOT_U64 user_region_base = 0ULL;
+#endif
+  BOOT_U64 flags = 0ULL;
+  mm_phys_addr_t pa = 0ULL;
+  status_t st;
+
+  if (boot_info == (const boot_info_t *)0) {
+    return STATUS_INVALID_ARG;
+  }
+
+  page_size = mm_page_size();
+  if (page_size == 0ULL) {
+    return STATUS_FAULT;
+  }
+  entry = (BOOT_U64)(BOOT_UPTR)usermode_probe_entry;
+  entry_page = entry & ~(page_size - 1ULL);
+
+  st = user_stack_alloc(page_size, &stack_base);
+  if (st != STATUS_OK) {
+    return st;
+  }
+#if !defined(__riscv)
+  stack_page = stack_base & ~(page_size - 1ULL);
+#endif
+
+#if defined(__riscv)
+  /*
+   * riscv64 currently uses 1GiB leaf mappings in the substrate. Marking the
+   * kernel's own 1GiB region as user can fault S-mode instruction fetches.
+   * Alias only the entry page to a user VA and jump to the alias.
+   */
+  user_region_base = entry_page - page_size;
+  st = mm_map(user_region_base, entry_page, page_size, MMU_PROT_READ | MMU_PROT_WRITE | MMU_PROT_EXEC | MMU_PROT_USER);
+  if (st != STATUS_OK) {
+    return st;
+  }
+  user_entry = user_region_base + (entry - entry_page);
+  user_sp = user_region_base + (stack_base - entry_page) + k_user_stack_bytes - 16ULL;
+#else
+  st = mm_protect(entry_page, page_size, MMU_PROT_READ | MMU_PROT_WRITE | MMU_PROT_EXEC | MMU_PROT_USER);
+  if (st != STATUS_OK) {
+    return st;
+  }
+  if (stack_page != entry_page) {
+    st = mm_protect(stack_page, page_size, MMU_PROT_READ | MMU_PROT_WRITE | MMU_PROT_USER);
+    if (st != STATUS_OK) {
+      return st;
+    }
+  }
+  st = mm_sync_tlb(entry_page, page_size);
+  if (st != STATUS_OK) {
+    return st;
+  }
+  if (stack_page != entry_page) {
+    st = mm_sync_tlb(stack_page, page_size);
+    if (st != STATUS_OK) {
+      return st;
+    }
+  }
+  user_entry = entry;
+  user_sp = stack_base + k_user_stack_bytes - 16ULL;
+#endif
+
+  st = mm_translate(user_entry, &pa, &flags);
+  if (st == STATUS_OK) {
+    kprintf("usermode: entry=0x%llx pa=0x%llx flags=0x%llx\n", user_entry, (BOOT_U64)pa, flags);
+  }
+
+  st = uaccess_set_user_window(0ULL, ~0ULL);
+  if (st != STATUS_OK) {
+    return st;
+  }
+  st = arch_user_mode_set_kernel_stack(&g_usermode_kernel_stack[sizeof(g_usermode_kernel_stack)]);
+  if (st != STATUS_OK) {
+    return st;
+  }
+
+  kprintf("usermode: launching init task\n");
+  arch_user_mode_enter((arch_user_entry_t)(BOOT_UPTR)user_entry, (void *)0, user_sp);
+  return STATUS_FAULT;
+}
 #endif
 
 static const char *boot_info_arch_name(BOOT_U64 arch_id) {
@@ -328,6 +497,16 @@ void kmain(const boot_info_t *boot_info) {
 #endif
 
   kprintf("Starting Monolith (%s) . . . \n", boot_info_arch_name(boot_info->arch_id));
+#if MONOLITH_USERMODE_PROBE
+#if defined(__x86_64__) || defined(__aarch64__) || defined(__riscv)
+  if (status_is_ok(mem_status) && status_is_ok(page_status) && status_is_ok(syscall_status)) {
+    status_t launch_st = usermode_probe_launch(boot_info);
+    if (!status_is_ok(launch_st) && launch_st != STATUS_DEFERRED) {
+      kprintf("usermode launch: %s (%d)\n", status_str(launch_st), launch_st);
+    }
+  }
+#endif
+#endif
   kprintf("smp: possible=%llu online=%llu\n", smp_cpu_count_possible(), smp_cpu_count_online());
   {
     status_t ipi_st = ipi_send(0ULL, IPI_KIND_RESCHEDULE);
