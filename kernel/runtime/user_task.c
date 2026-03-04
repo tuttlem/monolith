@@ -87,7 +87,7 @@ status_t user_task_bootstrap_prepare(const boot_info_t *boot_info, user_task_boo
 
   out_ctx->user_base = user_base;
   out_ctx->user_size = page_size;
-  out_ctx->user_ip = 0ULL;
+  out_ctx->user_ip = user_base;
   out_ctx->user_sp = stack_base + page_size - 16ULL;
   out_ctx->kernel_stack_top = (void *)(BOOT_UPTR)boot_info->entry_sp;
   return STATUS_OK;

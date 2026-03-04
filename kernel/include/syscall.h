@@ -47,6 +47,8 @@ BOOT_U64 syscall_abi_info_word(void);
 int syscall_trap_entry_ready(void);
 int syscall_trap_mailbox_active(void);
 status_t syscall_trap_mailbox_consume(void);
+status_t syscall_handle_user_trap(BOOT_U64 op, BOOT_U64 arg0, BOOT_U64 arg1, BOOT_U64 arg2, BOOT_U64 arg3,
+                                  BOOT_U64 arg4, BOOT_U64 arg5, BOOT_U64 *out_ret);
 void syscall_dump_table(void);
 
 #endif

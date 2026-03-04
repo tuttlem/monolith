@@ -333,6 +333,22 @@ status_t syscall_invoke_trap(BOOT_U64 op, BOOT_U64 arg0, BOOT_U64 arg1, BOOT_U64
   return resp->status;
 }
 
+status_t syscall_handle_user_trap(BOOT_U64 op, BOOT_U64 arg0, BOOT_U64 arg1, BOOT_U64 arg2, BOOT_U64 arg3,
+                                  BOOT_U64 arg4, BOOT_U64 arg5, BOOT_U64 *out_ret) {
+  syscall_response_t resp = {STATUS_DEFERRED, 0ULL};
+  status_t st = syscall_invoke_kernel(op, arg0, arg1, arg2, arg3, arg4, arg5, &resp);
+  if (st != STATUS_OK) {
+    if (out_ret != (BOOT_U64 *)0) {
+      *out_ret = (BOOT_U64)st;
+    }
+    return st;
+  }
+  if (out_ret != (BOOT_U64 *)0) {
+    *out_ret = resp.value;
+  }
+  return resp.status;
+}
+
 const char *syscall_owner(BOOT_U64 op) {
   BOOT_U64 i;
   if (g_syscall.initialized == 0ULL) {

@@ -22,6 +22,9 @@ status_t arch_user_mode_prepare_frame(arch_user_frame_t *frame) {
 }
 
 __attribute__((noreturn)) void arch_user_mode_enter(arch_user_entry_t entry, void *arg, BOOT_U64 user_sp) {
+  BOOT_U64 elr;
+  BOOT_U64 spsr;
+
   if (entry == (arch_user_entry_t)0 || user_sp == 0ULL || g_arm64_kernel_stack_top == 0ULL) {
     for (;;) {
       arch_halt();
@@ -29,12 +32,20 @@ __attribute__((noreturn)) void arch_user_mode_enter(arch_user_entry_t entry, voi
   }
 
   user_sp &= ~0xFULL;
+  elr = (BOOT_U64)(BOOT_UPTR)entry;
+  spsr = 0ULL; /* EL0t with interrupts unmasked by default bring-up policy */
+
   __asm__ volatile("mov sp, %0\n\t"
-                   "mov x0, %1\n\t"
-                   "blr %2\n\t"
+                   "msr sp_el0, %1\n\t"
+                   "mov x0, %2\n\t"
+                   "msr elr_el1, %3\n\t"
+                   "msr spsr_el1, %4\n\t"
+                   "eret\n\t"
                    :
-                   : "r"(user_sp), "r"(arg), "r"(entry)
+                   : "r"(g_arm64_kernel_stack_top), "r"(user_sp), "r"(arg), "r"(elr), "r"(spsr)
                    : "x0", "memory");
+  __builtin_unreachable();
+
   for (;;) {
     arch_halt();
   }

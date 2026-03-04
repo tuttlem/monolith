@@ -71,13 +71,17 @@ static BOOT_U64 prot_from_block_attr(BOOT_U64 entry) {
   return flags;
 }
 
-static void tlb_flush_all_el1(void) {
-  __asm__ volatile("dsb ish\n\t"
-                   "tlbi vmalle1\n\t"
-                   "dsb ish\n\t"
+static BOOT_U64 read_ttbr0_el1(void) {
+  BOOT_U64 v;
+  __asm__ volatile("mrs %0, ttbr0_el1" : "=r"(v));
+  return v;
+}
+
+static void write_ttbr0_el1(BOOT_U64 v) {
+  __asm__ volatile("msr ttbr0_el1, %0\n\t"
                    "isb\n\t"
                    :
-                   :
+                   : "r"(v)
                    : "memory");
 }
 
@@ -177,8 +181,15 @@ status_t arch_mm_translate_page(mm_virt_addr_t va, mm_phys_addr_t *out_pa, BOOT_
 }
 
 status_t arch_mm_sync_tlb(mm_virt_addr_t va, BOOT_U64 size) {
+  BOOT_U64 ttbr0 = read_ttbr0_el1();
   (void)va;
   (void)size;
-  tlb_flush_all_el1();
+  __asm__ volatile("dsb ishst" : : : "memory");
+  write_ttbr0_el1(ttbr0);
+  __asm__ volatile("dsb ish\n\t"
+                   "isb\n\t"
+                   :
+                   :
+                   : "memory");
   return STATUS_OK;
 }

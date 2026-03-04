@@ -2,6 +2,11 @@
 .global riscv64_trap_entry
 
 riscv64_trap_entry:
+  csrr t0, sstatus
+  andi t0, t0, 0x100
+  bnez t0, 1f
+  csrrw sp, sscratch, sp
+1:
   addi sp, sp, -256
 
   sd ra, 0(sp)
@@ -43,6 +48,7 @@ riscv64_trap_entry:
   csrr a2, stval
   csrr a3, sstatus
   ld a4, 240(sp)
+  mv a5, sp
   call riscv64_trap_c
   csrw sepc, a0
 
@@ -78,4 +84,9 @@ riscv64_trap_entry:
   ld t6, 232(sp)
 
   addi sp, sp, 256
+  csrr t0, sstatus
+  andi t0, t0, 0x100
+  bnez t0, 2f
+  csrrw sp, sscratch, sp
+2:
   sret
