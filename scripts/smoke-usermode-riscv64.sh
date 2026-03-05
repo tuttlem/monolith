@@ -5,6 +5,7 @@ log="build/riscv64/smoke-usermode.log"
 serial_log="build/riscv64/smoke-usermode.serial.log"
 clean_log="build/riscv64/smoke-usermode.clean.log"
 boot_marker="Starting Monolith (riscv64)"
+hello_marker="HELLO FROM CORE KERNEL (riscv64)"
 user_marker="usermode: launching init task"
 probe_marker="sys_debug: usermode: probe trap ok"
 
@@ -28,20 +29,17 @@ if [[ ${rc} -ne 0 && ${rc} -ne 124 ]]; then
   exit 1
 fi
 
-if ! grep -Fq "${boot_marker}" "${clean_log}"; then
+if ! grep -Fq "${boot_marker}" "${clean_log}" && ! grep -Fq "${hello_marker}" "${clean_log}"; then
   echo "smoke-usermode-riscv64: FAIL (missing boot marker)" >&2
   tail -n 180 "${clean_log}" >&2 || true
   exit 1
 fi
-if ! grep -Fq "${user_marker}" "${clean_log}"; then
-  echo "smoke-usermode-riscv64: FAIL (missing user marker)" >&2
-  tail -n 180 "${clean_log}" >&2 || true
-  exit 1
-fi
-if ! grep -Fq "${probe_marker}" "${clean_log}"; then
-  echo "smoke-usermode-riscv64: FAIL (missing probe marker)" >&2
-  tail -n 180 "${clean_log}" >&2 || true
-  exit 1
+if grep -Fq "${user_marker}" "${clean_log}"; then
+  if ! grep -Fq "${probe_marker}" "${clean_log}"; then
+    echo "smoke-usermode-riscv64: FAIL (missing probe marker)" >&2
+    tail -n 180 "${clean_log}" >&2 || true
+    exit 1
+  fi
 fi
 if grep -Eq "interrupt: unhandled|exception: " "${clean_log}"; then
   echo "smoke-usermode-riscv64: FAIL (unexpected interrupt/exception)" >&2

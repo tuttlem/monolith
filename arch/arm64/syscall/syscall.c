@@ -1,5 +1,6 @@
 #include "arch_syscall.h"
 #include "arch_syscall_abi.h"
+#include "arch_user_syscall.h"
 
 #define ARM64_SYSCALL_VECTOR 64ULL
 
@@ -45,5 +46,27 @@ status_t arch_syscall_encode_ret(void *trap_frame, u64 value) {
   }
   out = (syscall_abi_frame_t *)trap_frame;
   out->args[0] = value;
+  return STATUS_OK;
+}
+
+status_t arch_user_syscall_invoke6(u64 op, u64 a0, u64 a1, u64 a2, u64 a3, u64 a4, u64 a5, u64 *out_ret) {
+  register u64 x0 __asm__("x0") = a0;
+  register u64 x1 __asm__("x1") = a1;
+  register u64 x2 __asm__("x2") = a2;
+  register u64 x3 __asm__("x3") = a3;
+  register u64 x4 __asm__("x4") = a4;
+  register u64 x5 __asm__("x5") = a5;
+  register u64 x8 __asm__("x8") = op;
+
+  if (out_ret == (u64 *)0) {
+    return STATUS_INVALID_ARG;
+  }
+
+  __asm__ volatile("svc #0"
+                   : "+r"(x0)
+                   : "r"(x1), "r"(x2), "r"(x3), "r"(x4), "r"(x5), "r"(x8)
+                   : "memory");
+
+  *out_ret = x0;
   return STATUS_OK;
 }

@@ -11,6 +11,7 @@
 #include "hw_resource.h"
 #include "irq_domain.h"
 #include "interrupts.h"
+#include "input.h"
 #include "iommu.h"
 #include "kmalloc.h"
 #include "arch_mm.h"
@@ -30,7 +31,9 @@
 #include "trace.h"
 #include "usb.h"
 #include "uaccess.h"
+#include "user_syscall.h"
 #include "user_task.h"
+#include "arch_input.h"
 #include "arch_user_mode.h"
 
 #ifndef CORE_ARCH_NAME
@@ -40,72 +43,17 @@
 #if defined(__x86_64__) || defined(__aarch64__) || defined(__riscv)
 static unsigned char g_usermode_kernel_stack[16384] __attribute__((aligned(16)));
 
-static u64 usermode_probe_syscall6(u64 op, u64 a0, u64 a1, u64 a2, u64 a3, u64 a4,
-                                        u64 a5) {
-#if defined(__x86_64__)
-  register u64 rax __asm__("rax") = op;
-  register u64 rdi __asm__("rdi") = a0;
-  register u64 rsi __asm__("rsi") = a1;
-  register u64 rdx __asm__("rdx") = a2;
-  register u64 r10 __asm__("r10") = a3;
-  register u64 r8 __asm__("r8") = a4;
-  register u64 r9 __asm__("r9") = a5;
-
-  __asm__ volatile("int $0x80"
-                   : "+a"(rax)
-                   : "D"(rdi), "S"(rsi), "d"(rdx), "r"(r10), "r"(r8), "r"(r9)
-                   : "rcx", "r11", "memory");
-  return rax;
-#elif defined(__aarch64__)
-  register u64 x0 __asm__("x0") = a0;
-  register u64 x1 __asm__("x1") = a1;
-  register u64 x2 __asm__("x2") = a2;
-  register u64 x3 __asm__("x3") = a3;
-  register u64 x4 __asm__("x4") = a4;
-  register u64 x5 __asm__("x5") = a5;
-  register u64 x8 __asm__("x8") = op;
-
-  __asm__ volatile("svc #0"
-                   : "+r"(x0)
-                   : "r"(x1), "r"(x2), "r"(x3), "r"(x4), "r"(x5), "r"(x8)
-                   : "memory");
-  return x0;
-#elif defined(__riscv)
-  register u64 a0reg __asm__("a0") = a0;
-  register u64 a1reg __asm__("a1") = a1;
-  register u64 a2reg __asm__("a2") = a2;
-  register u64 a3reg __asm__("a3") = a3;
-  register u64 a4reg __asm__("a4") = a4;
-  register u64 a5reg __asm__("a5") = a5;
-  register u64 a7reg __asm__("a7") = op;
-
-  __asm__ volatile("ecall"
-                   : "+r"(a0reg)
-                   : "r"(a1reg), "r"(a2reg), "r"(a3reg), "r"(a4reg), "r"(a5reg), "r"(a7reg)
-                   : "memory");
-  return a0reg;
-#else
-  (void)op;
-  (void)a0;
-  (void)a1;
-  (void)a2;
-  (void)a3;
-  (void)a4;
-  (void)a5;
-  return (u64)STATUS_NOT_SUPPORTED;
-#endif
-}
-
 __attribute__((noreturn)) static void usermode_probe_entry(void *arg) {
   volatile u64 sink = 0ULL;
+  u64 ret = 0ULL;
   char msg[] = "usermode: probe trap ok";
   (void)arg;
 
-  (void)usermode_probe_syscall6(SYSCALL_OP_DEBUG_LOG, (u64)(uptr)msg, (u64)(sizeof(msg) - 1U), 0ULL,
-                                0ULL, 0ULL, 0ULL);
+  (void)user_syscall2(SYSCALL_OP_DEBUG_LOG, (u64)(uptr)msg, (u64)(sizeof(msg) - 1U), &ret);
 
   for (;;) {
-    sink ^= usermode_probe_syscall6(SYSCALL_OP_TIME_NOW, 0ULL, 0ULL, 0ULL, 0ULL, 0ULL, 0ULL);
+    (void)user_syscall0(SYSCALL_OP_TIME_NOW, &ret);
+    sink ^= ret;
     __asm__ volatile("" : : "r"(sink) : "memory");
   }
 }
@@ -266,6 +214,8 @@ void kmain(const boot_info_t *boot_info) {
   status_t timer_status;
   status_t sched_status;
   status_t trace_status;
+  status_t input_status;
+  status_t arch_input_status;
   status_t dma_status;
   status_t iommu_status;
   status_t syscall_status;
@@ -287,6 +237,11 @@ void kmain(const boot_info_t *boot_info) {
 
   panic_set_context(boot_info);
   trace_status = trace_init(boot_info);
+  input_status = input_init();
+  arch_input_status = arch_input_init(boot_info);
+  if (status_is_ok(input_status) && status_is_ok(arch_input_status)) {
+    kprintf("input: backend ready (arch=%s drop=%llu)\n", boot_info_arch_name(boot_info->arch_id), input_drop_count());
+  }
   if (status_is_ok(trace_status)) {
     trace_emit(TRACE_CLASS_DEVICE, 0xB007ULL, boot_info->arch_id, boot_info->abi_version);
   }
@@ -418,6 +373,12 @@ void kmain(const boot_info_t *boot_info) {
   }
   if (!status_is_ok(trace_status) && trace_status != STATUS_DEFERRED) {
     kprintf("trace_init: %s (%d)\n", status_str(trace_status), trace_status);
+  }
+  if (!status_is_ok(input_status) && input_status != STATUS_DEFERRED) {
+    kprintf("input_init: %s (%d)\n", status_str(input_status), input_status);
+  }
+  if (!status_is_ok(arch_input_status) && arch_input_status != STATUS_DEFERRED) {
+    kprintf("arch_input_init: %s (%d)\n", status_str(arch_input_status), arch_input_status);
   }
   kprintf("personality: active=%s id=0x%llx\n", personality_active_name(), personality_active_id());
   if (!status_is_ok(syscall_probe_status) && syscall_probe_status != STATUS_DEFERRED) {

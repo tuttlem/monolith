@@ -18,6 +18,7 @@ Current substrate IDs:
 - `0x0001`: `sys_abi_info`
 - `0x0002`: `sys_debug_log`
 - `0x0003`: `sys_time_now`
+- `0x0004`: `sys_input_try_read` (queue-first substrate input read)
 
 ## Public API
 
@@ -36,6 +37,10 @@ Architecture hook:
 - `status_t arch_syscall_init(const boot_info_t *boot_info)` in `kernel/include/arch_syscall.h`
 - `status_t arch_syscall_get_vector(u64 *out_vector)` in `kernel/include/arch_syscall.h`
 - `status_t arch_syscall_trigger(void)` in `kernel/include/arch_syscall.h`
+
+User-mode invoke facade:
+- `status_t arch_user_syscall_invoke6(...)` in `kernel/include/arch_user_syscall.h`
+- `user_syscall0..6(...)` wrappers in `kernel/include/user_syscall.h`
 
 ## Current Phase Behavior
 

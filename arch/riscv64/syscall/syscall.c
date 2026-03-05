@@ -1,5 +1,6 @@
 #include "arch_syscall.h"
 #include "arch_syscall_abi.h"
+#include "arch_user_syscall.h"
 #include "interrupts.h"
 #include "syscall.h"
 
@@ -81,5 +82,27 @@ status_t arch_syscall_encode_ret(void *trap_frame, u64 value) {
   }
   out = (syscall_abi_frame_t *)trap_frame;
   out->args[0] = value;
+  return STATUS_OK;
+}
+
+status_t arch_user_syscall_invoke6(u64 op, u64 a0, u64 a1, u64 a2, u64 a3, u64 a4, u64 a5, u64 *out_ret) {
+  register u64 a0reg __asm__("a0") = a0;
+  register u64 a1reg __asm__("a1") = a1;
+  register u64 a2reg __asm__("a2") = a2;
+  register u64 a3reg __asm__("a3") = a3;
+  register u64 a4reg __asm__("a4") = a4;
+  register u64 a5reg __asm__("a5") = a5;
+  register u64 a7reg __asm__("a7") = op;
+
+  if (out_ret == (u64 *)0) {
+    return STATUS_INVALID_ARG;
+  }
+
+  __asm__ volatile("ecall"
+                   : "+r"(a0reg)
+                   : "r"(a1reg), "r"(a2reg), "r"(a3reg), "r"(a4reg), "r"(a5reg), "r"(a7reg)
+                   : "memory");
+
+  *out_ret = a0reg;
   return STATUS_OK;
 }

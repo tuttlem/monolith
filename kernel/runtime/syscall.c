@@ -7,6 +7,8 @@
 #include "timebase.h"
 #include "trace.h"
 #include "uaccess.h"
+#include "input.h"
+#include "arch_input.h"
 
 #define SYSCALL_MAX_HANDLERS 64U
 #define SYSCALL_DEBUG_LOG_MAX 255U
@@ -142,6 +144,43 @@ static status_t syscall_handle_time_now(const syscall_request_t *req, syscall_re
   return STATUS_OK;
 }
 
+static status_t syscall_handle_input_try_read(const syscall_request_t *req, syscall_response_t *resp) {
+  char ch = '\0';
+  int has_char = 0;
+
+  if (req == (const syscall_request_t *)0 || resp == (syscall_response_t *)0) {
+    return STATUS_INVALID_ARG;
+  }
+
+  if (input_try_pop_char(&ch) == 0) {
+    has_char = 1;
+  } else {
+    arch_input_poll();
+    if (input_try_pop_char(&ch) == 0) {
+      has_char = 1;
+    }
+  }
+
+  if (!has_char) {
+    resp->status = STATUS_TRY_AGAIN;
+    resp->value = 0ULL;
+    return STATUS_TRY_AGAIN;
+  }
+
+  if (req->args[0] != 0ULL) {
+    status_t st = copy_to_user_checked(req->args[0], &ch, 1ULL);
+    if (st != STATUS_OK) {
+      resp->status = st;
+      resp->value = 0ULL;
+      return st;
+    }
+  }
+
+  resp->status = STATUS_OK;
+  resp->value = (u64)(u8)ch;
+  return STATUS_OK;
+}
+
 void syscall_reset(void) {
   u64 i;
   g_syscall.initialized = 0;
@@ -232,6 +271,10 @@ status_t syscall_init(const boot_info_t *boot_info) {
     return st;
   }
   st = syscall_register(SYSCALL_OP_TIME_NOW, syscall_handle_time_now, g_syscall_owner_core);
+  if (st != STATUS_OK) {
+    return st;
+  }
+  st = syscall_register(SYSCALL_OP_INPUT_TRY_READ, syscall_handle_input_try_read, g_syscall_owner_core);
   if (st != STATUS_OK) {
     return st;
   }
@@ -370,6 +413,8 @@ const char *syscall_op_name(u64 op) {
     return "debug_log";
   case SYSCALL_OP_TIME_NOW:
     return "time_now";
+  case SYSCALL_OP_INPUT_TRY_READ:
+    return "input_try_read";
   default:
     return "unknown";
   }
