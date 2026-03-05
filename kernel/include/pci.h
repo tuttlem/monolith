@@ -4,6 +4,6 @@
 #include "device_bus.h"
 
 status_t pci_enumerate(const boot_info_t *boot_info);
-BOOT_U64 pci_device_count(void);
+u64 pci_device_count(void);
 
 #endif

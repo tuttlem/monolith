@@ -4,33 +4,33 @@
 #define IRQ_DESC_FLAG_MSI 0x1ULL
 
 static struct {
-  BOOT_U64 registered;
+  u64 registered;
   const char *name;
   irq_controller_ops_t ops;
 } g_irqc;
 
 static struct {
-  BOOT_U64 initialized;
-  BOOT_U64 alloc_count;
+  u64 initialized;
+  u64 alloc_count;
   irq_desc_t allocs[IRQ_DOMAIN_MAX_ALLOCS];
 } g_irq_domain;
 
 void irq_controller_reset(void) {
   g_irqc.registered = 0;
   g_irqc.name = (const char *)0;
-  g_irqc.ops.enable_irq = (status_t(*)(BOOT_U64))0;
-  g_irqc.ops.disable_irq = (status_t(*)(BOOT_U64))0;
-  g_irqc.ops.ack_irq = (void (*)(BOOT_U64))0;
-  g_irqc.ops.eoi_irq = (void (*)(BOOT_U64))0;
-  g_irqc.ops.map_irq = (status_t(*)(BOOT_U64, BOOT_U64 *))0;
-  g_irqc.ops.vector_to_irq = (status_t(*)(BOOT_U64, BOOT_U64 *))0;
+  g_irqc.ops.enable_irq = (status_t(*)(u64))0;
+  g_irqc.ops.disable_irq = (status_t(*)(u64))0;
+  g_irqc.ops.ack_irq = (void (*)(u64))0;
+  g_irqc.ops.eoi_irq = (void (*)(u64))0;
+  g_irqc.ops.map_irq = (status_t(*)(u64, u64 *))0;
+  g_irqc.ops.vector_to_irq = (status_t(*)(u64, u64 *))0;
   g_irq_domain.initialized = 0;
   g_irq_domain.alloc_count = 0;
 }
 
 status_t irq_controller_register(const char *name, const irq_controller_ops_t *ops) {
-  if (name == (const char *)0 || ops == (const irq_controller_ops_t *)0 || ops->map_irq == (status_t(*)(BOOT_U64, BOOT_U64 *))0 ||
-      ops->vector_to_irq == (status_t(*)(BOOT_U64, BOOT_U64 *))0) {
+  if (name == (const char *)0 || ops == (const irq_controller_ops_t *)0 || ops->map_irq == (status_t(*)(u64, u64 *))0 ||
+      ops->vector_to_irq == (status_t(*)(u64, u64 *))0) {
     return STATUS_INVALID_ARG;
   }
   if (g_irqc.registered != 0) {
@@ -50,56 +50,56 @@ status_t irq_controller_register(const char *name, const irq_controller_ops_t *o
 
 const char *irq_controller_name(void) { return g_irqc.name; }
 
-status_t irq_controller_enable(BOOT_U64 irq) {
-  if (g_irqc.registered == 0 || g_irqc.ops.enable_irq == (status_t(*)(BOOT_U64))0) {
+status_t irq_controller_enable(u64 irq) {
+  if (g_irqc.registered == 0 || g_irqc.ops.enable_irq == (status_t(*)(u64))0) {
     return STATUS_DEFERRED;
   }
   return g_irqc.ops.enable_irq(irq);
 }
 
-status_t irq_controller_disable(BOOT_U64 irq) {
-  if (g_irqc.registered == 0 || g_irqc.ops.disable_irq == (status_t(*)(BOOT_U64))0) {
+status_t irq_controller_disable(u64 irq) {
+  if (g_irqc.registered == 0 || g_irqc.ops.disable_irq == (status_t(*)(u64))0) {
     return STATUS_DEFERRED;
   }
   return g_irqc.ops.disable_irq(irq);
 }
 
-void irq_controller_ack(BOOT_U64 irq) {
-  if (g_irqc.registered == 0 || g_irqc.ops.ack_irq == (void (*)(BOOT_U64))0) {
+void irq_controller_ack(u64 irq) {
+  if (g_irqc.registered == 0 || g_irqc.ops.ack_irq == (void (*)(u64))0) {
     return;
   }
   g_irqc.ops.ack_irq(irq);
 }
 
-void irq_controller_eoi(BOOT_U64 irq) {
-  if (g_irqc.registered == 0 || g_irqc.ops.eoi_irq == (void (*)(BOOT_U64))0) {
+void irq_controller_eoi(u64 irq) {
+  if (g_irqc.registered == 0 || g_irqc.ops.eoi_irq == (void (*)(u64))0) {
     return;
   }
   g_irqc.ops.eoi_irq(irq);
 }
 
-status_t irq_controller_map(BOOT_U64 irq, BOOT_U64 *out_vector) {
-  if (out_vector == (BOOT_U64 *)0) {
+status_t irq_controller_map(u64 irq, u64 *out_vector) {
+  if (out_vector == (u64 *)0) {
     return STATUS_INVALID_ARG;
   }
-  if (g_irqc.registered == 0 || g_irqc.ops.map_irq == (status_t(*)(BOOT_U64, BOOT_U64 *))0) {
+  if (g_irqc.registered == 0 || g_irqc.ops.map_irq == (status_t(*)(u64, u64 *))0) {
     return STATUS_DEFERRED;
   }
   return g_irqc.ops.map_irq(irq, out_vector);
 }
 
-status_t irq_controller_vector_to_irq(BOOT_U64 vector, BOOT_U64 *out_irq) {
-  if (out_irq == (BOOT_U64 *)0) {
+status_t irq_controller_vector_to_irq(u64 vector, u64 *out_irq) {
+  if (out_irq == (u64 *)0) {
     return STATUS_INVALID_ARG;
   }
-  if (g_irqc.registered == 0 || g_irqc.ops.vector_to_irq == (status_t(*)(BOOT_U64, BOOT_U64 *))0) {
+  if (g_irqc.registered == 0 || g_irqc.ops.vector_to_irq == (status_t(*)(u64, u64 *))0) {
     return STATUS_DEFERRED;
   }
   return g_irqc.ops.vector_to_irq(vector, out_irq);
 }
 
 status_t irq_domain_init(const boot_info_t *boot_info) {
-  BOOT_U64 i;
+  u64 i;
 
   if (boot_info == (const boot_info_t *)0) {
     return STATUS_INVALID_ARG;
@@ -116,9 +116,9 @@ status_t irq_domain_init(const boot_info_t *boot_info) {
   return STATUS_OK;
 }
 
-status_t irq_alloc_line(BOOT_U64 device_id, BOOT_U64 hwirq, irq_desc_t *out) {
+status_t irq_alloc_line(u64 device_id, u64 hwirq, irq_desc_t *out) {
   irq_desc_t *slot;
-  BOOT_U64 vector;
+  u64 vector;
   status_t st;
 
   if (!g_irq_domain.initialized) {
@@ -150,8 +150,8 @@ status_t irq_alloc_line(BOOT_U64 device_id, BOOT_U64 hwirq, irq_desc_t *out) {
   return STATUS_OK;
 }
 
-status_t irq_alloc_msi(BOOT_U64 device_id, BOOT_U64 nvec, irq_desc_t *out_vec) {
-  BOOT_U64 i;
+status_t irq_alloc_msi(u64 device_id, u64 nvec, irq_desc_t *out_vec) {
+  u64 i;
 
   if (!g_irq_domain.initialized) {
     return STATUS_DEFERRED;
@@ -192,4 +192,4 @@ status_t irq_set_affinity(const irq_desc_t *irq, cpu_mask_t mask) {
   return STATUS_OK;
 }
 
-BOOT_U64 irq_domain_alloc_count(void) { return g_irq_domain.alloc_count; }
+u64 irq_domain_alloc_count(void) { return g_irq_domain.alloc_count; }

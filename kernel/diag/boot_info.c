@@ -1,6 +1,6 @@
 #include "diag/boot_info.h"
 
-static const char *mem_init_status_name(BOOT_U64 status) {
+static const char *mem_init_status_name(u64 status) {
   switch (status) {
   case BOOT_MEM_INIT_STATUS_NONE:
     return "none";
@@ -37,8 +37,8 @@ void diag_boot_info_print(const boot_info_t *boot_info) {
   kprintf("boot_info.memory_regions=%u/%u\n", boot_info->memory_region_count,
           boot_info->memory_region_capacity);
   if (boot_info->memory_region_count > 0) {
-    BOOT_U32 i;
-    BOOT_U32 show = boot_info->memory_region_count;
+    u32 i;
+    u32 show = boot_info->memory_region_count;
     if (show > 6U) {
       show = 6U;
     }
@@ -56,7 +56,7 @@ void diag_boot_info_print(const boot_info_t *boot_info) {
   if ((boot_info->valid_mask & BOOT_INFO_HAS_ARCH_DATA) != 0 && boot_info->arch_data_ptr != 0) {
     if (boot_info->arch_id == BOOT_INFO_ARCH_X86_64 || boot_info->arch_id == BOOT_INFO_ARCH_ARM64) {
       const boot_info_ext_uefi_t *uefi_ext =
-          (const boot_info_ext_uefi_t *)(BOOT_UPTR)boot_info->arch_data_ptr;
+          (const boot_info_ext_uefi_t *)(uptr)boot_info->arch_data_ptr;
       kprintf("uefi_ext.image_handle=0x%llx\n", uefi_ext->image_handle);
       kprintf("uefi_ext.boot_services=0x%llx runtime_services=0x%llx\n",
               uefi_ext->boot_services, uefi_ext->runtime_services);
@@ -68,7 +68,7 @@ void diag_boot_info_print(const boot_info_t *boot_info) {
               uefi_ext->paging_old_cr3, uefi_ext->paging_new_cr3, uefi_ext->paging_identity_bytes);
     } else if (boot_info->arch_id == BOOT_INFO_ARCH_RISCV64) {
       const boot_info_ext_riscv64_t *riscv_ext =
-          (const boot_info_ext_riscv64_t *)(BOOT_UPTR)boot_info->arch_data_ptr;
+          (const boot_info_ext_riscv64_t *)(uptr)boot_info->arch_data_ptr;
       kprintf("riscv_ext.hart_id=0x%llx dtb_ptr=0x%llx\n", riscv_ext->hart_id, riscv_ext->dtb_ptr);
       kprintf("riscv_ext.satp=0x%llx uart=0x%llx ram=[0x%llx..0x%llx)\n", riscv_ext->satp,
               riscv_ext->uart_base, riscv_ext->ram_base, riscv_ext->ram_base + riscv_ext->ram_size);

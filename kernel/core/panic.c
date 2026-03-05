@@ -4,9 +4,9 @@
 #include "print.h"
 #include "trace.h"
 
-static volatile BOOT_U64 g_panic_active = 0;
-static BOOT_U64 g_panic_arch_id = 0;
-static BOOT_U64 g_panic_boot_cpu_id = 0;
+static volatile u64 g_panic_active = 0;
+static u64 g_panic_arch_id = 0;
+static u64 g_panic_boot_cpu_id = 0;
 
 static void panic_stop_forever(void) {
   for (;;) {

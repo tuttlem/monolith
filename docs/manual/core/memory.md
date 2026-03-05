@@ -42,12 +42,12 @@ Per-arch backends:
 
 ### Generic API functions
 
-- `status_t mm_map(mm_virt_addr_t va, mm_phys_addr_t pa, BOOT_U64 size, BOOT_U64 prot_flags)`
-- `status_t mm_unmap(mm_virt_addr_t va, BOOT_U64 size)`
-- `status_t mm_protect(mm_virt_addr_t va, BOOT_U64 size, BOOT_U64 prot_flags)`
-- `status_t mm_translate(mm_virt_addr_t va, mm_phys_addr_t *out_pa, BOOT_U64 *out_flags)`
-- `status_t mm_sync_tlb(mm_virt_addr_t va, BOOT_U64 size)`
-- `BOOT_U64 mm_page_size(void)`
+- `status_t mm_map(mm_virt_addr_t va, mm_phys_addr_t pa, u64 size, u64 prot_flags)`
+- `status_t mm_unmap(mm_virt_addr_t va, u64 size)`
+- `status_t mm_protect(mm_virt_addr_t va, u64 size, u64 prot_flags)`
+- `status_t mm_translate(mm_virt_addr_t va, mm_phys_addr_t *out_pa, u64 *out_flags)`
+- `status_t mm_sync_tlb(mm_virt_addr_t va, u64 size)`
+- `u64 mm_page_size(void)`
 
 ### Alignment and multi-page semantics
 
@@ -97,9 +97,9 @@ Implementation: `kernel/mm/page_alloc.c`
 - `status_t page_alloc_init(boot_info_t *boot_info)`
   - initializes internal ranges and counters
   - returns `STATUS_OK` when pages are available
-- `BOOT_U64 alloc_page(void)`
+- `u64 alloc_page(void)`
   - returns physical address of 4KiB page, or `0` on exhaustion/unavailable
-- `void free_page(BOOT_U64 phys_addr)`
+- `void free_page(u64 phys_addr)`
   - validates alignment and pushes into recycle stack if capacity allows
 - `void page_alloc_stats(page_alloc_stats_t *out)`
   - reports availability and page counts

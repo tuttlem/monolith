@@ -12,19 +12,19 @@ typedef struct kmalloc_block kmalloc_block_t;
 typedef struct kmalloc_page kmalloc_page_t;
 
 struct kmalloc_block {
-  BOOT_U64 magic;
-  BOOT_U64 size;
-  BOOT_U64 free;
-  BOOT_U64 reserved;
+  u64 magic;
+  u64 size;
+  u64 free;
+  u64 reserved;
   kmalloc_block_t *prev;
   kmalloc_block_t *next;
 };
 
 struct kmalloc_page {
-  BOOT_U64 magic;
-  BOOT_U64 phys_addr;
-  BOOT_U64 free_bytes;
-  BOOT_U64 reserved;
+  u64 magic;
+  u64 phys_addr;
+  u64 free_bytes;
+  u64 reserved;
   kmalloc_page_t *prev;
   kmalloc_page_t *next;
   kmalloc_block_t *first;
@@ -36,20 +36,20 @@ struct kmalloc_page {
 #define KMALLOC_FIRST_BLOCK_PAYLOAD (KMALLOC_PAGE_SIZE - KMALLOC_PAGE_HEADER_SIZE - KMALLOC_BLOCK_HEADER_SIZE)
 
 static struct {
-  BOOT_U64 initialized;
-  BOOT_U64 available;
-  BOOT_U64 pages;
-  BOOT_U64 bytes_used;
-  BOOT_U64 alloc_count;
-  BOOT_U64 free_count;
-  BOOT_U64 failed_alloc_count;
-  BOOT_U64 invalid_free_count;
-  BOOT_U64 double_free_count;
+  u64 initialized;
+  u64 available;
+  u64 pages;
+  u64 bytes_used;
+  u64 alloc_count;
+  u64 free_count;
+  u64 failed_alloc_count;
+  u64 invalid_free_count;
+  u64 double_free_count;
   kmalloc_page_t *head;
 } g_kmalloc;
 
 static kmalloc_page_t *alloc_kmalloc_page(void) {
-  BOOT_U64 phys = alloc_page();
+  u64 phys = alloc_page();
   kmalloc_page_t *page;
   kmalloc_block_t *block;
   unsigned char *base;
@@ -58,7 +58,7 @@ static kmalloc_page_t *alloc_kmalloc_page(void) {
     return (kmalloc_page_t *)0;
   }
 
-  base = (unsigned char *)(BOOT_UPTR)phys;
+  base = (unsigned char *)(uptr)phys;
   page = (kmalloc_page_t *)(void *)base;
   page->magic = KMALLOC_PAGE_MAGIC;
   page->phys_addr = phys;
@@ -110,11 +110,11 @@ static void remove_page(kmalloc_page_t *page) {
 
 static kmalloc_page_t *find_page_for_ptr(void *ptr) {
   kmalloc_page_t *page = g_kmalloc.head;
-  BOOT_U64 p = (BOOT_U64)(BOOT_UPTR)ptr;
+  u64 p = (u64)(uptr)ptr;
 
   while (page != (kmalloc_page_t *)0) {
-    BOOT_U64 base = page->phys_addr;
-    BOOT_U64 end = base + KMALLOC_PAGE_SIZE;
+    u64 base = page->phys_addr;
+    u64 end = base + KMALLOC_PAGE_SIZE;
     if (p >= base && p < end) {
       return page;
     }
@@ -123,8 +123,8 @@ static kmalloc_page_t *find_page_for_ptr(void *ptr) {
   return (kmalloc_page_t *)0;
 }
 
-static void split_block(kmalloc_page_t *page, kmalloc_block_t *block, BOOT_U64 want_size) {
-  BOOT_U64 remaining;
+static void split_block(kmalloc_page_t *page, kmalloc_block_t *block, u64 want_size) {
+  u64 remaining;
   unsigned char *new_addr;
   kmalloc_block_t *new_block;
 
@@ -208,8 +208,8 @@ status_t kmalloc_init(boot_info_t *boot_info) {
   return STATUS_OK;
 }
 
-void *kmalloc(BOOT_U64 size) {
-  BOOT_U64 want_size;
+void *kmalloc(u64 size) {
+  u64 want_size;
   kmalloc_page_t *page;
   kmalloc_block_t *block;
 
@@ -267,7 +267,7 @@ void kfree(void *ptr) {
     return;
   }
 
-  if (((BOOT_U64)(BOOT_UPTR)ptr & (KMALLOC_ALIGN - 1ULL)) != 0) {
+  if (((u64)(uptr)ptr & (KMALLOC_ALIGN - 1ULL)) != 0) {
     ++g_kmalloc.invalid_free_count;
     return;
   }
@@ -279,8 +279,8 @@ void kfree(void *ptr) {
   }
 
   block = (kmalloc_block_t *)(void *)((unsigned char *)ptr - KMALLOC_BLOCK_HEADER_SIZE);
-  if ((BOOT_U64)(BOOT_UPTR)block < page->phys_addr + KMALLOC_PAGE_HEADER_SIZE ||
-      (BOOT_U64)(BOOT_UPTR)block >= page->phys_addr + KMALLOC_PAGE_SIZE ||
+  if ((u64)(uptr)block < page->phys_addr + KMALLOC_PAGE_HEADER_SIZE ||
+      (u64)(uptr)block >= page->phys_addr + KMALLOC_PAGE_SIZE ||
       block->magic != KMALLOC_BLOCK_MAGIC) {
     ++g_kmalloc.invalid_free_count;
     return;
@@ -333,7 +333,7 @@ int kmalloc_self_test(void) {
   void *b[5];
   kmalloc_stats_t before;
   kmalloc_stats_t after;
-  BOOT_U32 i;
+  u32 i;
 
   kmalloc_stats(&before);
   if (before.available == 0) {

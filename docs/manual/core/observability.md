@@ -15,7 +15,7 @@ Header:
 
 Functions:
 - `status_t trace_init(const boot_info_t *boot_info)`
-- `void trace_emit(trace_class_t cls, BOOT_U64 a0, BOOT_U64 a1, BOOT_U64 a2)`
+- `void trace_emit(trace_class_t cls, u64 a0, u64 a1, u64 a2)`
 - `status_t trace_dump(trace_sink_t sink)`
 - `void trace_sink_kprintf(const trace_record_t *record)`
 

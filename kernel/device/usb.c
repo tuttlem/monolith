@@ -1,9 +1,9 @@
 #include "usb.h"
 #include "print.h"
 
-static BOOT_U64 g_usb_bus_id = DEVICE_BUS_ID_NONE;
-static BOOT_U64 g_usb_host_count;
-static BOOT_U64 g_usb_device_count;
+static u64 g_usb_bus_id = DEVICE_BUS_ID_NONE;
+static u64 g_usb_host_count;
+static u64 g_usb_device_count;
 
 static status_t ensure_usb_bus(void) {
   bus_t bus;
@@ -20,7 +20,7 @@ static status_t ensure_usb_bus(void) {
 }
 
 status_t usb_enumerate(const boot_info_t *boot_info) {
-  BOOT_U64 i;
+  u64 i;
   status_t st;
 
   if (boot_info == (const boot_info_t *)0) {
@@ -47,8 +47,8 @@ status_t usb_enumerate(const boot_info_t *boot_info) {
 
     {
       device_t host;
-      BOOT_U64 host_id = DEVICE_BUS_ID_NONE;
-      BOOT_U64 r;
+      u64 host_id = DEVICE_BUS_ID_NONE;
+      u64 r;
 
       host.id = DEVICE_BUS_ID_NONE;
       host.parent_id = src->id;
@@ -78,7 +78,7 @@ status_t usb_enumerate(const boot_info_t *boot_info) {
 
       {
         device_t root_hub;
-        BOOT_U64 rr;
+        u64 rr;
 
         root_hub.id = DEVICE_BUS_ID_NONE;
         root_hub.parent_id = host_id;
@@ -100,7 +100,7 @@ status_t usb_enumerate(const boot_info_t *boot_info) {
           root_hub.resources[rr].flags = 0;
         }
 
-        st = device_bus_register_device(&root_hub, (BOOT_U64 *)0);
+        st = device_bus_register_device(&root_hub, (u64 *)0);
         if (st != STATUS_OK) {
           return st;
         }
@@ -117,5 +117,5 @@ status_t usb_enumerate(const boot_info_t *boot_info) {
   return STATUS_OK;
 }
 
-BOOT_U64 usb_host_count(void) { return g_usb_host_count; }
-BOOT_U64 usb_device_count(void) { return g_usb_device_count; }
+u64 usb_host_count(void) { return g_usb_host_count; }
+u64 usb_device_count(void) { return g_usb_device_count; }

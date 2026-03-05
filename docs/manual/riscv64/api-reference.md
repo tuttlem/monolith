@@ -4,7 +4,7 @@ This page documents riscv64-specific public symbols and riscv64-specific executi
 
 ## Boot and Console
 
-### `void arch_main(BOOT_U64 hart_id, BOOT_U64 dtb_ptr)`
+### `void arch_main(u64 hart_id, u64 dtb_ptr)`
 - File: `arch/riscv64/boot/main.c`
 - Purpose: non-UEFI machine entry path that builds `boot_info_t` and enters `kmain`.
 - Parameters:
@@ -45,7 +45,7 @@ Divergence notes:
 
 ## SMP Backend
 
-### `status_t arch_smp_bootstrap(const boot_info_t *boot_info, BOOT_U64 *out_possible_cpus, BOOT_U64 *out_started_cpus)`
+### `status_t arch_smp_bootstrap(const boot_info_t *boot_info, u64 *out_possible_cpus, u64 *out_started_cpus)`
 - File: `arch/riscv64/cpu/smp.c`
 - Purpose: derive possible CPU count from DTB CPU nodes and publish active SMP baseline status.
 - Parameters:
@@ -109,9 +109,9 @@ Divergence notes:
 
 ## Timer Backend
 
-### `status_t arch_timer_init(const boot_info_t *boot_info, BOOT_U64 *out_hz, BOOT_U64 *out_irq_vector)`
-### `void arch_timer_ack(BOOT_U64 vector)`
-### `BOOT_U64 arch_timer_clocksource_hz(const boot_info_t *boot_info)`
+### `status_t arch_timer_init(const boot_info_t *boot_info, u64 *out_hz, u64 *out_irq_vector)`
+### `void arch_timer_ack(u64 vector)`
+### `u64 arch_timer_clocksource_hz(const boot_info_t *boot_info)`
 - File: `arch/riscv64/timer/timer.c`
 - Purpose: riscv64 timer backend wiring for generic timebase.
 - Divergence:
@@ -123,7 +123,7 @@ Divergence notes:
 - File: `arch/riscv64/syscall/syscall.c`
 - Purpose: riscv64 syscall trap-entry backend hook for transport ABI.
 
-### `status_t arch_syscall_get_vector(BOOT_U64 *out_vector)`
+### `status_t arch_syscall_get_vector(u64 *out_vector)`
 - File: `arch/riscv64/syscall/syscall.c`
 - Purpose: provide synthetic syscall vector (`64`) to generic syscall layer.
 
@@ -132,7 +132,7 @@ Divergence notes:
 - Purpose: raise a supervisor software interrupt (`SSIP`) and, if needed, fall back to synthetic vector-64 dispatch so syscall trap invocation completes deterministically during early bring-up.
 
 ### `status_t arch_syscall_decode(const void *trap_frame, syscall_abi_frame_t *out)`
-### `status_t arch_syscall_encode_ret(void *trap_frame, BOOT_U64 value)`
+### `status_t arch_syscall_encode_ret(void *trap_frame, u64 value)`
 - File: `arch/riscv64/syscall/syscall.c`
 - Purpose: riscv64 syscall ABI helper hooks used by the generic syscall trap path.
 
@@ -140,7 +140,7 @@ Divergence notes:
 
 ### `status_t arch_user_mode_set_kernel_stack(void *kernel_stack_top)`
 ### `status_t arch_user_mode_prepare_frame(arch_user_frame_t *frame)`
-### `__attribute__((noreturn)) void arch_user_mode_enter(arch_user_entry_t entry, void *arg, BOOT_U64 user_sp)`
+### `__attribute__((noreturn)) void arch_user_mode_enter(arch_user_entry_t entry, void *arg, u64 user_sp)`
 - File: `arch/riscv64/user/user_mode.c`
 - Purpose: riscv64 backend implementation point for the architecture-neutral user-mode contract.
 - Current status:

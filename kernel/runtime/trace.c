@@ -7,17 +7,17 @@
 #define TRACE_RING_CAPACITY 256U
 
 typedef struct {
-  BOOT_U64 initialized;
-  BOOT_U64 enabled;
-  BOOT_U64 write_seq;
-  BOOT_U64 dropped;
+  u64 initialized;
+  u64 enabled;
+  u64 write_seq;
+  u64 dropped;
   trace_record_t ring[TRACE_RING_CAPACITY];
 } trace_state_t;
 
 static trace_state_t g_trace;
 
 status_t trace_init(const boot_info_t *boot_info) {
-  BOOT_U64 i;
+  u64 i;
 
   if (boot_info == (const boot_info_t *)0) {
     return STATUS_INVALID_ARG;
@@ -43,8 +43,8 @@ status_t trace_init(const boot_info_t *boot_info) {
   return STATUS_OK;
 }
 
-void trace_emit(trace_class_t cls, BOOT_U64 a0, BOOT_U64 a1, BOOT_U64 a2) {
-  BOOT_U64 idx;
+void trace_emit(trace_class_t cls, u64 a0, u64 a1, u64 a2) {
+  u64 idx;
   trace_record_t rec;
 
   if (g_trace.initialized == 0ULL || g_trace.enabled == 0ULL) {
@@ -74,13 +74,13 @@ void trace_sink_kprintf(const trace_record_t *record) {
     return;
   }
   kprintf("trace: seq=%llu ns=%llu cpu=%llu cls=%llu a0=0x%llx a1=0x%llx a2=0x%llx\n", record->seq,
-          record->timestamp_ns, record->cpu_id, (BOOT_U64)record->cls, record->a0, record->a1, record->a2);
+          record->timestamp_ns, record->cpu_id, (u64)record->cls, record->a0, record->a1, record->a2);
 }
 
 status_t trace_dump(trace_sink_t sink) {
-  BOOT_U64 total;
-  BOOT_U64 start;
-  BOOT_U64 i;
+  u64 total;
+  u64 start;
+  u64 i;
 
   if (g_trace.initialized == 0ULL) {
     return STATUS_DEFERRED;
@@ -100,7 +100,7 @@ status_t trace_dump(trace_sink_t sink) {
   }
 
   for (i = start; i <= total; ++i) {
-    BOOT_U64 idx = (i - 1ULL) % TRACE_RING_CAPACITY;
+    u64 idx = (i - 1ULL) % TRACE_RING_CAPACITY;
     if (g_trace.ring[idx].seq != i) {
       g_trace.dropped += 1ULL;
       continue;

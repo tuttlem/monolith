@@ -10,21 +10,21 @@ Provide a stable CPU primitive API used by all generic subsystems.
 status_t arch_cpu_early_init(const boot_info_t *boot_info);
 status_t arch_cpu_late_init(void);
 
-BOOT_U64 arch_cpu_id(void);
-BOOT_U64 arch_cpu_count_hint(void);
+u64 arch_cpu_id(void);
+u64 arch_cpu_count_hint(void);
 
 void arch_cpu_relax(void);
 void arch_cpu_halt(void);
 void arch_cpu_reboot(void);
 
-BOOT_U64 arch_cycle_counter(void);
+u64 arch_cycle_counter(void);
 
 void arch_barrier_full(void);
 void arch_barrier_read(void);
 void arch_barrier_write(void);
 
 void arch_tlb_sync_local(void);
-void arch_icache_sync_range(BOOT_U64 addr, BOOT_U64 size);
+void arch_icache_sync_range(u64 addr, u64 size);
 ```
 
 ## Per-Architecture Expectations

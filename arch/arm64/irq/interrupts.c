@@ -14,13 +14,13 @@
 
 status_t arch_interrupts_init(const boot_info_t *boot_info) {
   extern char arm64_vector_table[];
-  BOOT_U64 vbar;
+  u64 vbar;
 
   if (boot_info == (const boot_info_t *)0 || boot_info->arch_id != BOOT_INFO_ARCH_ARM64) {
     return STATUS_INVALID_ARG;
   }
 
-  vbar = (BOOT_U64)(BOOT_UPTR)arm64_vector_table;
+  vbar = (u64)(uptr)arm64_vector_table;
   __asm__ volatile("msr vbar_el1, %0\n\t"
                    "isb\n\t"
                    :
@@ -34,12 +34,12 @@ void arch_interrupts_enable(void) { __asm__ volatile("msr daifclr, #2" : : : "me
 
 void arch_interrupts_disable(void) { __asm__ volatile("msr daifset, #2" : : : "memory"); }
 
-BOOT_U64 arm64_trap_c(BOOT_U64 trap_kind, BOOT_U64 esr, BOOT_U64 elr, BOOT_U64 spsr, BOOT_U64 far, BOOT_U64 sp_at_trap,
-                      BOOT_U64 regs_base) {
+u64 arm64_trap_c(u64 trap_kind, u64 esr, u64 elr, u64 spsr, u64 far, u64 sp_at_trap,
+                      u64 regs_base) {
   interrupt_frame_t frame;
-  BOOT_U64 irq = 0;
-  BOOT_U64 vector = 0;
-  BOOT_U64 kind = trap_kind & 3ULL;
+  u64 irq = 0;
+  u64 vector = 0;
+  u64 kind = trap_kind & 3ULL;
   status_t st;
 
   if (kind == ARM64_TRAP_IRQ) {
@@ -68,18 +68,18 @@ BOOT_U64 arm64_trap_c(BOOT_U64 trap_kind, BOOT_U64 esr, BOOT_U64 elr, BOOT_U64 s
   } else if (kind == ARM64_TRAP_SERROR) {
     vector = 2;
   } else {
-    BOOT_U64 ec = (esr >> 26) & 0x3FULL;
+    u64 ec = (esr >> 26) & 0x3FULL;
     if (ec == 0x15ULL) {
-      BOOT_U64 prev_mode = spsr & 0xFULL;
+      u64 prev_mode = spsr & 0xFULL;
       if (prev_mode == 0ULL) {
-        BOOT_U64 ret = 0ULL;
-        BOOT_U64 *regs = (BOOT_U64 *)(BOOT_UPTR)regs_base;
-        if (regs == (BOOT_U64 *)0) {
+        u64 ret = 0ULL;
+        u64 *regs = (u64 *)(uptr)regs_base;
+        if (regs == (u64 *)0) {
           return elr + 4ULL;
         }
         st = syscall_handle_user_trap(regs[8], regs[0], regs[1], regs[2], regs[3], regs[4], regs[5], &ret);
         if (st != STATUS_OK && ret == 0ULL) {
-          ret = (BOOT_U64)st;
+          ret = (u64)st;
         }
         regs[0] = ret;
         return elr + 4ULL;

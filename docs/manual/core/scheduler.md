@@ -24,7 +24,7 @@ Functions:
 - `task_t *sched_current(void)`
 - `status_t sched_set_foreground(task_t *task)`
 - `status_t sched_add(task_t *task)`
-- `void sched_on_exit(task_t *task, BOOT_U64 code)`
+- `void sched_on_exit(task_t *task, u64 code)`
 - `void sched_tick(void)`
 - `status_t arch_context_switch(task_t *from, task_t *to)`
 

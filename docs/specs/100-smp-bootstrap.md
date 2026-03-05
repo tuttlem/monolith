@@ -15,8 +15,8 @@ Bring up secondary CPUs into a shared C entry and park them safely.
 ## Generic APIs
 
 - `status_t smp_init(const boot_info_t *boot_info)`
-- `BOOT_U64 smp_cpu_count_online(void)`
-- `BOOT_U64 smp_cpu_count_possible(void)`
+- `u64 smp_cpu_count_online(void)`
+- `u64 smp_cpu_count_possible(void)`
 
 ## Architecture Responsibilities
 

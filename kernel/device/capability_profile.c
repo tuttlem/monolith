@@ -54,10 +54,10 @@ status_t capability_domain_state(device_class_t class_id) {
 void capability_domain_dump_matrix(void) {
   static const device_class_t domains[] = {DEVICE_CLASS_BLOCK, DEVICE_CLASS_NET, DEVICE_CLASS_INPUT,
                                            DEVICE_CLASS_DISPLAY, DEVICE_CLASS_AUDIO};
-  BOOT_U64 i;
+  u64 i;
   kprintf("caps: matrix profile=%s\n", capability_profile_name());
   kprintf("  core: cpu=on mmu=on interrupts=on timer=on discovery=on reporting=on\n");
-  for (i = 0; i < (BOOT_U64)(sizeof(domains) / sizeof(domains[0])); ++i) {
+  for (i = 0; i < (u64)(sizeof(domains) / sizeof(domains[0])); ++i) {
     status_t st = capability_domain_state(domains[i]);
     kprintf("  opt:%s=%s\n", capability_domain_name(domains[i]), status_str(st));
   }

@@ -24,7 +24,7 @@ Introduce an optional but standardized IOMMU layer for secure DMA isolation with
   - `status_t iommu_init(const boot_info_t *boot_info)`
   - `status_t iommu_domain_create(iommu_domain_t *out)`
   - `status_t iommu_attach(iommu_domain_t dom, device_id_t dev)`
-  - `status_t iommu_map(iommu_domain_t dom, iova_t iova, phys_addr_t pa, BOOT_U64 len, iommu_perm_t perm)`
+  - `status_t iommu_map(iommu_domain_t dom, iova_t iova, phys_addr_t pa, u64 len, iommu_perm_t perm)`
   - `status_t iommu_unmap(...)`
 
 ## Architecture Backends

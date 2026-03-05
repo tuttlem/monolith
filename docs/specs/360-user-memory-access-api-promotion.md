@@ -25,15 +25,15 @@ This spec is complete only when syscall/uaccess paths on `x86_64`, `arm64`, and 
 ## Required API (Copy Into Monolith)
 
 ```c
-status_t uaccess_set_user_window(BOOT_U64 base, BOOT_U64 size);
-status_t copy_from_user_checked(void *dst, BOOT_U64 user_src, BOOT_U64 len);
-status_t copy_to_user_checked(BOOT_U64 user_dst, const void *src, BOOT_U64 len);
+status_t uaccess_set_user_window(u64 base, u64 size);
+status_t copy_from_user_checked(void *dst, u64 user_src, u64 len);
+status_t copy_to_user_checked(u64 user_dst, const void *src, u64 len);
 ```
 
 ## Validation Pattern
 
 ```c
-static int user_range_ok(BOOT_U64 p, BOOT_U64 n) {
+static int user_range_ok(u64 p, u64 n) {
   if (n == 0) return 1;
   if (p < g_user_base) return 0;
   if (p + n < p) return 0; /* overflow */

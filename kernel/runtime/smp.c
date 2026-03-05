@@ -11,15 +11,15 @@
 #define SMP_WAIT_LOOPS 10000000ULL
 
 static struct {
-  BOOT_U64 initialized;
-  BOOT_U64 possible_cpus;
-  BOOT_U64 online_cpus;
-  BOOT_U64 cpu_online_bitmap;
+  u64 initialized;
+  u64 possible_cpus;
+  u64 online_cpus;
+  u64 cpu_online_bitmap;
 } g_smp;
 
-static BOOT_U64 smp_wait_for_online(BOOT_U64 expected) {
-  BOOT_U64 i;
-  BOOT_U64 online = percpu_online_count();
+static u64 smp_wait_for_online(u64 expected) {
+  u64 i;
+  u64 online = percpu_online_count();
 
   if (expected <= online) {
     return online;
@@ -37,9 +37,9 @@ static BOOT_U64 smp_wait_for_online(BOOT_U64 expected) {
 
 status_t smp_init(const boot_info_t *boot_info) {
   status_t st;
-  BOOT_U64 possible = 1;
-  BOOT_U64 started = 0;
-  BOOT_U64 online;
+  u64 possible = 1;
+  u64 started = 0;
+  u64 online;
 
   if (boot_info == (const boot_info_t *)0) {
     return STATUS_INVALID_ARG;
@@ -104,22 +104,22 @@ status_t smp_init(const boot_info_t *boot_info) {
   return STATUS_OK;
 }
 
-BOOT_U64 smp_cpu_count_online(void) {
-  BOOT_U64 online = percpu_online_count();
+u64 smp_cpu_count_online(void) {
+  u64 online = percpu_online_count();
   if (online > 0ULL) {
     return online;
   }
   return g_smp.online_cpus;
 }
 
-BOOT_U64 smp_cpu_count_possible(void) {
+u64 smp_cpu_count_possible(void) {
   if (g_smp.possible_cpus != 0ULL) {
     return g_smp.possible_cpus;
   }
   return 1ULL;
 }
 
-status_t smp_cpu_start(BOOT_U64 cpu_id) {
+status_t smp_cpu_start(u64 cpu_id) {
   status_t st;
 
   if (g_smp.initialized == 0ULL) {
@@ -139,27 +139,27 @@ status_t smp_cpu_start(BOOT_U64 cpu_id) {
   return st;
 }
 
-status_t ipi_send(BOOT_U64 cpu_id, ipi_kind_t kind) {
+status_t ipi_send(u64 cpu_id, ipi_kind_t kind) {
   if (g_smp.initialized == 0ULL) {
     return STATUS_DEFERRED;
   }
   if (cpu_id >= g_smp.possible_cpus) {
     return STATUS_NOT_FOUND;
   }
-  return arch_smp_ipi_send(cpu_id, (BOOT_U64)kind);
+  return arch_smp_ipi_send(cpu_id, (u64)kind);
 }
 
-status_t tlb_shootdown(cpu_mask_t mask, virt_addr_t va, BOOT_U64 len) {
+status_t tlb_shootdown(cpu_mask_t mask, virt_addr_t va, u64 len) {
   if (g_smp.initialized == 0ULL) {
     return STATUS_DEFERRED;
   }
   if (len == 0ULL) {
     return STATUS_INVALID_ARG;
   }
-  return arch_smp_tlb_shootdown((BOOT_U64)mask, (BOOT_U64)va, len);
+  return arch_smp_tlb_shootdown((u64)mask, (u64)va, len);
 }
 
-void smp_secondary_entry(BOOT_U64 cpu_id) {
+void smp_secondary_entry(u64 cpu_id) {
   if (percpu_register_current_cpu(cpu_id) != STATUS_OK) {
     for (;;) {
       arch_cpu_halt();
@@ -210,9 +210,9 @@ status_t cpu_context_init(cpu_context_t *ctx, void (*entry)(void *), void *arg, 
   if (ctx == (cpu_context_t *)0 || entry == (void (*)(void *))0 || stack_top == (void *)0) {
     return STATUS_INVALID_ARG;
   }
-  ctx->sp = (BOOT_U64)(BOOT_UPTR)stack_top;
-  ctx->ip = (BOOT_U64)(BOOT_UPTR)entry;
-  ctx->arg = (BOOT_U64)(BOOT_UPTR)arg;
+  ctx->sp = (u64)(uptr)stack_top;
+  ctx->ip = (u64)(uptr)entry;
+  ctx->arg = (u64)(uptr)arg;
   ctx->flags = 0ULL;
   return STATUS_OK;
 }

@@ -4,15 +4,15 @@
 #include "kernel.h"
 
 typedef struct {
-  BOOT_U64 class_id;
-  BOOT_U64 arch_id;
-  BOOT_U64 vector;
-  BOOT_U64 error_code;
-  BOOT_U64 raw_syndrome;
-  BOOT_U64 fault_addr;
-  BOOT_U64 ip;
-  BOOT_U64 sp;
-  BOOT_U64 flags;
+  u64 class_id;
+  u64 arch_id;
+  u64 vector;
+  u64 error_code;
+  u64 raw_syndrome;
+  u64 fault_addr;
+  u64 ip;
+  u64 sp;
+  u64 flags;
   const char *reason;
 } exception_info_t;
 

@@ -11,7 +11,7 @@ static const EFI_GUID k_mp_services_guid = {
 
 typedef struct {
   EFI_MP_SERVICES_PROTOCOL *mp;
-  volatile BOOT_U64 started;
+  volatile u64 started;
 } arm64_smp_context_t;
 
 static void EFIAPI arm64_smp_ap_entry(VOID *arg) {
@@ -25,13 +25,13 @@ static void EFIAPI arm64_smp_ap_entry(VOID *arg) {
     return;
   }
 
-  if (percpu_register_current_cpu((BOOT_U64)cpu_id) == STATUS_OK) {
+  if (percpu_register_current_cpu((u64)cpu_id) == STATUS_OK) {
     __atomic_add_fetch(&ctx->started, 1ULL, __ATOMIC_SEQ_CST);
-    smp_secondary_entry((BOOT_U64)cpu_id);
+    smp_secondary_entry((u64)cpu_id);
   }
 }
 
-status_t arch_smp_bootstrap(const boot_info_t *boot_info, BOOT_U64 *out_possible_cpus, BOOT_U64 *out_started_cpus) {
+status_t arch_smp_bootstrap(const boot_info_t *boot_info, u64 *out_possible_cpus, u64 *out_started_cpus) {
   boot_info_ext_uefi_t *uefi_ext;
   EFI_BOOT_SERVICES *boot_services;
   EFI_MP_SERVICES_PROTOCOL *mp = (EFI_MP_SERVICES_PROTOCOL *)0;
@@ -40,21 +40,21 @@ status_t arch_smp_bootstrap(const boot_info_t *boot_info, BOOT_U64 *out_possible
   UINTN enabled = 1;
   arm64_smp_context_t ctx;
 
-  if (boot_info == (const boot_info_t *)0 || out_possible_cpus == (BOOT_U64 *)0 || out_started_cpus == (BOOT_U64 *)0) {
+  if (boot_info == (const boot_info_t *)0 || out_possible_cpus == (u64 *)0 || out_started_cpus == (u64 *)0) {
     return STATUS_INVALID_ARG;
   }
   if (boot_info->arch_id != BOOT_INFO_ARCH_ARM64) {
     return STATUS_INVALID_ARG;
   }
   if ((boot_info->valid_mask & BOOT_INFO_HAS_ARCH_DATA) == 0 || boot_info->arch_data_ptr == 0 ||
-      boot_info->arch_data_size < (BOOT_U64)sizeof(boot_info_ext_uefi_t)) {
+      boot_info->arch_data_size < (u64)sizeof(boot_info_ext_uefi_t)) {
     *out_possible_cpus = 1ULL;
     *out_started_cpus = 0ULL;
     return STATUS_OK;
   }
 
-  uefi_ext = (boot_info_ext_uefi_t *)(BOOT_UPTR)boot_info->arch_data_ptr;
-  boot_services = (EFI_BOOT_SERVICES *)(BOOT_UPTR)uefi_ext->boot_services;
+  uefi_ext = (boot_info_ext_uefi_t *)(uptr)boot_info->arch_data_ptr;
+  boot_services = (EFI_BOOT_SERVICES *)(uptr)uefi_ext->boot_services;
   if (boot_services == (EFI_BOOT_SERVICES *)0 || boot_services->LocateProtocol == (EFI_LOCATE_PROTOCOL)0) {
     *out_possible_cpus = 1ULL;
     *out_started_cpus = 0ULL;
@@ -74,7 +74,7 @@ status_t arch_smp_bootstrap(const boot_info_t *boot_info, BOOT_U64 *out_possible
     return STATUS_TRY_AGAIN;
   }
 
-  *out_possible_cpus = (BOOT_U64)total;
+  *out_possible_cpus = (u64)total;
   if (enabled <= 1U) {
     *out_started_cpus = 0ULL;
     return STATUS_OK;
@@ -104,14 +104,14 @@ status_t arch_context_switch(task_t *from, task_t *to) {
   return cpu_context_switch((cpu_context_t *)from->arch_ctx, (cpu_context_t *)to->arch_ctx);
 }
 
-status_t arch_smp_cpu_start(BOOT_U64 cpu_id) {
+status_t arch_smp_cpu_start(u64 cpu_id) {
   if (cpu_id == 0ULL) {
     return STATUS_OK;
   }
   return STATUS_NOT_SUPPORTED;
 }
 
-status_t arch_smp_ipi_send(BOOT_U64 cpu_id, BOOT_U64 kind) {
+status_t arch_smp_ipi_send(u64 cpu_id, u64 kind) {
   (void)kind;
   if (cpu_id == arch_cpu_id()) {
     return STATUS_OK;
@@ -119,7 +119,7 @@ status_t arch_smp_ipi_send(BOOT_U64 cpu_id, BOOT_U64 kind) {
   return STATUS_NOT_SUPPORTED;
 }
 
-status_t arch_smp_tlb_shootdown(BOOT_U64 mask, BOOT_U64 va, BOOT_U64 len) {
+status_t arch_smp_tlb_shootdown(u64 mask, u64 va, u64 len) {
   (void)va;
   (void)len;
   if ((mask & (1ULL << arch_cpu_id())) != 0ULL) {

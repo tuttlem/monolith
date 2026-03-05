@@ -47,32 +47,32 @@ typedef enum {
 
 typedef struct {
   device_resource_kind_t kind;
-  BOOT_U64 base;
-  BOOT_U64 size;
-  BOOT_U64 flags;
+  u64 base;
+  u64 size;
+  u64 flags;
 } device_resource_t;
 
 typedef struct {
-  BOOT_U64 id;
-  BOOT_U64 parent_id;
-  BOOT_U64 bus_id;
+  u64 id;
+  u64 parent_id;
+  u64 bus_id;
   const char *name;
   device_class_t class_id;
-  BOOT_U64 vendor_id;
-  BOOT_U64 device_id;
-  BOOT_U64 revision;
-  BOOT_U64 class_code;
-  BOOT_U64 subclass_code;
-  BOOT_U64 prog_if;
-  BOOT_U64 resource_count;
+  u64 vendor_id;
+  u64 device_id;
+  u64 revision;
+  u64 class_code;
+  u64 subclass_code;
+  u64 prog_if;
+  u64 resource_count;
   device_resource_t resources[DEVICE_BUS_MAX_RESOURCES];
   void *driver_data;
-  BOOT_U64 active;
+  u64 active;
 } device_t;
 
 typedef struct {
-  BOOT_U64 id;
-  BOOT_U64 parent_bus_id;
+  u64 id;
+  u64 parent_bus_id;
   bus_type_t type;
   const char *name;
 } bus_t;
@@ -82,22 +82,22 @@ typedef void (*device_hotplug_fn_t)(const device_t *dev, void *ctx);
 status_t device_bus_init(const boot_info_t *boot_info, const hw_desc_t *hw);
 void device_bus_reset(void);
 
-status_t device_bus_register_bus(const bus_t *bus_template, BOOT_U64 *out_bus_id);
-status_t device_bus_register_device(const device_t *dev_template, BOOT_U64 *out_device_id);
-status_t device_bus_remove_device(BOOT_U64 device_id);
+status_t device_bus_register_bus(const bus_t *bus_template, u64 *out_bus_id);
+status_t device_bus_register_device(const device_t *dev_template, u64 *out_device_id);
+status_t device_bus_remove_device(u64 device_id);
 status_t device_bus_register_hotplug(device_hotplug_fn_t on_add, device_hotplug_fn_t on_remove, void *ctx);
 
-const bus_t *device_bus_get_bus(BOOT_U64 bus_id);
-const device_t *device_bus_get_device(BOOT_U64 device_id);
-BOOT_U64 device_bus_count(void);
-const device_t *device_bus_device_at(BOOT_U64 index);
+const bus_t *device_bus_get_bus(u64 bus_id);
+const device_t *device_bus_get_device(u64 device_id);
+u64 device_bus_count(void);
+const device_t *device_bus_device_at(u64 index);
 
-BOOT_U64 device_bus_find_first_by_class(device_class_t class_id);
-BOOT_U64 device_bus_find_next_by_class(device_class_t class_id, BOOT_U64 after_id);
+u64 device_bus_find_first_by_class(device_class_t class_id);
+u64 device_bus_find_next_by_class(device_class_t class_id, u64 after_id);
 
 void device_bus_dump(void);
 
 /* Spec 131 hardware-resource manager compatibility layer. */
-status_t device_bus_replace_resources(BOOT_U64 device_id, const device_resource_t *resources, BOOT_U64 count);
+status_t device_bus_replace_resources(u64 device_id, const device_resource_t *resources, u64 count);
 
 #endif

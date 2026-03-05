@@ -25,9 +25,9 @@ Complete SMP substrate beyond bootstrap parking so multicore control is practica
 - Headers: `kernel/include/smp.h`, `kernel/include/ipi.h`
 - APIs:
   - `status_t smp_init(const boot_info_t *boot_info)`
-  - `status_t smp_cpu_start(BOOT_U64 cpu_id)`
-  - `status_t ipi_send(BOOT_U64 cpu_id, ipi_kind_t kind)`
-  - `status_t tlb_shootdown(cpu_mask_t mask, virt_addr_t va, BOOT_U64 len)`
+  - `status_t smp_cpu_start(u64 cpu_id)`
+  - `status_t ipi_send(u64 cpu_id, ipi_kind_t kind)`
+  - `status_t tlb_shootdown(cpu_mask_t mask, virt_addr_t va, u64 len)`
 
 ## Architecture Backends
 

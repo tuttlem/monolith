@@ -26,7 +26,7 @@ Normalize ACPI/DT/fallback data into one early hardware descriptor consumed by g
 1. `hw_discovery_init(const boot_info_t *boot_info)` in `kmain`
 2. consumers query:
    - `const hw_desc_t *hw_desc_get(void)`
-   - `BOOT_U64 hw_desc_cpu_count_hint(void)`
+   - `u64 hw_desc_cpu_count_hint(void)`
 
 ## Parser Split
 

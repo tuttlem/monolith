@@ -29,13 +29,13 @@ This spec is part of a tri-arch program and is only globally complete when corre
 
 ```c
 status_t arch_user_mode_set_kernel_stack(void *kernel_stack_top) {
-  g_riscv64_kernel_stack_top = (BOOT_U64)(BOOT_UPTR)kernel_stack_top;
+  g_riscv64_kernel_stack_top = (u64)(uptr)kernel_stack_top;
   return STATUS_OK;
 }
 
-__attribute__((noreturn)) void arch_user_mode_enter(arch_user_entry_t entry, void *arg, BOOT_U64 user_sp) {
-  BOOT_U64 sepc = (BOOT_U64)(BOOT_UPTR)entry;
-  BOOT_U64 sstatus;
+__attribute__((noreturn)) void arch_user_mode_enter(arch_user_entry_t entry, void *arg, u64 user_sp) {
+  u64 sepc = (u64)(uptr)entry;
+  u64 sstatus;
 
   __asm__ volatile("csrr %0, sstatus" : "=r"(sstatus));
   sstatus &= ~(1ULL << 8); /* clear SPP => return to U-mode */

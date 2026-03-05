@@ -15,17 +15,17 @@
 #define X64_IDENTITY_BYTES (X64_IDENTITY_GIB * 1024ULL * 1024ULL * 1024ULL)
 #define X64_ADDR_MASK_2M 0x000FFFFFFFE00000ULL
 
-extern BOOT_U64 g_pml4[512];
-extern BOOT_U64 g_pdpt[512];
-extern BOOT_U64 g_pd[X64_IDENTITY_GIB][512];
+extern u64 g_pml4[512];
+extern u64 g_pdpt[512];
+extern u64 g_pd[X64_IDENTITY_GIB][512];
 
-static BOOT_U64 read_cr3(void) {
-  BOOT_U64 cr3;
+static u64 read_cr3(void) {
+  u64 cr3;
   __asm__ volatile("movq %%cr3, %0" : "=r"(cr3));
   return cr3;
 }
 
-static void write_cr3(BOOT_U64 cr3) { __asm__ volatile("movq %0, %%cr3" : : "r"(cr3) : "memory"); }
+static void write_cr3(u64 cr3) { __asm__ volatile("movq %0, %%cr3" : : "r"(cr3) : "memory"); }
 
 static int range_supported(mm_virt_addr_t va, mm_phys_addr_t pa) {
   if (va >= X64_IDENTITY_BYTES) {
@@ -37,8 +37,8 @@ static int range_supported(mm_virt_addr_t va, mm_phys_addr_t pa) {
   return 1;
 }
 
-static BOOT_U64 x64_flags_from_prot(BOOT_U64 prot_flags) {
-  BOOT_U64 flags = X64_PAGE_PRESENT | X64_PAGE_LARGE;
+static u64 x64_flags_from_prot(u64 prot_flags) {
+  u64 flags = X64_PAGE_PRESENT | X64_PAGE_LARGE;
 
   if ((prot_flags & MMU_PROT_WRITE) != 0) {
     flags |= X64_PAGE_WRITABLE;
@@ -58,8 +58,8 @@ static BOOT_U64 x64_flags_from_prot(BOOT_U64 prot_flags) {
   return flags;
 }
 
-static BOOT_U64 x64_prot_from_entry(BOOT_U64 entry) {
-  BOOT_U64 flags = MMU_PROT_READ;
+static u64 x64_prot_from_entry(u64 entry) {
+  u64 flags = MMU_PROT_READ;
 
   if ((entry & X64_PAGE_WRITABLE) != 0) {
     flags |= MMU_PROT_WRITE;
@@ -79,12 +79,12 @@ static BOOT_U64 x64_prot_from_entry(BOOT_U64 entry) {
   return flags;
 }
 
-BOOT_U64 arch_mm_page_size(void) { return X64_PAGE_SIZE_2M; }
+u64 arch_mm_page_size(void) { return X64_PAGE_SIZE_2M; }
 
-status_t arch_mm_map_page(mm_virt_addr_t va, mm_phys_addr_t pa, BOOT_U64 prot_flags) {
-  BOOT_U64 pdpt_index;
-  BOOT_U64 pd_index;
-  BOOT_U64 entry;
+status_t arch_mm_map_page(mm_virt_addr_t va, mm_phys_addr_t pa, u64 prot_flags) {
+  u64 pdpt_index;
+  u64 pd_index;
+  u64 entry;
 
   if ((va & (X64_PAGE_SIZE_2M - 1ULL)) != 0 || (pa & (X64_PAGE_SIZE_2M - 1ULL)) != 0) {
     return STATUS_INVALID_ARG;
@@ -108,8 +108,8 @@ status_t arch_mm_map_page(mm_virt_addr_t va, mm_phys_addr_t pa, BOOT_U64 prot_fl
 }
 
 status_t arch_mm_unmap_page(mm_virt_addr_t va) {
-  BOOT_U64 pdpt_index;
-  BOOT_U64 pd_index;
+  u64 pdpt_index;
+  u64 pd_index;
 
   if ((va & (X64_PAGE_SIZE_2M - 1ULL)) != 0) {
     return STATUS_INVALID_ARG;
@@ -127,11 +127,11 @@ status_t arch_mm_unmap_page(mm_virt_addr_t va) {
   return STATUS_OK;
 }
 
-status_t arch_mm_protect_page(mm_virt_addr_t va, BOOT_U64 prot_flags) {
-  BOOT_U64 pdpt_index;
-  BOOT_U64 pd_index;
-  BOOT_U64 old_entry;
-  BOOT_U64 new_entry;
+status_t arch_mm_protect_page(mm_virt_addr_t va, u64 prot_flags) {
+  u64 pdpt_index;
+  u64 pd_index;
+  u64 old_entry;
+  u64 new_entry;
 
   if ((va & (X64_PAGE_SIZE_2M - 1ULL)) != 0) {
     return STATUS_INVALID_ARG;
@@ -156,10 +156,10 @@ status_t arch_mm_protect_page(mm_virt_addr_t va, BOOT_U64 prot_flags) {
   return STATUS_OK;
 }
 
-status_t arch_mm_translate_page(mm_virt_addr_t va, mm_phys_addr_t *out_pa, BOOT_U64 *out_flags) {
-  BOOT_U64 pdpt_index;
-  BOOT_U64 pd_index;
-  BOOT_U64 entry;
+status_t arch_mm_translate_page(mm_virt_addr_t va, mm_phys_addr_t *out_pa, u64 *out_flags) {
+  u64 pdpt_index;
+  u64 pd_index;
+  u64 entry;
 
   if ((va & (X64_PAGE_SIZE_2M - 1ULL)) != 0 || out_pa == (mm_phys_addr_t *)0) {
     return STATUS_INVALID_ARG;
@@ -176,14 +176,14 @@ status_t arch_mm_translate_page(mm_virt_addr_t va, mm_phys_addr_t *out_pa, BOOT_
   }
 
   *out_pa = entry & X64_ADDR_MASK_2M;
-  if (out_flags != (BOOT_U64 *)0) {
+  if (out_flags != (u64 *)0) {
     *out_flags = x64_prot_from_entry(entry);
   }
   return STATUS_OK;
 }
 
-status_t arch_mm_sync_tlb(mm_virt_addr_t va, BOOT_U64 size) {
-  BOOT_U64 cr3;
+status_t arch_mm_sync_tlb(mm_virt_addr_t va, u64 size) {
+  u64 cr3;
   (void)va;
   (void)size;
 

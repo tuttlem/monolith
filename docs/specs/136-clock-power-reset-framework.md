@@ -24,7 +24,7 @@ Provide a minimal control-plane substrate for SoC/peripheral clock and reset ope
 - Headers: `kernel/include/clock.h`, `kernel/include/reset.h`, `kernel/include/power_domain.h`
 - APIs:
   - `status_t clock_enable(clock_id_t clk)`
-  - `status_t clock_set_rate(clock_id_t clk, BOOT_U64 hz)`
+  - `status_t clock_set_rate(clock_id_t clk, u64 hz)`
   - `status_t reset_deassert(reset_id_t rst)`
 
 ## Architecture Notes

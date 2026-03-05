@@ -23,44 +23,44 @@
 #define HW_IRQ_CONTROLLER_RISCV_PLIC 4ULL
 
 typedef struct {
-  BOOT_U64 cpu_id;
-  BOOT_U64 flags;
+  u64 cpu_id;
+  u64 flags;
 } hw_cpu_desc_t;
 
 typedef struct {
-  BOOT_U64 type;
-  BOOT_U64 mmio_base;
-  BOOT_U64 mmio_size;
-  BOOT_U64 irq_base;
-  BOOT_U64 irq_count;
+  u64 type;
+  u64 mmio_base;
+  u64 mmio_size;
+  u64 irq_base;
+  u64 irq_count;
 } hw_irq_controller_desc_t;
 
 typedef struct {
-  BOOT_U64 mmio_base;
-  BOOT_U64 mmio_size;
-  BOOT_U64 irq;
-  BOOT_U64 freq_hz;
-  BOOT_U64 flags;
+  u64 mmio_base;
+  u64 mmio_size;
+  u64 irq;
+  u64 freq_hz;
+  u64 flags;
 } hw_timer_desc_t;
 
 typedef struct {
-  BOOT_U64 base;
-  BOOT_U64 size;
+  u64 base;
+  u64 size;
 } hw_mmio_region_desc_t;
 
 typedef struct {
-  BOOT_U64 base;
-  BOOT_U64 irq;
-  BOOT_U64 flags;
+  u64 base;
+  u64 irq;
+  u64 flags;
 } hw_uart_desc_t;
 
 typedef struct {
-  BOOT_U64 source_mask;
-  BOOT_U64 cpu_count;
-  BOOT_U64 timer_count;
-  BOOT_U64 irq_controller_count;
-  BOOT_U64 mmio_region_count;
-  BOOT_U64 uart_count;
+  u64 source_mask;
+  u64 cpu_count;
+  u64 timer_count;
+  u64 irq_controller_count;
+  u64 mmio_region_count;
+  u64 uart_count;
   hw_cpu_desc_t cpus[HW_DESC_MAX_CPUS];
   hw_timer_desc_t timers[HW_DESC_MAX_TIMERS];
   hw_irq_controller_desc_t irq_controllers[HW_DESC_MAX_IRQ_CONTROLLERS];
@@ -70,6 +70,6 @@ typedef struct {
 
 status_t hw_discovery_init(const boot_info_t *boot_info);
 const hw_desc_t *hw_desc_get(void);
-BOOT_U64 hw_desc_cpu_count_hint(void);
+u64 hw_desc_cpu_count_hint(void);
 
 #endif

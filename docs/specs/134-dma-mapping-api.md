@@ -21,8 +21,8 @@ Provide a generic DMA mapping/unmapping layer that hides cache coherency and add
 - Header: `kernel/include/dma.h`
 - APIs:
   - `status_t dma_init(const boot_info_t *boot_info)`
-  - `status_t dma_map(device_id_t dev, void *cpu_ptr, BOOT_U64 len, dma_dir_t dir, dma_addr_t *out)`
-  - `status_t dma_unmap(device_id_t dev, dma_addr_t addr, BOOT_U64 len, dma_dir_t dir)`
+  - `status_t dma_map(device_id_t dev, void *cpu_ptr, u64 len, dma_dir_t dir, dma_addr_t *out)`
+  - `status_t dma_unmap(device_id_t dev, dma_addr_t addr, u64 len, dma_dir_t dir)`
   - `status_t dma_sync_for_device(...)`
   - `status_t dma_sync_for_cpu(...)`
 

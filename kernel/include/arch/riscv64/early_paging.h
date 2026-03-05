@@ -4,9 +4,9 @@
 #include "boot_info.h"
 
 typedef struct {
-  BOOT_U64 old_satp;
-  BOOT_U64 new_satp;
-  BOOT_U64 identity_bytes_mapped;
+  u64 old_satp;
+  u64 new_satp;
+  u64 identity_bytes_mapped;
 } riscv64_early_paging_result_t;
 
 int riscv64_early_paging_takeover(riscv64_early_paging_result_t *result);

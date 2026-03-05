@@ -7,8 +7,8 @@ The network baseline layer creates generic network-domain devices from already e
 Header: `kernel/include/net.h`
 
 - `status_t net_enumerate(const boot_info_t *boot_info)`
-- `BOOT_U64 net_device_count(void)`
-- `status_t net_device_info_at(BOOT_U64 index, net_device_info_t *out_info)`
+- `u64 net_device_count(void)`
+- `status_t net_device_info_at(u64 index, net_device_info_t *out_info)`
 - `void net_dump_diagnostics(void)`
 
 ## `net_device_info_t`
@@ -44,8 +44,8 @@ This descriptor gives OS writers a stable, architecture-agnostic summary for eac
 ```c
 status_t st = net_enumerate(boot_info);
 if (st == STATUS_OK) {
-  BOOT_U64 n = net_device_count();
-  BOOT_U64 i;
+  u64 n = net_device_count();
+  u64 i;
   for (i = 0; i < n; ++i) {
     net_device_info_t info;
     if (net_device_info_at(i, &info) == STATUS_OK) {

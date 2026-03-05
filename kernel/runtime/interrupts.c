@@ -9,7 +9,7 @@
 
 static const char g_irq_owner_anon[] = "anonymous";
 
-static BOOT_U64 exception_class_from_frame(const interrupt_frame_t *frame) {
+static u64 exception_class_from_frame(const interrupt_frame_t *frame) {
   if (frame == (const interrupt_frame_t *)0) {
     return EXCEPTION_CLASS_UNKNOWN;
   }
@@ -19,7 +19,7 @@ static BOOT_U64 exception_class_from_frame(const interrupt_frame_t *frame) {
   return EXCEPTION_CLASS_FAULT;
 }
 
-static const char *x86_64_exception_name(BOOT_U64 vector) {
+static const char *x86_64_exception_name(u64 vector) {
   switch (vector) {
   case 0:
     return "divide_error";
@@ -65,7 +65,7 @@ static const char *x86_64_exception_name(BOOT_U64 vector) {
 }
 
 static const char *arm64_exception_name(const interrupt_frame_t *frame) {
-  BOOT_U64 ec;
+  u64 ec;
   if (frame == (const interrupt_frame_t *)0) {
     return "arm64_exception";
   }
@@ -98,9 +98,9 @@ static const char *arm64_exception_name(const interrupt_frame_t *frame) {
 }
 
 static const char *riscv64_exception_name(const interrupt_frame_t *frame) {
-  BOOT_U64 scause;
-  BOOT_U64 is_interrupt;
-  BOOT_U64 code;
+  u64 scause;
+  u64 is_interrupt;
+  u64 code;
 
   if (frame == (const interrupt_frame_t *)0) {
     return "riscv_exception";
@@ -160,10 +160,10 @@ typedef struct {
 } interrupt_slot_t;
 
 static struct {
-  BOOT_U64 initialized;
-  BOOT_U64 arch_id;
+  u64 initialized;
+  u64 arch_id;
   interrupt_slot_t slots[INTERRUPT_MAX_VECTORS];
-  BOOT_U64 unhandled_once[INTERRUPT_MAX_VECTORS];
+  u64 unhandled_once[INTERRUPT_MAX_VECTORS];
 } g_interrupts;
 
 static int owner_eq(const char *a, const char *b) {
@@ -205,7 +205,7 @@ static void interrupts_panic_exception(const interrupt_frame_t *frame, const cha
 }
 
 static void default_interrupt_handler(const interrupt_frame_t *frame) {
-  BOOT_U64 irq = 0;
+  u64 irq = 0;
 
   if (frame == (const interrupt_frame_t *)0) {
     return;
@@ -238,7 +238,7 @@ static void default_interrupt_handler(const interrupt_frame_t *frame) {
 }
 
 status_t interrupts_init(const boot_info_t *boot_info) {
-  BOOT_U64 i;
+  u64 i;
   status_t st;
   const hw_desc_t *hw;
 
@@ -273,7 +273,7 @@ status_t interrupts_init(const boot_info_t *boot_info) {
   return st;
 }
 
-status_t interrupts_register_handler_owned(BOOT_U64 vector, interrupt_handler_t handler, void *ctx, const char *owner) {
+status_t interrupts_register_handler_owned(u64 vector, interrupt_handler_t handler, void *ctx, const char *owner) {
   interrupt_slot_t *slot;
   const char *new_owner;
 
@@ -297,11 +297,11 @@ status_t interrupts_register_handler_owned(BOOT_U64 vector, interrupt_handler_t 
   return STATUS_OK;
 }
 
-status_t interrupts_register_handler(BOOT_U64 vector, interrupt_handler_t handler, void *ctx) {
+status_t interrupts_register_handler(u64 vector, interrupt_handler_t handler, void *ctx) {
   return interrupts_register_handler_owned(vector, handler, ctx, g_irq_owner_anon);
 }
 
-status_t interrupts_unregister_handler(BOOT_U64 vector, const char *owner) {
+status_t interrupts_unregister_handler(u64 vector, const char *owner) {
   interrupt_slot_t *slot;
   const char *expected_owner;
 
@@ -328,7 +328,7 @@ status_t interrupts_unregister_handler(BOOT_U64 vector, const char *owner) {
   return STATUS_OK;
 }
 
-const char *interrupts_handler_owner(BOOT_U64 vector) {
+const char *interrupts_handler_owner(u64 vector) {
   if (g_interrupts.initialized == 0 || vector >= INTERRUPT_MAX_VECTORS) {
     return (const char *)0;
   }

@@ -1,10 +1,10 @@
 #include "pci.h"
 #include "print.h"
 
-static BOOT_U64 g_pci_device_count;
+static u64 g_pci_device_count;
 
 #if defined(__x86_64__)
-static BOOT_U64 g_pci_bus_id = DEVICE_BUS_ID_NONE;
+static u64 g_pci_bus_id = DEVICE_BUS_ID_NONE;
 static void outl(unsigned short port, unsigned int value) {
   __asm__ volatile("outl %0, %1" : : "a"(value), "dN"(port));
 }
@@ -15,20 +15,20 @@ static unsigned int inl(unsigned short port) {
   return value;
 }
 
-static unsigned int pci_cfg_read32(BOOT_U64 bus, BOOT_U64 slot, BOOT_U64 func, BOOT_U64 off) {
+static unsigned int pci_cfg_read32(u64 bus, u64 slot, u64 func, u64 off) {
   unsigned int address = 0x80000000U | ((unsigned int)(bus & 0xFFULL) << 16) | ((unsigned int)(slot & 0x1FULL) << 11) |
                          ((unsigned int)(func & 0x7ULL) << 8) | (unsigned int)(off & 0xFCULL);
   outl(0xCF8U, address);
   return inl(0xCFCU);
 }
 
-static BOOT_U64 header_type(BOOT_U64 bus, BOOT_U64 slot, BOOT_U64 func) {
+static u64 header_type(u64 bus, u64 slot, u64 func) {
   unsigned int v = pci_cfg_read32(bus, slot, func, 0x0CU);
-  return (BOOT_U64)((v >> 16) & 0xFFU);
+  return (u64)((v >> 16) & 0xFFU);
 }
 
-static BOOT_U64 read_vendor(BOOT_U64 bus, BOOT_U64 slot, BOOT_U64 func) {
-  return (BOOT_U64)(pci_cfg_read32(bus, slot, func, 0x00U) & 0xFFFFU);
+static u64 read_vendor(u64 bus, u64 slot, u64 func) {
+  return (u64)(pci_cfg_read32(bus, slot, func, 0x00U) & 0xFFFFU);
 }
 
 static status_t ensure_pci_bus(void) {
@@ -47,9 +47,9 @@ static status_t ensure_pci_bus(void) {
   return st;
 }
 
-static void fill_bar_resources(device_t *dev, BOOT_U64 bus, BOOT_U64 slot, BOOT_U64 func, BOOT_U64 hdr_type) {
-  BOOT_U64 max_bars = ((hdr_type & 0x7fULL) == 0ULL) ? 6ULL : 2ULL;
-  BOOT_U64 bar;
+static void fill_bar_resources(device_t *dev, u64 bus, u64 slot, u64 func, u64 hdr_type) {
+  u64 max_bars = ((hdr_type & 0x7fULL) == 0ULL) ? 6ULL : 2ULL;
+  u64 bar;
 
   for (bar = 0; bar < max_bars && dev->resource_count < DEVICE_BUS_MAX_RESOURCES; ++bar) {
     unsigned int raw = pci_cfg_read32(bus, slot, func, 0x10U + bar * 4ULL);
@@ -58,13 +58,13 @@ static void fill_bar_resources(device_t *dev, BOOT_U64 bus, BOOT_U64 slot, BOOT_
     }
     if ((raw & 1U) != 0U) {
       dev->resources[dev->resource_count].kind = DEVICE_RESOURCE_IOPORT;
-      dev->resources[dev->resource_count].base = (BOOT_U64)(raw & ~0x3U);
+      dev->resources[dev->resource_count].base = (u64)(raw & ~0x3U);
       dev->resources[dev->resource_count].size = 0;
       dev->resources[dev->resource_count].flags = 0;
       dev->resource_count += 1ULL;
     } else {
       dev->resources[dev->resource_count].kind = DEVICE_RESOURCE_MMIO;
-      dev->resources[dev->resource_count].base = (BOOT_U64)(raw & ~0xFULL);
+      dev->resources[dev->resource_count].base = (u64)(raw & ~0xFULL);
       dev->resources[dev->resource_count].size = 0;
       dev->resources[dev->resource_count].flags = ((raw & 0x8U) != 0U) ? 1ULL : 0ULL;
       dev->resource_count += 1ULL;
@@ -73,7 +73,7 @@ static void fill_bar_resources(device_t *dev, BOOT_U64 bus, BOOT_U64 slot, BOOT_
 }
 
 static status_t enumerate_x86_legacy(void) {
-  BOOT_U64 bus;
+  u64 bus;
   status_t st;
 
   st = ensure_pci_bus();
@@ -84,21 +84,21 @@ static status_t enumerate_x86_legacy(void) {
   g_pci_device_count = 0;
 
   for (bus = 0; bus < 256ULL; ++bus) {
-    BOOT_U64 slot;
+    u64 slot;
     for (slot = 0; slot < 32ULL; ++slot) {
-      BOOT_U64 fn_limit = 1ULL;
-      BOOT_U64 func;
+      u64 fn_limit = 1ULL;
+      u64 func;
 
       if ((header_type(bus, slot, 0) & 0x80ULL) != 0ULL) {
         fn_limit = 8ULL;
       }
 
       for (func = 0; func < fn_limit; ++func) {
-        BOOT_U64 vendor = read_vendor(bus, slot, func);
+        u64 vendor = read_vendor(bus, slot, func);
         device_t dev;
         unsigned int idreg;
         unsigned int classreg;
-        BOOT_U64 hdr;
+        u64 hdr;
 
         if (vendor == 0xFFFFULL) {
           continue;
@@ -113,16 +113,16 @@ static status_t enumerate_x86_legacy(void) {
         dev.bus_id = g_pci_bus_id;
         dev.name = "pci-device";
         dev.class_id = DEVICE_CLASS_PCI_DEVICE;
-        dev.vendor_id = (BOOT_U64)(idreg & 0xFFFFU);
-        dev.device_id = (BOOT_U64)((idreg >> 16) & 0xFFFFU);
-        dev.revision = (BOOT_U64)(classreg & 0xFFU);
-        dev.class_code = (BOOT_U64)((classreg >> 24) & 0xFFU);
-        dev.subclass_code = (BOOT_U64)((classreg >> 16) & 0xFFU);
-        dev.prog_if = (BOOT_U64)((classreg >> 8) & 0xFFU);
+        dev.vendor_id = (u64)(idreg & 0xFFFFU);
+        dev.device_id = (u64)((idreg >> 16) & 0xFFFFU);
+        dev.revision = (u64)(classreg & 0xFFU);
+        dev.class_code = (u64)((classreg >> 24) & 0xFFU);
+        dev.subclass_code = (u64)((classreg >> 16) & 0xFFU);
+        dev.prog_if = (u64)((classreg >> 8) & 0xFFU);
         dev.resource_count = 0;
         dev.driver_data = (void *)0;
         {
-          BOOT_U64 r;
+          u64 r;
           for (r = 0; r < DEVICE_BUS_MAX_RESOURCES; ++r) {
             dev.resources[r].kind = DEVICE_RESOURCE_NONE;
             dev.resources[r].base = 0;
@@ -132,7 +132,7 @@ static status_t enumerate_x86_legacy(void) {
         }
         fill_bar_resources(&dev, bus, slot, func, hdr);
 
-        st = device_bus_register_device(&dev, (BOOT_U64 *)0);
+        st = device_bus_register_device(&dev, (u64 *)0);
         if (st != STATUS_OK) {
           return st;
         }
@@ -163,4 +163,4 @@ status_t pci_enumerate(const boot_info_t *boot_info) {
 #endif
 }
 
-BOOT_U64 pci_device_count(void) { return g_pci_device_count; }
+u64 pci_device_count(void) { return g_pci_device_count; }

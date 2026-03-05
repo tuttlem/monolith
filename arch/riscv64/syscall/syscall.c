@@ -24,8 +24,8 @@ status_t arch_syscall_init(const boot_info_t *boot_info) {
   return STATUS_OK;
 }
 
-status_t arch_syscall_get_vector(BOOT_U64 *out_vector) {
-  if (out_vector == (BOOT_U64 *)0) {
+status_t arch_syscall_get_vector(u64 *out_vector) {
+  if (out_vector == (u64 *)0) {
     return STATUS_INVALID_ARG;
   }
   *out_vector = RISCV64_SYSCALL_VECTOR;
@@ -33,8 +33,8 @@ status_t arch_syscall_get_vector(BOOT_U64 *out_vector) {
 }
 
 status_t arch_syscall_trigger(void) {
-  BOOT_U64 old_sstatus;
-  BOOT_U64 spin;
+  u64 old_sstatus;
+  u64 spin;
 
   __asm__ volatile("csrr %0, sstatus" : "=r"(old_sstatus));
   __asm__ volatile("csrsi sie, 2\n\t"
@@ -61,7 +61,7 @@ status_t arch_syscall_trigger(void) {
 
 status_t arch_syscall_decode(const void *trap_frame, syscall_abi_frame_t *out) {
   const syscall_abi_frame_t *in;
-  BOOT_U64 i;
+  u64 i;
 
   if (trap_frame == (const void *)0 || out == (syscall_abi_frame_t *)0) {
     return STATUS_INVALID_ARG;
@@ -74,7 +74,7 @@ status_t arch_syscall_decode(const void *trap_frame, syscall_abi_frame_t *out) {
   return STATUS_OK;
 }
 
-status_t arch_syscall_encode_ret(void *trap_frame, BOOT_U64 value) {
+status_t arch_syscall_encode_ret(void *trap_frame, u64 value) {
   syscall_abi_frame_t *out;
   if (trap_frame == (void *)0) {
     return STATUS_INVALID_ARG;

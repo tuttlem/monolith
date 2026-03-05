@@ -5,7 +5,7 @@
 #include "irq_controller.h"
 
 static inline void driver_irq_complete(const interrupt_frame_t *frame) {
-  BOOT_U64 irq;
+  u64 irq;
   if (frame == (const interrupt_frame_t *)0) {
     return;
   }

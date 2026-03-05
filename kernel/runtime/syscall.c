@@ -12,30 +12,30 @@
 #define SYSCALL_DEBUG_LOG_MAX 255U
 
 typedef struct {
-  BOOT_U64 op;
+  u64 op;
   syscall_handler_t handler;
   const char *owner;
 } syscall_slot_t;
 
 static struct {
-  BOOT_U64 initialized;
-  BOOT_U64 arch_id;
-  BOOT_U64 abi_version;
-  BOOT_U64 feature_bits;
+  u64 initialized;
+  u64 arch_id;
+  u64 abi_version;
+  u64 feature_bits;
   syscall_slot_t slots[SYSCALL_MAX_HANDLERS];
-  BOOT_U64 slot_count;
-  BOOT_U64 trap_vector;
+  u64 slot_count;
+  u64 trap_vector;
 } g_syscall;
 
 static const char g_syscall_owner_core[] = "core";
 static const char g_syscall_owner_trap[] = "syscall-trap";
 
 static const personality_ops_t *g_personalities[PERSONALITY_MAX];
-static BOOT_U64 g_personality_count;
+static u64 g_personality_count;
 static personality_id_t g_active_personality = (personality_id_t)(~0ULL);
 
 static struct {
-  BOOT_U64 active;
+  u64 active;
   syscall_abi_frame_t frame;
   syscall_response_t resp;
 } g_syscall_trap_mailbox;
@@ -90,8 +90,8 @@ static status_t syscall_handle_abi_info(const syscall_request_t *req, syscall_re
 }
 
 static status_t syscall_handle_debug_log(const syscall_request_t *req, syscall_response_t *resp) {
-  BOOT_U64 i;
-  BOOT_U64 len;
+  u64 i;
+  u64 len;
   char line[SYSCALL_DEBUG_LOG_MAX + 1U];
   status_t st;
 
@@ -143,7 +143,7 @@ static status_t syscall_handle_time_now(const syscall_request_t *req, syscall_re
 }
 
 void syscall_reset(void) {
-  BOOT_U64 i;
+  u64 i;
   g_syscall.initialized = 0;
   g_syscall.arch_id = BOOT_INFO_ARCH_UNKNOWN;
   g_syscall.abi_version = SYSCALL_TRANSPORT_ABI_VERSION;
@@ -163,8 +163,8 @@ void syscall_reset(void) {
   }
 }
 
-status_t syscall_register(BOOT_U64 op, syscall_handler_t handler, const char *owner) {
-  BOOT_U64 i;
+status_t syscall_register(u64 op, syscall_handler_t handler, const char *owner) {
+  u64 i;
 
   if (g_syscall.initialized == 0ULL) {
     return STATUS_DEFERRED;
@@ -190,7 +190,7 @@ status_t syscall_register(BOOT_U64 op, syscall_handler_t handler, const char *ow
 
 status_t syscall_init(const boot_info_t *boot_info) {
   status_t st;
-  BOOT_U64 trap_vector = 0;
+  u64 trap_vector = 0;
 
   if (boot_info == (const boot_info_t *)0) {
     return STATUS_INVALID_ARG;
@@ -240,7 +240,7 @@ status_t syscall_init(const boot_info_t *boot_info) {
 }
 
 status_t syscall_dispatch(const syscall_request_t *req, syscall_response_t *resp) {
-  BOOT_U64 i;
+  u64 i;
 
   if (g_syscall.initialized == 0ULL) {
     return STATUS_DEFERRED;
@@ -257,19 +257,19 @@ status_t syscall_dispatch(const syscall_request_t *req, syscall_response_t *resp
   for (i = 0; i < g_syscall.slot_count; ++i) {
     if (g_syscall.slots[i].op == req->op) {
       status_t st = g_syscall.slots[i].handler(req, resp);
-      trace_emit(TRACE_CLASS_SYSCALL, req->op, (BOOT_U64)st, resp->value);
+      trace_emit(TRACE_CLASS_SYSCALL, req->op, (u64)st, resp->value);
       return st;
     }
   }
 
   resp->status = STATUS_NOT_SUPPORTED;
   resp->value = 0;
-  trace_emit(TRACE_CLASS_SYSCALL, req->op, (BOOT_U64)STATUS_NOT_SUPPORTED, 0ULL);
+  trace_emit(TRACE_CLASS_SYSCALL, req->op, (u64)STATUS_NOT_SUPPORTED, 0ULL);
   return STATUS_NOT_SUPPORTED;
 }
 
-status_t syscall_invoke_kernel(BOOT_U64 op, BOOT_U64 arg0, BOOT_U64 arg1, BOOT_U64 arg2, BOOT_U64 arg3, BOOT_U64 arg4,
-                               BOOT_U64 arg5, syscall_response_t *resp) {
+status_t syscall_invoke_kernel(u64 op, u64 arg0, u64 arg1, u64 arg2, u64 arg3, u64 arg4,
+                               u64 arg5, syscall_response_t *resp) {
   syscall_request_t req;
 
   if (resp == (syscall_response_t *)0) {
@@ -289,9 +289,9 @@ status_t syscall_invoke_kernel(BOOT_U64 op, BOOT_U64 arg0, BOOT_U64 arg1, BOOT_U
   return syscall_dispatch(&req, resp);
 }
 
-status_t syscall_invoke_trap(BOOT_U64 op, BOOT_U64 arg0, BOOT_U64 arg1, BOOT_U64 arg2, BOOT_U64 arg3, BOOT_U64 arg4,
-                             BOOT_U64 arg5, syscall_response_t *resp) {
-  BOOT_U64 spin;
+status_t syscall_invoke_trap(u64 op, u64 arg0, u64 arg1, u64 arg2, u64 arg3, u64 arg4,
+                             u64 arg5, syscall_response_t *resp) {
+  u64 spin;
 
   if (resp == (syscall_response_t *)0) {
     return STATUS_INVALID_ARG;
@@ -333,24 +333,24 @@ status_t syscall_invoke_trap(BOOT_U64 op, BOOT_U64 arg0, BOOT_U64 arg1, BOOT_U64
   return resp->status;
 }
 
-status_t syscall_handle_user_trap(BOOT_U64 op, BOOT_U64 arg0, BOOT_U64 arg1, BOOT_U64 arg2, BOOT_U64 arg3,
-                                  BOOT_U64 arg4, BOOT_U64 arg5, BOOT_U64 *out_ret) {
+status_t syscall_handle_user_trap(u64 op, u64 arg0, u64 arg1, u64 arg2, u64 arg3,
+                                  u64 arg4, u64 arg5, u64 *out_ret) {
   syscall_response_t resp = {STATUS_DEFERRED, 0ULL};
   status_t st = syscall_invoke_kernel(op, arg0, arg1, arg2, arg3, arg4, arg5, &resp);
   if (st != STATUS_OK) {
-    if (out_ret != (BOOT_U64 *)0) {
-      *out_ret = (BOOT_U64)st;
+    if (out_ret != (u64 *)0) {
+      *out_ret = (u64)st;
     }
     return st;
   }
-  if (out_ret != (BOOT_U64 *)0) {
+  if (out_ret != (u64 *)0) {
     *out_ret = resp.value;
   }
   return resp.status;
 }
 
-const char *syscall_owner(BOOT_U64 op) {
-  BOOT_U64 i;
+const char *syscall_owner(u64 op) {
+  u64 i;
   if (g_syscall.initialized == 0ULL) {
     return (const char *)0;
   }
@@ -362,7 +362,7 @@ const char *syscall_owner(BOOT_U64 op) {
   return (const char *)0;
 }
 
-const char *syscall_op_name(BOOT_U64 op) {
+const char *syscall_op_name(u64 op) {
   switch (op) {
   case SYSCALL_OP_ABI_INFO:
     return "abi_info";
@@ -375,8 +375,8 @@ const char *syscall_op_name(BOOT_U64 op) {
   }
 }
 
-BOOT_U64 syscall_abi_info_word(void) {
-  BOOT_U64 value = 0;
+u64 syscall_abi_info_word(void) {
+  u64 value = 0;
   value |= (g_syscall.abi_version & 0xFFFFULL);
   value |= ((g_syscall.arch_id & 0xFFULL) << 16);
   value |= ((g_syscall.feature_bits & 0xFFFFULL) << 24);
@@ -390,7 +390,7 @@ int syscall_trap_entry_ready(void) {
 int syscall_trap_mailbox_active(void) { return g_syscall_trap_mailbox.active != 0ULL; }
 
 status_t personality_register(const personality_ops_t *ops) {
-  BOOT_U64 i;
+  u64 i;
 
   if (ops == (const personality_ops_t *)0 || ops->name == (const char *)0) {
     return STATUS_INVALID_ARG;
@@ -409,7 +409,7 @@ status_t personality_register(const personality_ops_t *ops) {
 }
 
 status_t personality_activate(personality_id_t id) {
-  BOOT_U64 i;
+  u64 i;
 
   for (i = 0; i < g_personality_count; ++i) {
     const personality_ops_t *ops = g_personalities[i];
@@ -428,7 +428,7 @@ status_t personality_activate(personality_id_t id) {
 }
 
 status_t personality_exec(const exec_image_t *img, exec_result_t *out) {
-  BOOT_U64 i;
+  u64 i;
 
   if (img == (const exec_image_t *)0 || out == (exec_result_t *)0) {
     return STATUS_INVALID_ARG;
@@ -448,7 +448,7 @@ status_t personality_exec(const exec_image_t *img, exec_result_t *out) {
 personality_id_t personality_active_id(void) { return g_active_personality; }
 
 const char *personality_active_name(void) {
-  BOOT_U64 i;
+  u64 i;
   for (i = 0; i < g_personality_count; ++i) {
     const personality_ops_t *ops = g_personalities[i];
     if (ops != (const personality_ops_t *)0 && ops->id == g_active_personality) {
@@ -459,7 +459,7 @@ const char *personality_active_name(void) {
 }
 
 void syscall_dump_table(void) {
-  BOOT_U64 i;
+  u64 i;
 
   if (g_syscall.initialized == 0ULL) {
     kprintf("syscall: not initialized\n");

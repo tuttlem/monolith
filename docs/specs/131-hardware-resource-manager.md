@@ -37,9 +37,9 @@ Current discovery and device model expose topology, but resource handling still 
   - `device_resource_view_t`
 - APIs:
   - `status_t hw_resource_init(const boot_info_t *boot_info)`
-  - `status_t hw_resource_attach(device_id_t dev, const hw_resource_t *list, BOOT_U64 count)`
-  - `status_t hw_resource_get(device_id_t dev, resource_type_t type, BOOT_U64 index, hw_resource_t *out)`
-  - `BOOT_U64 hw_resource_count(device_id_t dev, resource_type_t type)`
+  - `status_t hw_resource_attach(device_id_t dev, const hw_resource_t *list, u64 count)`
+  - `status_t hw_resource_get(device_id_t dev, resource_type_t type, u64 index, hw_resource_t *out)`
+  - `u64 hw_resource_count(device_id_t dev, resource_type_t type)`
 
 ## Architecture Backends
 

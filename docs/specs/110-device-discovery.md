@@ -22,10 +22,10 @@ Suggested core type:
 
 ```c
 typedef struct {
-  BOOT_U64 cpu_count;
-  BOOT_U64 timer_count;
-  BOOT_U64 irq_controller_count;
-  BOOT_U64 mmio_region_count;
+  u64 cpu_count;
+  u64 timer_count;
+  u64 irq_controller_count;
+  u64 mmio_region_count;
   // fixed-size arrays for early bring-up; dynamic extension later
 } hw_desc_t;
 ```

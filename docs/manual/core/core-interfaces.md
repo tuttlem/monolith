@@ -11,6 +11,7 @@ This project freezes minimal architecture HAL interfaces so generic kernel code 
 
 Related generic services:
 - `status`: `kernel/include/status.h`
+- `types`: `kernel/include/types.h` (`u64/u32/uptr/...` for internal APIs; `BOOT_*` kept for boot ABI structs)
 - panic/assert: `kernel/include/panic.h`, `kernel/include/assert.h`
 - interrupts: `kernel/include/interrupts.h`
 - time: `kernel/include/timebase.h`

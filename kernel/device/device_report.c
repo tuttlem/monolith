@@ -34,9 +34,9 @@ static const char *class_name(device_class_t class_id) {
   }
 }
 
-BOOT_U64 device_report_count(void) { return device_bus_count(); }
+u64 device_report_count(void) { return device_bus_count(); }
 
-status_t device_report_get(BOOT_U64 index, device_report_entry_t *out_entry) {
+status_t device_report_get(u64 index, device_report_entry_t *out_entry) {
   const device_t *d;
 
   if (out_entry == (device_report_entry_t *)0) {
@@ -63,7 +63,7 @@ status_t device_report_get(BOOT_U64 index, device_report_entry_t *out_entry) {
 }
 
 void device_report_dump_all(void) {
-  BOOT_U64 i;
+  u64 i;
   kprintf("device-report: total=%llu\n", device_report_count());
   for (i = 0; i < device_report_count(); ++i) {
     const device_t *d = device_bus_device_at(i);
@@ -77,7 +77,7 @@ void device_report_dump_all(void) {
 }
 
 void device_report_dump_class(device_class_t class_id) {
-  BOOT_U64 id = device_bus_find_first_by_class(class_id);
+  u64 id = device_bus_find_first_by_class(class_id);
   kprintf("device-report: class=%s\n", class_name(class_id));
   while (id != DEVICE_BUS_ID_NONE) {
     const device_t *d = device_bus_get_device(id);

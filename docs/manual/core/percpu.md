@@ -43,15 +43,15 @@ Behavior:
 - `percpu_t *percpu_current(void)`
   - lockless read of current CPU-local pointer via architecture base register.
   - returns `NULL` if not initialized.
-- `percpu_t *percpu_by_id(BOOT_U64 cpu_id)`
+- `percpu_t *percpu_by_id(u64 cpu_id)`
   - linear search over online slots.
   - intended for early/simple use (SMP scaling can evolve later).
 
 ## Architecture Hook Mapping
 
 Defined in `kernel/include/arch_cpu.h`:
-- `status_t arch_cpu_set_local_base(BOOT_U64 base)`
-- `BOOT_U64 arch_cpu_get_local_base(void)`
+- `status_t arch_cpu_set_local_base(u64 base)`
+- `u64 arch_cpu_get_local_base(void)`
 
 Current backends:
 - x86_64: GS base MSR (`IA32_GS_BASE`)

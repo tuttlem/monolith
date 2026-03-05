@@ -7,7 +7,7 @@ The PCI layer provides baseline PCI/PCIe discovery and injects PCI devices into 
 Header: `kernel/include/pci.h`
 
 - `status_t pci_enumerate(const boot_info_t *boot_info)`
-- `BOOT_U64 pci_device_count(void)`
+- `u64 pci_device_count(void)`
 
 ## Current Backend Status
 

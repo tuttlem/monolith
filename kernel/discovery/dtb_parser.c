@@ -1,16 +1,16 @@
 #include "discovery_internal.h"
 
 typedef struct {
-  BOOT_U32 magic;
-  BOOT_U32 totalsize;
-  BOOT_U32 off_dt_struct;
-  BOOT_U32 off_dt_strings;
-  BOOT_U32 off_mem_rsvmap;
-  BOOT_U32 version;
-  BOOT_U32 last_comp_version;
-  BOOT_U32 boot_cpuid_phys;
-  BOOT_U32 size_dt_strings;
-  BOOT_U32 size_dt_struct;
+  u32 magic;
+  u32 totalsize;
+  u32 off_dt_struct;
+  u32 off_dt_strings;
+  u32 off_mem_rsvmap;
+  u32 version;
+  u32 last_comp_version;
+  u32 boot_cpuid_phys;
+  u32 size_dt_strings;
+  u32 size_dt_struct;
 } fdt_header_t;
 
 #define FDT_MAGIC 0xd00dfeedU
@@ -20,30 +20,30 @@ typedef struct {
 #define FDT_NOP 4U
 #define FDT_END 9U
 
-static BOOT_U32 be32_at(const unsigned char *p) {
-  return ((BOOT_U32)p[0] << 24) | ((BOOT_U32)p[1] << 16) | ((BOOT_U32)p[2] << 8) | (BOOT_U32)p[3];
+static u32 be32_at(const unsigned char *p) {
+  return ((u32)p[0] << 24) | ((u32)p[1] << 16) | ((u32)p[2] << 8) | (u32)p[3];
 }
 
-static BOOT_U64 be64_at(const unsigned char *p) {
-  BOOT_U64 hi = (BOOT_U64)be32_at(p);
-  BOOT_U64 lo = (BOOT_U64)be32_at(p + 4);
+static u64 be64_at(const unsigned char *p) {
+  u64 hi = (u64)be32_at(p);
+  u64 lo = (u64)be32_at(p + 4);
   return (hi << 32) | lo;
 }
 
-static BOOT_U32 align4(BOOT_U32 v) { return (v + 3U) & ~3U; }
+static u32 align4(u32 v) { return (v + 3U) & ~3U; }
 
 #define DTB_MAX_DEPTH 64U
 
 typedef struct {
-  BOOT_U64 last_reg_base;
-  BOOT_U64 last_reg_size;
-  BOOT_U64 last_irq;
-  BOOT_U64 node_is_cpu;
-  BOOT_U64 node_is_timer;
-  BOOT_U64 node_is_uart;
-  BOOT_U64 node_is_irqc;
-  BOOT_U64 node_irqc_type;
-  BOOT_U64 cpu_id;
+  u64 last_reg_base;
+  u64 last_reg_size;
+  u64 last_irq;
+  u64 node_is_cpu;
+  u64 node_is_timer;
+  u64 node_is_uart;
+  u64 node_is_irqc;
+  u64 node_irqc_type;
+  u64 cpu_id;
 } dtb_node_frame_t;
 
 static dtb_node_frame_t g_dtb_frames[DTB_MAX_DEPTH];
@@ -68,16 +68,16 @@ static int str_starts_with(const char *s, const char *prefix) {
   return 1;
 }
 
-static BOOT_U64 parse_hex_suffix_u64(const char *s) {
-  BOOT_U64 v = 0;
+static u64 parse_hex_suffix_u64(const char *s) {
+  u64 v = 0;
   while (*s != '\0') {
     char c = *s++;
     if (c >= '0' && c <= '9') {
-      v = (v << 4) | (BOOT_U64)(c - '0');
+      v = (v << 4) | (u64)(c - '0');
     } else if (c >= 'a' && c <= 'f') {
-      v = (v << 4) | (BOOT_U64)(10 + c - 'a');
+      v = (v << 4) | (u64)(10 + c - 'a');
     } else if (c >= 'A' && c <= 'F') {
-      v = (v << 4) | (BOOT_U64)(10 + c - 'A');
+      v = (v << 4) | (u64)(10 + c - 'A');
     } else {
       break;
     }
@@ -85,20 +85,20 @@ static BOOT_U64 parse_hex_suffix_u64(const char *s) {
   return v;
 }
 
-static BOOT_U64 read_reg64(const unsigned char *p, BOOT_U32 len, BOOT_U64 *out_size) {
+static u64 read_reg64(const unsigned char *p, u32 len, u64 *out_size) {
   if (len >= 16U) {
     *out_size = be64_at(p + 8);
     return be64_at(p);
   }
   if (len >= 8U) {
-    *out_size = (BOOT_U64)be32_at(p + 4);
-    return (BOOT_U64)be32_at(p);
+    *out_size = (u64)be32_at(p + 4);
+    return (u64)be32_at(p);
   }
   *out_size = 0;
   return 0;
 }
 
-static void add_cpu(hw_desc_t *desc, BOOT_U64 cpu_id) {
+static void add_cpu(hw_desc_t *desc, u64 cpu_id) {
   if (desc->cpu_count >= HW_DESC_MAX_CPUS) {
     return;
   }
@@ -107,7 +107,7 @@ static void add_cpu(hw_desc_t *desc, BOOT_U64 cpu_id) {
   desc->cpu_count += 1ULL;
 }
 
-static void add_timer(hw_desc_t *desc, BOOT_U64 irq) {
+static void add_timer(hw_desc_t *desc, u64 irq) {
   if (desc->timer_count >= HW_DESC_MAX_TIMERS) {
     return;
   }
@@ -119,7 +119,7 @@ static void add_timer(hw_desc_t *desc, BOOT_U64 irq) {
   desc->timer_count += 1ULL;
 }
 
-static void add_irqc(hw_desc_t *desc, BOOT_U64 type, BOOT_U64 base, BOOT_U64 size) {
+static void add_irqc(hw_desc_t *desc, u64 type, u64 base, u64 size) {
   if (desc->irq_controller_count >= HW_DESC_MAX_IRQ_CONTROLLERS) {
     return;
   }
@@ -131,7 +131,7 @@ static void add_irqc(hw_desc_t *desc, BOOT_U64 type, BOOT_U64 base, BOOT_U64 siz
   desc->irq_controller_count += 1ULL;
 }
 
-static void add_uart(hw_desc_t *desc, BOOT_U64 base, BOOT_U64 irq) {
+static void add_uart(hw_desc_t *desc, u64 base, u64 irq) {
   if (desc->uart_count >= HW_DESC_MAX_UARTS) {
     return;
   }
@@ -148,17 +148,17 @@ void hw_discovery_parse_dtb(const boot_info_t *boot_info, hw_desc_t *desc) {
   const unsigned char *struct_end;
   const char *strings_base;
   const unsigned char *p;
-  BOOT_U32 off_struct;
-  BOOT_U32 off_strings;
-  BOOT_U32 size_struct;
-  BOOT_U32 depth = 0;
+  u32 off_struct;
+  u32 off_strings;
+  u32 size_struct;
+  u32 depth = 0;
   dtb_node_frame_t *frames = g_dtb_frames;
 
   if (boot_info == (const boot_info_t *)0 || desc == (hw_desc_t *)0 || boot_info->dtb_ptr == 0) {
     return;
   }
 
-  hdr = (const fdt_header_t *)(BOOT_UPTR)boot_info->dtb_ptr;
+  hdr = (const fdt_header_t *)(uptr)boot_info->dtb_ptr;
   blob = (const unsigned char *)hdr;
   if (be32_at((const unsigned char *)&hdr->magic) != FDT_MAGIC) {
     return;
@@ -185,7 +185,7 @@ void hw_discovery_parse_dtb(const boot_info_t *boot_info, hw_desc_t *desc) {
   depth = 0;
 
   while (p + 4 <= struct_end) {
-    BOOT_U32 token = be32_at(p);
+    u32 token = be32_at(p);
     p += 4;
 
     if (token == FDT_BEGIN_NODE) {
@@ -197,7 +197,7 @@ void hw_discovery_parse_dtb(const boot_info_t *boot_info, hw_desc_t *desc) {
         break;
       }
       ++p;
-      p = struct_base + align4((BOOT_U32)(p - struct_base));
+      p = struct_base + align4((u32)(p - struct_base));
       if (depth >= DTB_MAX_DEPTH) {
         break;
       }
@@ -244,8 +244,8 @@ void hw_discovery_parse_dtb(const boot_info_t *boot_info, hw_desc_t *desc) {
     }
 
     if (token == FDT_PROP) {
-      BOOT_U32 len;
-      BOOT_U32 nameoff;
+      u32 len;
+      u32 nameoff;
       const char *prop_name;
       if (p + 8 > struct_end) {
         break;
@@ -265,7 +265,7 @@ void hw_discovery_parse_dtb(const boot_info_t *boot_info, hw_desc_t *desc) {
         }
       } else if (str_eq(prop_name, "interrupts")) {
         if (len >= 4U) {
-          frames[depth - 1U].last_irq = (BOOT_U64)be32_at(p);
+          frames[depth - 1U].last_irq = (u64)be32_at(p);
         }
       } else if (str_eq(prop_name, "interrupt-controller")) {
         frames[depth - 1U].node_is_irqc = 1ULL;

@@ -33,7 +33,7 @@ typedef struct {
   status_t (*enqueue)(task_t *task);
   task_t *(*pick_next)(void);
   void (*on_yield)(task_t *task);
-  void (*on_exit)(task_t *task, BOOT_U64 code);
+  void (*on_exit)(task_t *task, u64 code);
 } scheduler_ops_t;
 
 status_t sched_register_backend(const scheduler_ops_t *ops);

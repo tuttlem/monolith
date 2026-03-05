@@ -32,7 +32,7 @@ Related generic services:
 
 1. Generic types first.
 2. Opaque handles where backend state is needed.
-3. Use fixed-width semantics via existing BOOT types or explicit typedefs.
+3. Use fixed-width semantics via common kernel types (`u64`, `u32`, `uptr`, etc.) and reserve BOOT types for boot ABI boundary structs.
 4. `status_t` for fallible calls.
 5. No global mutable state exposed through headers.
 

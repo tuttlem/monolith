@@ -1,13 +1,15 @@
 #ifndef KERNEL_BOOT_INFO_H
 #define KERNEL_BOOT_INFO_H
 
-typedef unsigned long long BOOT_U64;
-typedef unsigned int BOOT_U32;
-#if __SIZEOF_POINTER__ == 8
-typedef unsigned long long BOOT_UPTR;
-#else
-typedef unsigned long BOOT_UPTR;
-#endif
+#include "types.h"
+
+typedef u64 BOOT_U64;
+typedef u32 BOOT_U32;
+typedef uptr BOOT_UPTR;
+
+_Static_assert(sizeof(BOOT_U64) == 8, "BOOT_U64 must be 64-bit");
+_Static_assert(sizeof(BOOT_U32) == 4, "BOOT_U32 must be 32-bit");
+_Static_assert(sizeof(BOOT_UPTR) == sizeof(void *), "BOOT_UPTR must match pointer width");
 
 #define BOOT_INFO_ABI_VERSION 2ULL
 

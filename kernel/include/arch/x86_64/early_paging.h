@@ -4,9 +4,9 @@
 #include "boot_info.h"
 
 typedef struct {
-  BOOT_U64 old_cr3;
-  BOOT_U64 new_cr3;
-  BOOT_U64 identity_bytes_mapped;
+  u64 old_cr3;
+  u64 new_cr3;
+  u64 identity_bytes_mapped;
 } x86_64_early_paging_result_t;
 
 int x86_64_early_paging_takeover(x86_64_early_paging_result_t *result);

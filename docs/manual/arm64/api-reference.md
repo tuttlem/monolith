@@ -44,7 +44,7 @@ Divergence notes:
 
 ## SMP Backend
 
-### `status_t arch_smp_bootstrap(const boot_info_t *boot_info, BOOT_U64 *out_possible_cpus, BOOT_U64 *out_started_cpus)`
+### `status_t arch_smp_bootstrap(const boot_info_t *boot_info, u64 *out_possible_cpus, u64 *out_started_cpus)`
 - File: `arch/arm64/cpu/smp.c`
 - Purpose: use UEFI MP Services for CPU enumeration/AP startup.
 - Parameters:
@@ -98,8 +98,8 @@ Divergence notes:
 
 ### GICv2 public helpers (`arch/arm64/irq/gicv2.c`)
 - `status_t arm64_gicv2_controller_init(const boot_info_t *boot_info)`
-- `status_t arm64_gicv2_claim_irq(BOOT_U64 *out_irq)`
-- `void arm64_gicv2_eoi_irq(BOOT_U64 irq)`
+- `status_t arm64_gicv2_claim_irq(u64 *out_irq)`
+- `void arm64_gicv2_eoi_irq(u64 irq)`
 
 Function details:
 - `arm64_gicv2_controller_init`:
@@ -115,9 +115,9 @@ Function details:
 
 ## Timer Backend
 
-### `status_t arch_timer_init(const boot_info_t *boot_info, BOOT_U64 *out_hz, BOOT_U64 *out_irq_vector)`
-### `void arch_timer_ack(BOOT_U64 vector)`
-### `BOOT_U64 arch_timer_clocksource_hz(const boot_info_t *boot_info)`
+### `status_t arch_timer_init(const boot_info_t *boot_info, u64 *out_hz, u64 *out_irq_vector)`
+### `void arch_timer_ack(u64 vector)`
+### `u64 arch_timer_clocksource_hz(const boot_info_t *boot_info)`
 - File: `arch/arm64/timer/timer.c`
 - Purpose: arm generic virtual timer setup and acknowledgment path.
 - Divergence:
@@ -129,7 +129,7 @@ Function details:
 - File: `arch/arm64/syscall/syscall.c`
 - Purpose: arm64 syscall trap-entry backend hook for transport ABI.
 
-### `status_t arch_syscall_get_vector(BOOT_U64 *out_vector)`
+### `status_t arch_syscall_get_vector(u64 *out_vector)`
 - File: `arch/arm64/syscall/syscall.c`
 - Purpose: provide synthetic syscall vector (`64`) to generic syscall layer.
 
@@ -138,7 +138,7 @@ Function details:
 - Purpose: execute `svc #0`; arm64 sync-trap decode routes SVC to vector `64`.
 
 ### `status_t arch_syscall_decode(const void *trap_frame, syscall_abi_frame_t *out)`
-### `status_t arch_syscall_encode_ret(void *trap_frame, BOOT_U64 value)`
+### `status_t arch_syscall_encode_ret(void *trap_frame, u64 value)`
 - File: `arch/arm64/syscall/syscall.c`
 - Purpose: arm64 syscall ABI helper hooks used by the generic syscall trap path.
 
@@ -146,7 +146,7 @@ Function details:
 
 ### `status_t arch_user_mode_set_kernel_stack(void *kernel_stack_top)`
 ### `status_t arch_user_mode_prepare_frame(arch_user_frame_t *frame)`
-### `__attribute__((noreturn)) void arch_user_mode_enter(arch_user_entry_t entry, void *arg, BOOT_U64 user_sp)`
+### `__attribute__((noreturn)) void arch_user_mode_enter(arch_user_entry_t entry, void *arg, u64 user_sp)`
 - File: `arch/arm64/user/user_mode.c`
 - Purpose: arm64 backend implementation point for the architecture-neutral user-mode contract.
 - Current status:

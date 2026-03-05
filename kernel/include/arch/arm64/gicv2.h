@@ -4,7 +4,7 @@
 #include "kernel.h"
 
 status_t arm64_gicv2_controller_init(const boot_info_t *boot_info);
-status_t arm64_gicv2_claim_irq(BOOT_U64 *out_irq);
-void arm64_gicv2_eoi_irq(BOOT_U64 irq);
+status_t arm64_gicv2_claim_irq(u64 *out_irq);
+void arm64_gicv2_eoi_irq(u64 irq);
 
 #endif

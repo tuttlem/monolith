@@ -34,7 +34,7 @@ status_t arch_user_mode_set_kernel_stack(void *kernel_stack_top) {
   return x86_64_user_mode_set_kernel_stack(kernel_stack_top);
 }
 
-__attribute__((noreturn)) void arch_user_mode_enter(arch_user_entry_t entry, void *arg, BOOT_U64 user_sp) {
+__attribute__((noreturn)) void arch_user_mode_enter(arch_user_entry_t entry, void *arg, u64 user_sp) {
   x86_64_user_mode_enter(entry, arg, user_sp);
 }
 ```
@@ -42,14 +42,14 @@ __attribute__((noreturn)) void arch_user_mode_enter(arch_user_entry_t entry, voi
 User syscall stub pattern:
 
 ```c
-static BOOT_U64 user_syscall6(BOOT_U64 op, BOOT_U64 a0, BOOT_U64 a1, BOOT_U64 a2, BOOT_U64 a3, BOOT_U64 a4, BOOT_U64 a5) {
-  register BOOT_U64 rax __asm__("rax") = op;
-  register BOOT_U64 rdi __asm__("rdi") = a0;
-  register BOOT_U64 rsi __asm__("rsi") = a1;
-  register BOOT_U64 rdx __asm__("rdx") = a2;
-  register BOOT_U64 r10 __asm__("r10") = a3;
-  register BOOT_U64 r8  __asm__("r8")  = a4;
-  register BOOT_U64 r9  __asm__("r9")  = a5;
+static u64 user_syscall6(u64 op, u64 a0, u64 a1, u64 a2, u64 a3, u64 a4, u64 a5) {
+  register u64 rax __asm__("rax") = op;
+  register u64 rdi __asm__("rdi") = a0;
+  register u64 rsi __asm__("rsi") = a1;
+  register u64 rdx __asm__("rdx") = a2;
+  register u64 r10 __asm__("r10") = a3;
+  register u64 r8  __asm__("r8")  = a4;
+  register u64 r9  __asm__("r9")  = a5;
   __asm__ volatile("int $0x80" : "+a"(rax) : "D"(rdi), "S"(rsi), "d"(rdx), "r"(r10), "r"(r8), "r"(r9) : "rcx", "r11", "memory");
   return rax;
 }

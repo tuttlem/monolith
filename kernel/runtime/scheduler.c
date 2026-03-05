@@ -3,8 +3,8 @@
 #include "cpu_context.h"
 
 typedef struct {
-  BOOT_U64 initialized;
-  BOOT_U64 next_tid;
+  u64 initialized;
+  u64 next_tid;
   task_t *current;
   task_t *foreground;
   task_t *runq_head;
@@ -74,7 +74,7 @@ static status_t sched_default_init(void) {
   g_sched.idle_task.kernel_stack_size = 0ULL;
   g_sched.idle_task.next = (task_t *)0;
 
-  st = cpu_context_init(&g_sched.idle_ctx, sched_idle_entry, (void *)0, (void *)(BOOT_UPTR)0x1000ULL);
+  st = cpu_context_init(&g_sched.idle_ctx, sched_idle_entry, (void *)0, (void *)(uptr)0x1000ULL);
   if (st != STATUS_OK) {
     return st;
   }
@@ -102,7 +102,7 @@ static void sched_default_on_yield(task_t *task) {
   }
 }
 
-static void sched_default_on_exit(task_t *task, BOOT_U64 code) {
+static void sched_default_on_exit(task_t *task, u64 code) {
   (void)code;
   if (task == (task_t *)0) {
     return;
@@ -123,7 +123,7 @@ status_t sched_register_backend(const scheduler_ops_t *ops) {
   if (ops == (const scheduler_ops_t *)0 || ops->init == (status_t (*)(void))0 ||
       ops->set_foreground == (status_t (*)(task_t *))0 || ops->enqueue == (status_t (*)(task_t *))0 ||
       ops->pick_next == (task_t *(*)(void))0 || ops->on_yield == (void (*)(task_t *))0 ||
-      ops->on_exit == (void (*)(task_t *, BOOT_U64))0) {
+      ops->on_exit == (void (*)(task_t *, u64))0) {
     return STATUS_INVALID_ARG;
   }
   if (g_sched.initialized != 0ULL) {
@@ -172,7 +172,7 @@ status_t sched_add(task_t *task) {
   return g_sched.ops->enqueue(task);
 }
 
-void sched_on_exit(task_t *task, BOOT_U64 code) {
+void sched_on_exit(task_t *task, u64 code) {
   if (g_sched.ops == (const scheduler_ops_t *)0) {
     return;
   }

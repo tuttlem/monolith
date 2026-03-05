@@ -1,14 +1,6 @@
 #include "kernel.h"
 #include "print.h"
 
-typedef unsigned long long u64_t;
-typedef long long s64_t;
-#if __SIZEOF_POINTER__ == 8
-typedef unsigned long long uptr_t;
-#else
-typedef unsigned long uptr_t;
-#endif
-
 static unsigned long append_char(char *buf, unsigned long size, unsigned long pos, char c) {
   if (size > 0 && pos + 1 < size) {
     buf[pos] = c;
@@ -46,7 +38,7 @@ static unsigned long append_u32_dec(char *buf, unsigned long size, unsigned long
   return pos;
 }
 
-static unsigned long append_u64_dec(char *buf, unsigned long size, unsigned long pos, u64_t value) {
+static unsigned long append_u64_dec(char *buf, unsigned long size, unsigned long pos, u64 value) {
   char tmp[32];
   unsigned i = 0;
 
@@ -88,7 +80,7 @@ static unsigned long append_u32_hex(char *buf, unsigned long size, unsigned long
   return pos;
 }
 
-static unsigned long append_u64_hex(char *buf, unsigned long size, unsigned long pos, u64_t value,
+static unsigned long append_u64_hex(char *buf, unsigned long size, unsigned long pos, u64 value,
                                     int lowercase) {
   const char *digits = lowercase ? "0123456789abcdef" : "0123456789ABCDEF";
   int shift;
@@ -149,13 +141,13 @@ int kvsnprintf(char *buf, unsigned long size, const char *fmt, va_list args) {
     case 'd':
     case 'i': {
       if (long_count >= 2) {
-        s64_t v = va_arg(args, s64_t);
-        u64_t mag;
+        s64 v = va_arg(args, s64);
+        u64 mag;
         if (v < 0) {
           pos = append_char(buf, size, pos, '-');
-          mag = (u64_t)(-(v + 1LL)) + 1ULL;
+          mag = (u64)(-(v + 1LL)) + 1ULL;
         } else {
-          mag = (u64_t)v;
+          mag = (u64)v;
         }
         pos = append_u64_dec(buf, size, pos, mag);
       } else {
@@ -178,7 +170,7 @@ int kvsnprintf(char *buf, unsigned long size, const char *fmt, va_list args) {
     }
     case 'u':
       if (long_count >= 2) {
-        pos = append_u64_dec(buf, size, pos, va_arg(args, u64_t));
+        pos = append_u64_dec(buf, size, pos, va_arg(args, u64));
       } else if (long_count >= 1) {
         pos = append_u32_dec(buf, size, pos, va_arg(args, unsigned long));
       } else {
@@ -189,7 +181,7 @@ int kvsnprintf(char *buf, unsigned long size, const char *fmt, va_list args) {
     case 'X': {
       int lower = (*fmt == 'x');
       if (long_count >= 2) {
-        pos = append_u64_hex(buf, size, pos, va_arg(args, u64_t), lower);
+        pos = append_u64_hex(buf, size, pos, va_arg(args, u64), lower);
       } else if (long_count == 1) {
         pos = append_u32_hex(buf, size, pos, va_arg(args, unsigned long), lower);
       } else {
@@ -201,9 +193,9 @@ int kvsnprintf(char *buf, unsigned long size, const char *fmt, va_list args) {
       void *ptr = va_arg(args, void *);
       pos = append_str(buf, size, pos, "0x");
       if (__SIZEOF_POINTER__ == 8) {
-        pos = append_u64_hex(buf, size, pos, (u64_t)(uptr_t)ptr, 1);
+        pos = append_u64_hex(buf, size, pos, (u64)(uptr)ptr, 1);
       } else {
-        pos = append_u32_hex(buf, size, pos, (unsigned long)(uptr_t)ptr, 1);
+        pos = append_u32_hex(buf, size, pos, (unsigned long)(uptr)ptr, 1);
       }
       break;
     }

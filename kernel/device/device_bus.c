@@ -4,18 +4,18 @@
 
 static bus_t g_buses[DEVICE_BUS_MAX_BUSES];
 static device_t g_devices[DEVICE_BUS_MAX_DEVICES];
-static BOOT_U64 g_bus_count;
-static BOOT_U64 g_device_count;
-static BOOT_U64 g_initialized;
+static u64 g_bus_count;
+static u64 g_device_count;
+static u64 g_initialized;
 
-static BOOT_U64 g_root_bus_id = DEVICE_BUS_ID_NONE;
-static BOOT_U64 g_platform_bus_id = DEVICE_BUS_ID_NONE;
+static u64 g_root_bus_id = DEVICE_BUS_ID_NONE;
+static u64 g_platform_bus_id = DEVICE_BUS_ID_NONE;
 static device_hotplug_fn_t g_hotplug_on_add;
 static device_hotplug_fn_t g_hotplug_on_remove;
 static void *g_hotplug_ctx;
 
 static void init_empty_device(device_t *dev) {
-  BOOT_U64 j;
+  u64 j;
   dev->id = DEVICE_BUS_ID_NONE;
   dev->parent_id = DEVICE_BUS_ID_NONE;
   dev->bus_id = DEVICE_BUS_ID_NONE;
@@ -89,8 +89,8 @@ static const char *bus_name(bus_type_t type) {
 }
 
 void device_bus_reset(void) {
-  BOOT_U64 i;
-  BOOT_U64 j;
+  u64 i;
+  u64 j;
 
   for (i = 0; i < DEVICE_BUS_MAX_BUSES; ++i) {
     g_buses[i].id = DEVICE_BUS_ID_NONE;
@@ -132,7 +132,7 @@ void device_bus_reset(void) {
   g_hotplug_ctx = (void *)0;
 }
 
-status_t device_bus_register_bus(const bus_t *bus_template, BOOT_U64 *out_bus_id) {
+status_t device_bus_register_bus(const bus_t *bus_template, u64 *out_bus_id) {
   bus_t *dst;
 
   if (bus_template == (const bus_t *)0) {
@@ -148,16 +148,16 @@ status_t device_bus_register_bus(const bus_t *bus_template, BOOT_U64 *out_bus_id
   dst->type = bus_template->type;
   dst->name = bus_template->name;
   dst->id = g_bus_count;
-  if (out_bus_id != (BOOT_U64 *)0) {
+  if (out_bus_id != (u64 *)0) {
     *out_bus_id = dst->id;
   }
   g_bus_count += 1ULL;
   return STATUS_OK;
 }
 
-status_t device_bus_register_device(const device_t *dev_template, BOOT_U64 *out_device_id) {
+status_t device_bus_register_device(const device_t *dev_template, u64 *out_device_id) {
   device_t *dst;
-  BOOT_U64 i;
+  u64 i;
 
   if (dev_template == (const device_t *)0) {
     return STATUS_INVALID_ARG;
@@ -191,7 +191,7 @@ status_t device_bus_register_device(const device_t *dev_template, BOOT_U64 *out_
     dst->resources[i].size = dev_template->resources[i].size;
     dst->resources[i].flags = dev_template->resources[i].flags;
   }
-  if (out_device_id != (BOOT_U64 *)0) {
+  if (out_device_id != (u64 *)0) {
     *out_device_id = dst->id;
   }
   if (g_hotplug_on_add != (device_hotplug_fn_t)0) {
@@ -201,7 +201,7 @@ status_t device_bus_register_device(const device_t *dev_template, BOOT_U64 *out_
   return STATUS_OK;
 }
 
-status_t device_bus_remove_device(BOOT_U64 device_id) {
+status_t device_bus_remove_device(u64 device_id) {
   if (device_id >= g_device_count) {
     return STATUS_NOT_FOUND;
   }
@@ -222,9 +222,9 @@ status_t device_bus_register_hotplug(device_hotplug_fn_t on_add, device_hotplug_
   return STATUS_OK;
 }
 
-status_t device_bus_replace_resources(BOOT_U64 device_id, const device_resource_t *resources, BOOT_U64 count) {
+status_t device_bus_replace_resources(u64 device_id, const device_resource_t *resources, u64 count) {
   device_t *dst;
-  BOOT_U64 i;
+  u64 i;
 
   if (device_id >= g_device_count) {
     return STATUS_NOT_FOUND;
@@ -251,14 +251,14 @@ status_t device_bus_replace_resources(BOOT_U64 device_id, const device_resource_
   return STATUS_OK;
 }
 
-const bus_t *device_bus_get_bus(BOOT_U64 bus_id) {
+const bus_t *device_bus_get_bus(u64 bus_id) {
   if (bus_id >= g_bus_count) {
     return (const bus_t *)0;
   }
   return &g_buses[bus_id];
 }
 
-const device_t *device_bus_get_device(BOOT_U64 device_id) {
+const device_t *device_bus_get_device(u64 device_id) {
   if (device_id >= g_device_count) {
     return (const device_t *)0;
   }
@@ -268,9 +268,9 @@ const device_t *device_bus_get_device(BOOT_U64 device_id) {
   return &g_devices[device_id];
 }
 
-BOOT_U64 device_bus_count(void) {
-  BOOT_U64 i;
-  BOOT_U64 count = 0;
+u64 device_bus_count(void) {
+  u64 i;
+  u64 count = 0;
   for (i = 0; i < g_device_count; ++i) {
     if (g_devices[i].active != 0) {
       count += 1ULL;
@@ -279,9 +279,9 @@ BOOT_U64 device_bus_count(void) {
   return count;
 }
 
-const device_t *device_bus_device_at(BOOT_U64 index) {
-  BOOT_U64 i;
-  BOOT_U64 active = 0;
+const device_t *device_bus_device_at(u64 index) {
+  u64 i;
+  u64 active = 0;
   for (i = 0; i < g_device_count; ++i) {
     if (g_devices[i].active == 0) {
       continue;
@@ -294,8 +294,8 @@ const device_t *device_bus_device_at(BOOT_U64 index) {
   return (const device_t *)0;
 }
 
-BOOT_U64 device_bus_find_first_by_class(device_class_t class_id) {
-  BOOT_U64 i;
+u64 device_bus_find_first_by_class(device_class_t class_id) {
+  u64 i;
   for (i = 0; i < g_device_count; ++i) {
     if (g_devices[i].active != 0 && g_devices[i].class_id == class_id) {
       return g_devices[i].id;
@@ -304,8 +304,8 @@ BOOT_U64 device_bus_find_first_by_class(device_class_t class_id) {
   return DEVICE_BUS_ID_NONE;
 }
 
-BOOT_U64 device_bus_find_next_by_class(device_class_t class_id, BOOT_U64 after_id) {
-  BOOT_U64 i;
+u64 device_bus_find_next_by_class(device_class_t class_id, u64 after_id) {
+  u64 i;
   for (i = after_id + 1ULL; i < g_device_count; ++i) {
     if (g_devices[i].active != 0 && g_devices[i].class_id == class_id) {
       return g_devices[i].id;
@@ -315,7 +315,7 @@ BOOT_U64 device_bus_find_next_by_class(device_class_t class_id, BOOT_U64 after_i
 }
 
 static status_t populate_platform_devices(const boot_info_t *boot_info, const hw_desc_t *hw) {
-  BOOT_U64 i;
+  u64 i;
 
   for (i = 0; i < hw->irq_controller_count; ++i) {
     device_t dev;
@@ -340,7 +340,7 @@ static status_t populate_platform_devices(const boot_info_t *boot_info, const hw
       dev.resources[0].flags = 0;
       dev.resource_count = 1;
     }
-    if (device_bus_register_device(&dev, (BOOT_U64 *)0) != STATUS_OK) {
+    if (device_bus_register_device(&dev, (u64 *)0) != STATUS_OK) {
       return STATUS_NO_MEMORY;
     }
   }
@@ -375,7 +375,7 @@ static status_t populate_platform_devices(const boot_info_t *boot_info, const hw
       dev.resources[dev.resource_count].flags = 0;
       dev.resource_count += 1;
     }
-    if (device_bus_register_device(&dev, (BOOT_U64 *)0) != STATUS_OK) {
+    if (device_bus_register_device(&dev, (u64 *)0) != STATUS_OK) {
       return STATUS_NO_MEMORY;
     }
   }
@@ -407,7 +407,7 @@ static status_t populate_platform_devices(const boot_info_t *boot_info, const hw
       dev.resources[1].flags = 0;
       dev.resource_count = 2;
     }
-    if (device_bus_register_device(&dev, (BOOT_U64 *)0) != STATUS_OK) {
+    if (device_bus_register_device(&dev, (u64 *)0) != STATUS_OK) {
       return STATUS_NO_MEMORY;
     }
   }
@@ -432,7 +432,7 @@ static status_t populate_platform_devices(const boot_info_t *boot_info, const hw
     dev.resources[0].base = hw->mmio_regions[i].base;
     dev.resources[0].size = hw->mmio_regions[i].size;
     dev.resources[0].flags = 0;
-    if (device_bus_register_device(&dev, (BOOT_U64 *)0) != STATUS_OK) {
+    if (device_bus_register_device(&dev, (u64 *)0) != STATUS_OK) {
       return STATUS_NO_MEMORY;
     }
   }
@@ -455,10 +455,10 @@ static status_t populate_platform_devices(const boot_info_t *boot_info, const hw
     dev.driver_data = (void *)0;
     dev.resources[0].kind = DEVICE_RESOURCE_MMIO;
     dev.resources[0].base = boot_info->framebuffer_base;
-    dev.resources[0].size = (BOOT_U64)boot_info->framebuffer_pixels_per_scanline * (BOOT_U64)boot_info->framebuffer_height *
+    dev.resources[0].size = (u64)boot_info->framebuffer_pixels_per_scanline * (u64)boot_info->framebuffer_height *
                             4ULL;
     dev.resources[0].flags = 0;
-    if (device_bus_register_device(&dev, (BOOT_U64 *)0) != STATUS_OK) {
+    if (device_bus_register_device(&dev, (u64 *)0) != STATUS_OK) {
       return STATUS_NO_MEMORY;
     }
   }
@@ -505,7 +505,7 @@ status_t device_bus_init(const boot_info_t *boot_info, const hw_desc_t *hw) {
 }
 
 void device_bus_dump(void) {
-  BOOT_U64 i;
+  u64 i;
 
   if (g_initialized == 0ULL) {
     kprintf("device-bus: not initialized\n");
@@ -560,9 +560,9 @@ status_t hw_resource_init(const boot_info_t *boot_info) {
   return g_initialized ? STATUS_OK : STATUS_DEFERRED;
 }
 
-status_t hw_resource_attach(BOOT_U64 device_id, const hw_resource_t *list, BOOT_U64 count) {
+status_t hw_resource_attach(u64 device_id, const hw_resource_t *list, u64 count) {
   device_resource_t resources[DEVICE_BUS_MAX_RESOURCES];
-  BOOT_U64 i;
+  u64 i;
 
   if (count > 0 && list == (const hw_resource_t *)0) {
     return STATUS_INVALID_ARG;
@@ -579,10 +579,10 @@ status_t hw_resource_attach(BOOT_U64 device_id, const hw_resource_t *list, BOOT_
   return device_bus_replace_resources(device_id, resources, count);
 }
 
-status_t hw_resource_get(BOOT_U64 device_id, hw_resource_type_t type, BOOT_U64 index, hw_resource_t *out) {
+status_t hw_resource_get(u64 device_id, hw_resource_type_t type, u64 index, hw_resource_t *out) {
   const device_t *dev;
-  BOOT_U64 i;
-  BOOT_U64 found = 0;
+  u64 i;
+  u64 found = 0;
 
   if (out == (hw_resource_t *)0) {
     return STATUS_INVALID_ARG;
@@ -609,10 +609,10 @@ status_t hw_resource_get(BOOT_U64 device_id, hw_resource_type_t type, BOOT_U64 i
   return STATUS_NOT_FOUND;
 }
 
-BOOT_U64 hw_resource_count(BOOT_U64 device_id, hw_resource_type_t type) {
+u64 hw_resource_count(u64 device_id, hw_resource_type_t type) {
   const device_t *dev;
-  BOOT_U64 i;
-  BOOT_U64 count = 0;
+  u64 i;
+  u64 count = 0;
 
   dev = device_bus_get_device(device_id);
   if (dev == (const device_t *)0) {
@@ -626,7 +626,7 @@ BOOT_U64 hw_resource_count(BOOT_U64 device_id, hw_resource_type_t type) {
   return count;
 }
 
-status_t hw_resource_view(BOOT_U64 device_id, device_resource_view_t *out) {
+status_t hw_resource_view(u64 device_id, device_resource_view_t *out) {
   const device_t *dev;
 
   if (out == (device_resource_view_t *)0) {

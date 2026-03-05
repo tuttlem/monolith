@@ -5,17 +5,17 @@
 
 #define PERSONALITY_MAX 8U
 
-typedef BOOT_U64 personality_id_t;
+typedef u64 personality_id_t;
 
 typedef struct {
   const void *image_base;
-  BOOT_U64 image_size;
-  BOOT_U64 flags;
+  u64 image_size;
+  u64 flags;
 } exec_image_t;
 
 typedef struct {
-  BOOT_U64 entry_pc;
-  BOOT_U64 stack_ptr;
+  u64 entry_pc;
+  u64 stack_ptr;
   status_t status;
 } exec_result_t;
 

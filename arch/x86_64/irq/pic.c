@@ -41,7 +41,7 @@ static void pic_remap(void) {
   io_wait();
 }
 
-static status_t pic_enable_irq(BOOT_U64 irq) {
+static status_t pic_enable_irq(u64 irq) {
   unsigned short data_port;
   unsigned char mask;
   unsigned char bit;
@@ -58,7 +58,7 @@ static status_t pic_enable_irq(BOOT_U64 irq) {
   return STATUS_OK;
 }
 
-static status_t pic_disable_irq(BOOT_U64 irq) {
+static status_t pic_disable_irq(u64 irq) {
   unsigned short data_port;
   unsigned char mask;
   unsigned char bit;
@@ -75,25 +75,25 @@ static status_t pic_disable_irq(BOOT_U64 irq) {
   return STATUS_OK;
 }
 
-static void pic_ack_irq(BOOT_U64 irq) { (void)irq; }
+static void pic_ack_irq(u64 irq) { (void)irq; }
 
-static void pic_eoi_irq(BOOT_U64 irq) {
+static void pic_eoi_irq(u64 irq) {
   if (irq >= 8ULL) {
     outb(X86_64_PIC2_CMD, X86_64_PIC_EOI);
   }
   outb(X86_64_PIC1_CMD, X86_64_PIC_EOI);
 }
 
-static status_t pic_map_irq(BOOT_U64 irq, BOOT_U64 *out_vector) {
-  if (out_vector == (BOOT_U64 *)0 || irq >= 16ULL) {
+static status_t pic_map_irq(u64 irq, u64 *out_vector) {
+  if (out_vector == (u64 *)0 || irq >= 16ULL) {
     return STATUS_INVALID_ARG;
   }
   *out_vector = 32ULL + irq;
   return STATUS_OK;
 }
 
-static status_t pic_vector_to_irq(BOOT_U64 vector, BOOT_U64 *out_irq) {
-  if (out_irq == (BOOT_U64 *)0 || vector < 32ULL || vector > 47ULL) {
+static status_t pic_vector_to_irq(u64 vector, u64 *out_irq) {
+  if (out_irq == (u64 *)0 || vector < 32ULL || vector > 47ULL) {
     return STATUS_INVALID_ARG;
   }
   *out_irq = vector - 32ULL;

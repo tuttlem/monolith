@@ -18,17 +18,17 @@
 #define ARM64_TTBR_ASID_MASK 0xFFFF000000000000ULL
 #define ARM64_TTBR_BADDR_MASK 0x0000FFFFFFFFF000ULL
 
-BOOT_U64 g_l0[512] __attribute__((aligned(4096)));
-BOOT_U64 g_l1[512] __attribute__((aligned(4096)));
-BOOT_U64 g_l2[ARM64_IDENTITY_GIB][512] __attribute__((aligned(4096)));
+u64 g_l0[512] __attribute__((aligned(4096)));
+u64 g_l1[512] __attribute__((aligned(4096)));
+u64 g_l2[ARM64_IDENTITY_GIB][512] __attribute__((aligned(4096)));
 
-static BOOT_U64 read_ttbr0_el1(void) {
-  BOOT_U64 v;
+static u64 read_ttbr0_el1(void) {
+  u64 v;
   __asm__ volatile("mrs %0, ttbr0_el1" : "=r"(v));
   return v;
 }
 
-static void write_ttbr0_el1(BOOT_U64 v) {
+static void write_ttbr0_el1(u64 v) {
   __asm__ volatile("msr ttbr0_el1, %0\n\t"
                    "isb\n\t"
                    :
@@ -36,7 +36,7 @@ static void write_ttbr0_el1(BOOT_U64 v) {
                    : "memory");
 }
 
-static void write_mair_el1(BOOT_U64 v) {
+static void write_mair_el1(u64 v) {
   __asm__ volatile("msr mair_el1, %0\n\t"
                    "isb\n\t"
                    :
@@ -54,16 +54,16 @@ static void tlb_flush_all_el1(void) {
                    : "memory");
 }
 
-static void zero_u64(BOOT_U64 *p, BOOT_U64 count) {
-  BOOT_U64 i;
+static void zero_u64(u64 *p, u64 count) {
+  u64 i;
   for (i = 0; i < count; ++i) {
     p[i] = 0;
   }
 }
 
-static BOOT_U32 region_kind_for_phys(const boot_info_t *boot_info, BOOT_U64 phys) {
-  BOOT_U32 i;
-  BOOT_U32 best_kind = BOOT_MEM_REGION_USABLE;
+static u32 region_kind_for_phys(const boot_info_t *boot_info, u64 phys) {
+  u32 i;
+  u32 best_kind = BOOT_MEM_REGION_USABLE;
 
   if (boot_info == (const boot_info_t *)0) {
     return BOOT_MEM_REGION_USABLE;
@@ -71,8 +71,8 @@ static BOOT_U32 region_kind_for_phys(const boot_info_t *boot_info, BOOT_U64 phys
 
   for (i = 0; i < boot_info->memory_region_count; ++i) {
     const boot_mem_region_t *r = &boot_info->memory_regions[i];
-    BOOT_U64 begin = r->base;
-    BOOT_U64 end = r->base + r->size;
+    u64 begin = r->base;
+    u64 end = r->base + r->size;
     if (r->size == 0) {
       continue;
     }
@@ -84,8 +84,8 @@ static BOOT_U32 region_kind_for_phys(const boot_info_t *boot_info, BOOT_U64 phys
   return best_kind;
 }
 
-static BOOT_U64 block_attr_for_kind(BOOT_U32 kind) {
-  BOOT_U64 attr = ARM64_BLK_VALID | ARM64_BLK_AF;
+static u64 block_attr_for_kind(u32 kind) {
+  u64 attr = ARM64_BLK_VALID | ARM64_BLK_AF;
 
   if (kind == BOOT_MEM_REGION_MMIO) {
     attr |= ARM64_BLK_SH_OUTER;
@@ -102,11 +102,11 @@ static BOOT_U64 block_attr_for_kind(BOOT_U32 kind) {
 }
 
 int arm64_early_paging_takeover(const boot_info_t *boot_info, arm64_early_paging_result_t *result) {
-  BOOT_U64 old_ttbr0;
-  BOOT_U64 new_base;
-  BOOT_U64 new_ttbr0;
-  BOOT_U64 i;
-  BOOT_U64 j;
+  u64 old_ttbr0;
+  u64 new_base;
+  u64 new_ttbr0;
+  u64 i;
+  u64 j;
 
   if (boot_info == (const boot_info_t *)0 || result == (arm64_early_paging_result_t *)0) {
     return 0;
@@ -116,15 +116,15 @@ int arm64_early_paging_takeover(const boot_info_t *boot_info, arm64_early_paging
   zero_u64(g_l1, 512ULL);
   zero_u64(&g_l2[0][0], ARM64_IDENTITY_GIB * 512ULL);
 
-  g_l0[0] = ((BOOT_U64)(BOOT_UPTR)&g_l1[0] & ARM64_TTBR_BADDR_MASK) | ARM64_TBL_VALID | ARM64_TBL_TABLE;
+  g_l0[0] = ((u64)(uptr)&g_l1[0] & ARM64_TTBR_BADDR_MASK) | ARM64_TBL_VALID | ARM64_TBL_TABLE;
 
   for (i = 0; i < ARM64_IDENTITY_GIB; ++i) {
-    g_l1[i] = ((BOOT_U64)(BOOT_UPTR)&g_l2[i][0] & ARM64_TTBR_BADDR_MASK) | ARM64_TBL_VALID | ARM64_TBL_TABLE;
+    g_l1[i] = ((u64)(uptr)&g_l2[i][0] & ARM64_TTBR_BADDR_MASK) | ARM64_TBL_VALID | ARM64_TBL_TABLE;
 
     for (j = 0; j < 512ULL; ++j) {
-      BOOT_U64 phys = (i * ARM64_L1_SPAN) + (j * ARM64_L2_SPAN);
-      BOOT_U32 kind = region_kind_for_phys(boot_info, phys);
-      BOOT_U64 attr = block_attr_for_kind(kind);
+      u64 phys = (i * ARM64_L1_SPAN) + (j * ARM64_L2_SPAN);
+      u32 kind = region_kind_for_phys(boot_info, phys);
+      u64 attr = block_attr_for_kind(kind);
       g_l2[i][j] = (phys & ARM64_TTBR_BADDR_MASK) | attr;
     }
   }
@@ -133,7 +133,7 @@ int arm64_early_paging_takeover(const boot_info_t *boot_info, arm64_early_paging
   write_mair_el1((0xFFULL << 0) | (0x00ULL << 8));
 
   old_ttbr0 = read_ttbr0_el1();
-  new_base = (BOOT_U64)(BOOT_UPTR)&g_l0[0];
+  new_base = (u64)(uptr)&g_l0[0];
   new_ttbr0 = (old_ttbr0 & ARM64_TTBR_ASID_MASK) | (new_base & ARM64_TTBR_BADDR_MASK);
   write_ttbr0_el1(new_ttbr0);
   tlb_flush_all_el1();

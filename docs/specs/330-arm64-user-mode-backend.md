@@ -33,13 +33,13 @@ Define the generic backend in arch code:
 ```c
 status_t arch_user_mode_set_kernel_stack(void *kernel_stack_top) {
   /* If SP_EL1 is managed per-task, store top for trap return path. */
-  g_arm64_kernel_stack_top = (BOOT_U64)(BOOT_UPTR)kernel_stack_top;
+  g_arm64_kernel_stack_top = (u64)(uptr)kernel_stack_top;
   return STATUS_OK;
 }
 
-__attribute__((noreturn)) void arch_user_mode_enter(arch_user_entry_t entry, void *arg, BOOT_U64 user_sp) {
-  BOOT_U64 elr = (BOOT_U64)(BOOT_UPTR)entry;
-  BOOT_U64 spsr = 0; /* EL0t, interrupts policy per kernel rules */
+__attribute__((noreturn)) void arch_user_mode_enter(arch_user_entry_t entry, void *arg, u64 user_sp) {
+  u64 elr = (u64)(uptr)entry;
+  u64 spsr = 0; /* EL0t, interrupts policy per kernel rules */
   __asm__ volatile(
       "msr sp_el0, %0\n\t"
       "mov x0, %1\n\t"

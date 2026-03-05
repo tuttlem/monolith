@@ -3,9 +3,9 @@
 #include "driver_queue.h"
 #include "print.h"
 
-static BOOT_U64 g_block_count;
-static BOOT_U64 g_input_count;
-static BOOT_U64 g_display_count;
+static u64 g_block_count;
+static u64 g_input_count;
+static u64 g_display_count;
 static driver_ring_t g_block_probe_ring;
 
 static int is_domain_source(const device_t *d) {
@@ -17,7 +17,7 @@ static int is_domain_source(const device_t *d) {
 
 static status_t add_domain_device(const device_t *src, device_class_t class_id, const char *name) {
   device_t d;
-  BOOT_U64 r;
+  u64 r;
 
   d.id = DEVICE_BUS_ID_NONE;
   d.parent_id = src->id;
@@ -42,11 +42,11 @@ static status_t add_domain_device(const device_t *src, device_class_t class_id, 
     d.resources[r].flags = src->resources[r].flags;
   }
 
-  return device_bus_register_device(&d, (BOOT_U64 *)0);
+  return device_bus_register_device(&d, (u64 *)0);
 }
 
 status_t device_domains_enumerate(const boot_info_t *boot_info) {
-  BOOT_U64 i;
+  u64 i;
   status_t st = STATUS_DEFERRED;
 
   if (boot_info == (const boot_info_t *)0) {
@@ -66,7 +66,7 @@ status_t device_domains_enumerate(const boot_info_t *boot_info) {
     }
 
     if (src->class_id == DEVICE_CLASS_PCI_DEVICE && src->class_code == 0x01ULL) {
-      BOOT_U64 block_slot;
+      u64 block_slot;
       if (!capability_domain_enabled(DEVICE_CLASS_BLOCK)) {
         continue;
       }
@@ -77,7 +77,7 @@ status_t device_domains_enumerate(const boot_info_t *boot_info) {
         g_block_count += 1ULL;
         st = STATUS_OK;
       }
-      (void)driver_ring_pop(&g_block_probe_ring, (BOOT_U64 *)0);
+      (void)driver_ring_pop(&g_block_probe_ring, (u64 *)0);
       continue;
     }
 
@@ -110,6 +110,6 @@ status_t device_domains_enumerate(const boot_info_t *boot_info) {
   return st;
 }
 
-BOOT_U64 block_device_count(void) { return g_block_count; }
-BOOT_U64 input_device_count(void) { return g_input_count; }
-BOOT_U64 display_device_count(void) { return g_display_count; }
+u64 block_device_count(void) { return g_block_count; }
+u64 input_device_count(void) { return g_input_count; }
+u64 display_device_count(void) { return g_display_count; }

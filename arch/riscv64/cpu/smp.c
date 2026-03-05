@@ -11,23 +11,23 @@
 #define FDT_END 9U
 
 typedef struct {
-  BOOT_U32 magic;
-  BOOT_U32 totalsize;
-  BOOT_U32 off_dt_struct;
-  BOOT_U32 off_dt_strings;
-  BOOT_U32 off_mem_rsvmap;
-  BOOT_U32 version;
-  BOOT_U32 last_comp_version;
-  BOOT_U32 boot_cpuid_phys;
-  BOOT_U32 size_dt_strings;
-  BOOT_U32 size_dt_struct;
+  u32 magic;
+  u32 totalsize;
+  u32 off_dt_struct;
+  u32 off_dt_strings;
+  u32 off_mem_rsvmap;
+  u32 version;
+  u32 last_comp_version;
+  u32 boot_cpuid_phys;
+  u32 size_dt_strings;
+  u32 size_dt_struct;
 } fdt_header_t;
 
-static BOOT_U32 be32_at(const unsigned char *p) {
-  return ((BOOT_U32)p[0] << 24) | ((BOOT_U32)p[1] << 16) | ((BOOT_U32)p[2] << 8) | (BOOT_U32)p[3];
+static u32 be32_at(const unsigned char *p) {
+  return ((u32)p[0] << 24) | ((u32)p[1] << 16) | ((u32)p[2] << 8) | (u32)p[3];
 }
 
-static BOOT_U32 align4(BOOT_U32 v) { return (v + 3U) & ~3U; }
+static u32 align4(u32 v) { return (v + 3U) & ~3U; }
 
 static int str_eq(const char *a, const char *b) {
   while (*a != '\0' && *b != '\0') {
@@ -49,18 +49,18 @@ static int str_starts_with(const char *s, const char *prefix) {
   return 1;
 }
 
-static BOOT_U64 riscv64_dtb_cpu_count(const void *dtb) {
+static u64 riscv64_dtb_cpu_count(const void *dtb) {
   const fdt_header_t *hdr;
   const unsigned char *blob = (const unsigned char *)dtb;
   const unsigned char *struct_base;
   const unsigned char *struct_end;
   const char *strings_base;
   const unsigned char *p;
-  BOOT_U32 off_struct;
-  BOOT_U32 size_struct;
-  BOOT_U32 off_strings;
-  BOOT_U32 depth = 0;
-  BOOT_U64 count = 0;
+  u32 off_struct;
+  u32 size_struct;
+  u32 off_strings;
+  u32 depth = 0;
+  u64 count = 0;
 
   if (dtb == (const void *)0) {
     return 1ULL;
@@ -80,7 +80,7 @@ static BOOT_U64 riscv64_dtb_cpu_count(const void *dtb) {
   p = struct_base;
 
   while (p + 4 <= struct_end) {
-    BOOT_U32 token = be32_at(p);
+    u32 token = be32_at(p);
     p += 4;
 
     if (token == FDT_BEGIN_NODE) {
@@ -92,7 +92,7 @@ static BOOT_U64 riscv64_dtb_cpu_count(const void *dtb) {
         break;
       }
       ++p;
-      p = struct_base + align4((BOOT_U32)(p - struct_base));
+      p = struct_base + align4((u32)(p - struct_base));
       ++depth;
       if (depth >= 2U && (str_eq(name, "cpu") || str_starts_with(name, "cpu@"))) {
         count += 1ULL;
@@ -109,7 +109,7 @@ static BOOT_U64 riscv64_dtb_cpu_count(const void *dtb) {
     }
 
     if (token == FDT_PROP) {
-      BOOT_U32 len;
+      u32 len;
       if (p + 8 > struct_end) {
         break;
       }
@@ -135,15 +135,15 @@ static BOOT_U64 riscv64_dtb_cpu_count(const void *dtb) {
   return count;
 }
 
-status_t arch_smp_bootstrap(const boot_info_t *boot_info, BOOT_U64 *out_possible_cpus, BOOT_U64 *out_started_cpus) {
-  if (boot_info == (const boot_info_t *)0 || out_possible_cpus == (BOOT_U64 *)0 || out_started_cpus == (BOOT_U64 *)0) {
+status_t arch_smp_bootstrap(const boot_info_t *boot_info, u64 *out_possible_cpus, u64 *out_started_cpus) {
+  if (boot_info == (const boot_info_t *)0 || out_possible_cpus == (u64 *)0 || out_started_cpus == (u64 *)0) {
     return STATUS_INVALID_ARG;
   }
   if (boot_info->arch_id != BOOT_INFO_ARCH_RISCV64) {
     return STATUS_INVALID_ARG;
   }
 
-  *out_possible_cpus = riscv64_dtb_cpu_count((const void *)(BOOT_UPTR)boot_info->dtb_ptr);
+  *out_possible_cpus = riscv64_dtb_cpu_count((const void *)(uptr)boot_info->dtb_ptr);
   *out_started_cpus = 0ULL;
   return STATUS_OK;
 }
@@ -158,14 +158,14 @@ status_t arch_context_switch(task_t *from, task_t *to) {
   return cpu_context_switch((cpu_context_t *)from->arch_ctx, (cpu_context_t *)to->arch_ctx);
 }
 
-status_t arch_smp_cpu_start(BOOT_U64 cpu_id) {
+status_t arch_smp_cpu_start(u64 cpu_id) {
   if (cpu_id == 0ULL) {
     return STATUS_OK;
   }
   return STATUS_NOT_SUPPORTED;
 }
 
-status_t arch_smp_ipi_send(BOOT_U64 cpu_id, BOOT_U64 kind) {
+status_t arch_smp_ipi_send(u64 cpu_id, u64 kind) {
   (void)kind;
   if (cpu_id == arch_cpu_id()) {
     return STATUS_OK;
@@ -173,7 +173,7 @@ status_t arch_smp_ipi_send(BOOT_U64 cpu_id, BOOT_U64 kind) {
   return STATUS_NOT_SUPPORTED;
 }
 
-status_t arch_smp_tlb_shootdown(BOOT_U64 mask, BOOT_U64 va, BOOT_U64 len) {
+status_t arch_smp_tlb_shootdown(u64 mask, u64 va, u64 len) {
   (void)va;
   (void)len;
   if ((mask & (1ULL << arch_cpu_id())) != 0ULL) {

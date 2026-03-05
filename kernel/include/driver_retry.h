@@ -4,11 +4,11 @@
 #include "arch_cpu.h"
 
 typedef struct {
-  BOOT_U64 attempts;
-  BOOT_U64 max_attempts;
+  u64 attempts;
+  u64 max_attempts;
 } driver_retry_t;
 
-static inline void driver_retry_begin(driver_retry_t *ctx, BOOT_U64 max_attempts) {
+static inline void driver_retry_begin(driver_retry_t *ctx, u64 max_attempts) {
   if (ctx == (driver_retry_t *)0) {
     return;
   }

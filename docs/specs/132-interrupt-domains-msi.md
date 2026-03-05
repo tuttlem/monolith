@@ -27,8 +27,8 @@ Provide a generic interrupt allocation and mapping layer that supports line IRQ 
 - Header: `kernel/include/irq_domain.h`
 - APIs:
   - `status_t irq_domain_init(const boot_info_t *boot_info)`
-  - `status_t irq_alloc_line(device_id_t dev, BOOT_U64 hwirq, irq_desc_t *out)`
-  - `status_t irq_alloc_msi(device_id_t dev, BOOT_U64 nvec, irq_desc_t *out_vec)`
+  - `status_t irq_alloc_line(device_id_t dev, u64 hwirq, irq_desc_t *out)`
+  - `status_t irq_alloc_msi(device_id_t dev, u64 nvec, irq_desc_t *out_vec)`
   - `status_t irq_configure(const irq_desc_t *irq, irq_cfg_t cfg)`
   - `status_t irq_set_affinity(const irq_desc_t *irq, cpu_mask_t mask)`
 

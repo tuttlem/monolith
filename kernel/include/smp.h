@@ -8,14 +8,14 @@
 #define SMP_API_VERSION_MINOR 0U
 
 status_t smp_init(const boot_info_t *boot_info);
-status_t smp_cpu_start(BOOT_U64 cpu_id);
-BOOT_U64 smp_cpu_count_online(void);
-BOOT_U64 smp_cpu_count_possible(void);
+status_t smp_cpu_start(u64 cpu_id);
+u64 smp_cpu_count_online(void);
+u64 smp_cpu_count_possible(void);
 
 /*
  * Common secondary CPU C entry for architecture backends.
  * Current phase policy: publish online and park in idle loop.
  */
-void smp_secondary_entry(BOOT_U64 cpu_id);
+void smp_secondary_entry(u64 cpu_id);
 
 #endif

@@ -19,9 +19,9 @@ Finish time substrate so monotonic time is stable, calibrated, and consistent ac
 
 - Header: `kernel/include/timebase.h`
 - APIs:
-  - `BOOT_U64 time_now_ns(void)`
-  - `BOOT_U64 time_ticks(void)`
-  - `BOOT_U64 time_hz(void)`
+  - `u64 time_now_ns(void)`
+  - `u64 time_ticks(void)`
+  - `u64 time_hz(void)`
   - `status_t time_quality(time_quality_t *out)`
 
 ## Architecture Backends

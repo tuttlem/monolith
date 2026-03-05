@@ -27,7 +27,7 @@ static int guid_equal(const EFI_GUID *a, const EFI_GUID *b) {
   return 1;
 }
 
-static BOOT_U64 find_acpi_rsdp(EFI_SYSTEM_TABLE *system_table) {
+static u64 find_acpi_rsdp(EFI_SYSTEM_TABLE *system_table) {
   EFI_CONFIGURATION_TABLE *tables;
   UINTN i;
 
@@ -39,38 +39,38 @@ static BOOT_U64 find_acpi_rsdp(EFI_SYSTEM_TABLE *system_table) {
   for (i = 0; i < system_table->NumberOfTableEntries; ++i) {
     if (guid_equal(&tables[i].VendorGuid, &k_acpi_20_table_guid) ||
         guid_equal(&tables[i].VendorGuid, &k_acpi_10_table_guid)) {
-      return (BOOT_U64)(UINTN)tables[i].VendorTable;
+      return (u64)(UINTN)tables[i].VendorTable;
     }
   }
 
   return 0;
 }
 
-static BOOT_U64 read_rip(void) {
-  BOOT_U64 rip;
+static u64 read_rip(void) {
+  u64 rip;
   __asm__ volatile("leaq 0(%%rip), %0" : "=r"(rip));
   return rip;
 }
 
-static BOOT_U64 read_rsp(void) {
-  BOOT_U64 rsp;
+static u64 read_rsp(void) {
+  u64 rsp;
   __asm__ volatile("movq %%rsp, %0" : "=r"(rsp));
   return rsp;
 }
 
-static BOOT_U64 read_cr0(void) {
-  BOOT_U64 cr0;
+static u64 read_cr0(void) {
+  u64 cr0;
   __asm__ volatile("movq %%cr0, %0" : "=r"(cr0));
   return cr0;
 }
 
-static BOOT_U64 read_cr3(void) {
-  BOOT_U64 cr3;
+static u64 read_cr3(void) {
+  u64 cr3;
   __asm__ volatile("movq %%cr3, %0" : "=r"(cr3));
   return cr3;
 }
 
-static BOOT_U32 uefi_memory_kind(UINT32 uefi_type) {
+static u32 uefi_memory_kind(UINT32 uefi_type) {
   switch (uefi_type) {
   case 7U:
     return BOOT_MEM_REGION_USABLE;
@@ -86,8 +86,8 @@ static BOOT_U32 uefi_memory_kind(UINT32 uefi_type) {
   }
 }
 
-static void add_memory_region(boot_info_t *boot_info, BOOT_U64 base, BOOT_U64 size, BOOT_U32 kind) {
-  BOOT_U32 idx;
+static void add_memory_region(boot_info_t *boot_info, u64 base, u64 size, u32 kind) {
+  u32 idx;
 
   if (size == 0 || boot_info->memory_region_count >= boot_info->memory_region_capacity) {
     return;
@@ -135,18 +135,18 @@ static void capture_uefi_memory_map(boot_info_t *boot_info, EFI_BOOT_SERVICES *b
     return;
   }
 
-  boot_info->memory_map = (BOOT_U64)(UINTN)map;
-  boot_info->memory_map_size = (BOOT_U64)map_size;
-  boot_info->memory_map_descriptor_size = (BOOT_U64)descriptor_size;
-  boot_info->memory_map_descriptor_version = (BOOT_U64)descriptor_version;
+  boot_info->memory_map = (u64)(UINTN)map;
+  boot_info->memory_map_size = (u64)map_size;
+  boot_info->memory_map_descriptor_size = (u64)descriptor_size;
+  boot_info->memory_map_descriptor_version = (u64)descriptor_version;
   boot_info->valid_mask |= BOOT_INFO_HAS_MEMMAP;
 
   descriptor_count = map_size / descriptor_size;
   cursor = (UINT8 *)map;
   for (i = 0; i < descriptor_count; ++i) {
     EFI_MEMORY_DESCRIPTOR *d = (EFI_MEMORY_DESCRIPTOR *)(VOID *)cursor;
-    BOOT_U64 base = (BOOT_U64)d->PhysicalStart;
-    BOOT_U64 size = (BOOT_U64)d->NumberOfPages * 4096ULL;
+    u64 base = (u64)d->PhysicalStart;
+    u64 size = (u64)d->NumberOfPages * 4096ULL;
     add_memory_region(boot_info, base, size, uefi_memory_kind(d->Type));
     cursor += descriptor_size;
   }
@@ -190,7 +190,7 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *system_tab
   boot_info_ext_uefi_t uefi_ext;
   EFI_BOOT_SERVICES *boot_services;
   EFI_STATUS status;
-  BOOT_U64 cr0;
+  u64 cr0;
 
   (void)image_handle;
 
@@ -213,8 +213,8 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *system_tab
   boot_info.entry_sp = read_rsp();
   boot_info.vm_enabled = (cr0 >> 31) & 1ULL;
   boot_info.vm_root_table = read_cr3();
-  boot_info.uefi_system_table = (BOOT_U64)(UINTN)system_table;
-  boot_info.uefi_configuration_table = (BOOT_U64)(UINTN)system_table->ConfigurationTable;
+  boot_info.uefi_system_table = (u64)(UINTN)system_table;
+  boot_info.uefi_configuration_table = (u64)(UINTN)system_table->ConfigurationTable;
   boot_info.memory_map = 0;
   boot_info.memory_map_size = 0;
   boot_info.memory_map_descriptor_size = 0;
@@ -228,15 +228,15 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *system_tab
   }
   boot_info.dtb_ptr = 0;
   boot_info.boot_cpu_id = 0;
-  uefi_ext.image_handle = (BOOT_U64)(UINTN)image_handle;
-  uefi_ext.system_table = (BOOT_U64)(UINTN)system_table;
-  uefi_ext.configuration_table = (BOOT_U64)(UINTN)system_table->ConfigurationTable;
-  uefi_ext.boot_services = (BOOT_U64)(UINTN)system_table->BootServices;
-  uefi_ext.runtime_services = (BOOT_U64)(UINTN)system_table->RuntimeServices;
-  uefi_ext.con_out = (BOOT_U64)(UINTN)system_table->ConOut;
-  uefi_ext.std_err = (BOOT_U64)(UINTN)system_table->StdErr;
-  uefi_ext.firmware_vendor = (BOOT_U64)(UINTN)system_table->FirmwareVendor;
-  uefi_ext.firmware_revision = (BOOT_U64)system_table->FirmwareRevision;
+  uefi_ext.image_handle = (u64)(UINTN)image_handle;
+  uefi_ext.system_table = (u64)(UINTN)system_table;
+  uefi_ext.configuration_table = (u64)(UINTN)system_table->ConfigurationTable;
+  uefi_ext.boot_services = (u64)(UINTN)system_table->BootServices;
+  uefi_ext.runtime_services = (u64)(UINTN)system_table->RuntimeServices;
+  uefi_ext.con_out = (u64)(UINTN)system_table->ConOut;
+  uefi_ext.std_err = (u64)(UINTN)system_table->StdErr;
+  uefi_ext.firmware_vendor = (u64)(UINTN)system_table->FirmwareVendor;
+  uefi_ext.firmware_revision = (u64)system_table->FirmwareRevision;
   uefi_ext.mem_init_status = BOOT_MEM_INIT_STATUS_NONE;
   uefi_ext.mem_old_root = boot_info.vm_root_table;
   uefi_ext.mem_new_root = boot_info.vm_root_table;
@@ -244,8 +244,8 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *system_tab
   uefi_ext.paging_old_cr3 = 0;
   uefi_ext.paging_new_cr3 = 0;
   uefi_ext.paging_identity_bytes = 0;
-  boot_info.arch_data_ptr = (BOOT_U64)(UINTN)&uefi_ext;
-  boot_info.arch_data_size = (BOOT_U64)sizeof(uefi_ext);
+  boot_info.arch_data_ptr = (u64)(UINTN)&uefi_ext;
+  boot_info.arch_data_size = (u64)sizeof(uefi_ext);
   boot_info.framebuffer_base = 0;
   boot_info.framebuffer_width = 0;
   boot_info.framebuffer_height = 0;
@@ -256,11 +256,11 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *system_tab
 
     status = boot_services->LocateProtocol((EFI_GUID *)&k_gop_guid, (VOID *)0, (VOID **)&gop);
     if (!EFI_ERROR(status) && gop != (VOID *)0 && gop->Mode != (VOID *)0 && gop->Mode->Info != (VOID *)0) {
-      boot_info.framebuffer_base = (BOOT_U64)gop->Mode->FrameBufferBase;
-      boot_info.framebuffer_width = (BOOT_U32)gop->Mode->Info->HorizontalResolution;
-      boot_info.framebuffer_height = (BOOT_U32)gop->Mode->Info->VerticalResolution;
-      boot_info.framebuffer_pixels_per_scanline = (BOOT_U32)gop->Mode->Info->PixelsPerScanLine;
-      boot_info.framebuffer_format = (BOOT_U32)gop->Mode->Info->PixelFormat;
+      boot_info.framebuffer_base = (u64)gop->Mode->FrameBufferBase;
+      boot_info.framebuffer_width = (u32)gop->Mode->Info->HorizontalResolution;
+      boot_info.framebuffer_height = (u32)gop->Mode->Info->VerticalResolution;
+      boot_info.framebuffer_pixels_per_scanline = (u32)gop->Mode->Info->PixelsPerScanLine;
+      boot_info.framebuffer_format = (u32)gop->Mode->Info->PixelFormat;
       boot_info.valid_mask |= BOOT_INFO_HAS_FRAMEBUFFER;
     }
   }

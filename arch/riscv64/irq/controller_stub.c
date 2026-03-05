@@ -7,8 +7,8 @@
 #define RISCV64_SIE_STIE (1ULL << 5)
 #define RISCV64_SIE_SEIE (1ULL << 9)
 
-static status_t riscv64_irq_enable(BOOT_U64 irq) {
-  BOOT_U64 mask = 0;
+static status_t riscv64_irq_enable(u64 irq) {
+  u64 mask = 0;
   if (irq == RISCV64_IRQ_SUPERVISOR_TIMER) {
     mask = RISCV64_SIE_STIE;
   } else if (irq == RISCV64_IRQ_SUPERVISOR_EXTERNAL) {
@@ -21,8 +21,8 @@ static status_t riscv64_irq_enable(BOOT_U64 irq) {
   return STATUS_OK;
 }
 
-static status_t riscv64_irq_disable(BOOT_U64 irq) {
-  BOOT_U64 mask = 0;
+static status_t riscv64_irq_disable(u64 irq) {
+  u64 mask = 0;
   if (irq == RISCV64_IRQ_SUPERVISOR_TIMER) {
     mask = RISCV64_SIE_STIE;
   } else if (irq == RISCV64_IRQ_SUPERVISOR_EXTERNAL) {
@@ -35,20 +35,20 @@ static status_t riscv64_irq_disable(BOOT_U64 irq) {
   return STATUS_OK;
 }
 
-static void riscv64_irq_ack(BOOT_U64 irq) { (void)irq; }
+static void riscv64_irq_ack(u64 irq) { (void)irq; }
 
-static void riscv64_irq_eoi(BOOT_U64 irq) { (void)irq; }
+static void riscv64_irq_eoi(u64 irq) { (void)irq; }
 
-static status_t riscv64_map_irq(BOOT_U64 irq, BOOT_U64 *out_vector) {
-  if (out_vector == (BOOT_U64 *)0 || irq >= (INTERRUPT_MAX_VECTORS - 32ULL)) {
+static status_t riscv64_map_irq(u64 irq, u64 *out_vector) {
+  if (out_vector == (u64 *)0 || irq >= (INTERRUPT_MAX_VECTORS - 32ULL)) {
     return STATUS_INVALID_ARG;
   }
   *out_vector = 32ULL + irq;
   return STATUS_OK;
 }
 
-static status_t riscv64_vector_to_irq(BOOT_U64 vector, BOOT_U64 *out_irq) {
-  if (out_irq == (BOOT_U64 *)0 || vector < 32ULL || vector >= INTERRUPT_MAX_VECTORS) {
+static status_t riscv64_vector_to_irq(u64 vector, u64 *out_irq) {
+  if (out_irq == (u64 *)0 || vector < 32ULL || vector >= INTERRUPT_MAX_VECTORS) {
     return STATUS_INVALID_ARG;
   }
   *out_irq = vector - 32ULL;

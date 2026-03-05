@@ -8,11 +8,11 @@ Define a minimal per-CPU data framework required for SMP-safe evolution.
 
 ```c
 typedef struct {
-  BOOT_U64 cpu_id;
-  BOOT_U64 online;
-  BOOT_U64 irq_nesting;
-  BOOT_U64 preempt_disable_depth;
-  BOOT_U64 local_tick_count;
+  u64 cpu_id;
+  u64 online;
+  u64 irq_nesting;
+  u64 preempt_disable_depth;
+  u64 local_tick_count;
   void *current_task;
   void *arch_local;
 } percpu_t;
@@ -22,7 +22,7 @@ typedef struct {
 
 - `status_t percpu_init_boot_cpu(const boot_info_t *boot_info)`
 - `percpu_t *percpu_current(void)`
-- `percpu_t *percpu_by_id(BOOT_U64 cpu_id)`
+- `percpu_t *percpu_by_id(u64 cpu_id)`
 
 Architecture hook required:
 - set/get per-CPU base register mechanism.

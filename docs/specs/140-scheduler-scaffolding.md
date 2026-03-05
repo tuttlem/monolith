@@ -16,11 +16,11 @@ typedef enum {
 } task_state_t;
 
 typedef struct task {
-  BOOT_U64 tid;
+  u64 tid;
   task_state_t state;
   void *arch_ctx;
   void *kernel_stack;
-  BOOT_U64 kernel_stack_size;
+  u64 kernel_stack_size;
   struct task *next;
 } task_t;
 ```

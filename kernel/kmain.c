@@ -40,16 +40,16 @@
 #if defined(__x86_64__) || defined(__aarch64__) || defined(__riscv)
 static unsigned char g_usermode_kernel_stack[16384] __attribute__((aligned(16)));
 
-static BOOT_U64 usermode_probe_syscall6(BOOT_U64 op, BOOT_U64 a0, BOOT_U64 a1, BOOT_U64 a2, BOOT_U64 a3, BOOT_U64 a4,
-                                        BOOT_U64 a5) {
+static u64 usermode_probe_syscall6(u64 op, u64 a0, u64 a1, u64 a2, u64 a3, u64 a4,
+                                        u64 a5) {
 #if defined(__x86_64__)
-  register BOOT_U64 rax __asm__("rax") = op;
-  register BOOT_U64 rdi __asm__("rdi") = a0;
-  register BOOT_U64 rsi __asm__("rsi") = a1;
-  register BOOT_U64 rdx __asm__("rdx") = a2;
-  register BOOT_U64 r10 __asm__("r10") = a3;
-  register BOOT_U64 r8 __asm__("r8") = a4;
-  register BOOT_U64 r9 __asm__("r9") = a5;
+  register u64 rax __asm__("rax") = op;
+  register u64 rdi __asm__("rdi") = a0;
+  register u64 rsi __asm__("rsi") = a1;
+  register u64 rdx __asm__("rdx") = a2;
+  register u64 r10 __asm__("r10") = a3;
+  register u64 r8 __asm__("r8") = a4;
+  register u64 r9 __asm__("r9") = a5;
 
   __asm__ volatile("int $0x80"
                    : "+a"(rax)
@@ -57,13 +57,13 @@ static BOOT_U64 usermode_probe_syscall6(BOOT_U64 op, BOOT_U64 a0, BOOT_U64 a1, B
                    : "rcx", "r11", "memory");
   return rax;
 #elif defined(__aarch64__)
-  register BOOT_U64 x0 __asm__("x0") = a0;
-  register BOOT_U64 x1 __asm__("x1") = a1;
-  register BOOT_U64 x2 __asm__("x2") = a2;
-  register BOOT_U64 x3 __asm__("x3") = a3;
-  register BOOT_U64 x4 __asm__("x4") = a4;
-  register BOOT_U64 x5 __asm__("x5") = a5;
-  register BOOT_U64 x8 __asm__("x8") = op;
+  register u64 x0 __asm__("x0") = a0;
+  register u64 x1 __asm__("x1") = a1;
+  register u64 x2 __asm__("x2") = a2;
+  register u64 x3 __asm__("x3") = a3;
+  register u64 x4 __asm__("x4") = a4;
+  register u64 x5 __asm__("x5") = a5;
+  register u64 x8 __asm__("x8") = op;
 
   __asm__ volatile("svc #0"
                    : "+r"(x0)
@@ -71,13 +71,13 @@ static BOOT_U64 usermode_probe_syscall6(BOOT_U64 op, BOOT_U64 a0, BOOT_U64 a1, B
                    : "memory");
   return x0;
 #elif defined(__riscv)
-  register BOOT_U64 a0reg __asm__("a0") = a0;
-  register BOOT_U64 a1reg __asm__("a1") = a1;
-  register BOOT_U64 a2reg __asm__("a2") = a2;
-  register BOOT_U64 a3reg __asm__("a3") = a3;
-  register BOOT_U64 a4reg __asm__("a4") = a4;
-  register BOOT_U64 a5reg __asm__("a5") = a5;
-  register BOOT_U64 a7reg __asm__("a7") = op;
+  register u64 a0reg __asm__("a0") = a0;
+  register u64 a1reg __asm__("a1") = a1;
+  register u64 a2reg __asm__("a2") = a2;
+  register u64 a3reg __asm__("a3") = a3;
+  register u64 a4reg __asm__("a4") = a4;
+  register u64 a5reg __asm__("a5") = a5;
+  register u64 a7reg __asm__("a7") = op;
 
   __asm__ volatile("ecall"
                    : "+r"(a0reg)
@@ -92,16 +92,16 @@ static BOOT_U64 usermode_probe_syscall6(BOOT_U64 op, BOOT_U64 a0, BOOT_U64 a1, B
   (void)a3;
   (void)a4;
   (void)a5;
-  return (BOOT_U64)STATUS_NOT_SUPPORTED;
+  return (u64)STATUS_NOT_SUPPORTED;
 #endif
 }
 
 __attribute__((noreturn)) static void usermode_probe_entry(void *arg) {
-  volatile BOOT_U64 sink = 0ULL;
+  volatile u64 sink = 0ULL;
   char msg[] = "usermode: probe trap ok";
   (void)arg;
 
-  (void)usermode_probe_syscall6(SYSCALL_OP_DEBUG_LOG, (BOOT_U64)(BOOT_UPTR)msg, (BOOT_U64)(sizeof(msg) - 1U), 0ULL,
+  (void)usermode_probe_syscall6(SYSCALL_OP_DEBUG_LOG, (u64)(uptr)msg, (u64)(sizeof(msg) - 1U), 0ULL,
                                 0ULL, 0ULL, 0ULL);
 
   for (;;) {
@@ -111,20 +111,20 @@ __attribute__((noreturn)) static void usermode_probe_entry(void *arg) {
 }
 
 static status_t usermode_probe_launch(const boot_info_t *boot_info) {
-  const BOOT_U64 k_user_stack_bytes = 4096ULL;
-  BOOT_U64 page_size;
-  BOOT_U64 stack_base;
+  const u64 k_user_stack_bytes = 4096ULL;
+  u64 page_size;
+  u64 stack_base;
 #if !defined(__riscv)
-  BOOT_U64 stack_page;
+  u64 stack_page;
 #endif
-  BOOT_U64 user_sp;
-  BOOT_U64 user_entry;
-  BOOT_U64 entry;
-  BOOT_U64 entry_page;
+  u64 user_sp;
+  u64 user_entry;
+  u64 entry;
+  u64 entry_page;
 #if defined(__riscv)
-  BOOT_U64 user_region_base = 0ULL;
+  u64 user_region_base = 0ULL;
 #endif
-  BOOT_U64 flags = 0ULL;
+  u64 flags = 0ULL;
   mm_phys_addr_t pa = 0ULL;
   status_t st;
 
@@ -136,7 +136,7 @@ static status_t usermode_probe_launch(const boot_info_t *boot_info) {
   if (page_size == 0ULL) {
     return STATUS_FAULT;
   }
-  entry = (BOOT_U64)(BOOT_UPTR)usermode_probe_entry;
+  entry = (u64)(uptr)usermode_probe_entry;
   entry_page = entry & ~(page_size - 1ULL);
 
   st = user_stack_alloc(page_size, &stack_base);
@@ -187,7 +187,7 @@ static status_t usermode_probe_launch(const boot_info_t *boot_info) {
 
   st = mm_translate(user_entry, &pa, &flags);
   if (st == STATUS_OK) {
-    kprintf("usermode: entry=0x%llx pa=0x%llx flags=0x%llx\n", user_entry, (BOOT_U64)pa, flags);
+    kprintf("usermode: entry=0x%llx pa=0x%llx flags=0x%llx\n", user_entry, (u64)pa, flags);
   }
 
   st = uaccess_set_user_window(0ULL, ~0ULL);
@@ -200,12 +200,12 @@ static status_t usermode_probe_launch(const boot_info_t *boot_info) {
   }
 
   kprintf("usermode: launching init task\n");
-  arch_user_mode_enter((arch_user_entry_t)(BOOT_UPTR)user_entry, (void *)0, user_sp);
+  arch_user_mode_enter((arch_user_entry_t)(uptr)user_entry, (void *)0, user_sp);
   return STATUS_FAULT;
 }
 #endif
 
-static const char *boot_info_arch_name(BOOT_U64 arch_id) {
+static const char *boot_info_arch_name(u64 arch_id) {
   switch (arch_id) {
   case BOOT_INFO_ARCH_X86_64:
     return "x86_64";
@@ -219,17 +219,17 @@ static const char *boot_info_arch_name(BOOT_U64 arch_id) {
 }
 
 #if MONOLITH_TIMER_SELFTEST
-static BOOT_U64 timer_selftest_spins_for_arch(BOOT_U64 arch_id) {
+static u64 timer_selftest_spins_for_arch(u64 arch_id) {
   if (arch_id == BOOT_INFO_ARCH_X86_64) {
     return MONOLITH_TIMER_SELFTEST_SPINS;
   }
   return 20000000ULL;
 }
 
-static int timer_progress_selftest(BOOT_U64 spins) {
-  BOOT_U64 start = timer_ticks();
-  BOOT_U64 last = start;
-  BOOT_U64 i;
+static int timer_progress_selftest(u64 spins) {
+  u64 start = timer_ticks();
+  u64 last = start;
+  u64 i;
 
   for (i = 0; i < spins; ++i) {
     last = timer_ticks();
@@ -312,7 +312,7 @@ void kmain(const boot_info_t *boot_info) {
   driver_set_boot_info(boot_info);
   driver_reg_status = device_model_register_builtin_drivers();
   device_status = driver_probe_all(hw);
-  trace_emit(TRACE_CLASS_DEVICE, (BOOT_U64)device_status, device_bus_count(), boot_info->arch_id);
+  trace_emit(TRACE_CLASS_DEVICE, (u64)device_status, device_bus_count(), boot_info->arch_id);
   irq_status = driver_class_last_status("irqc");
   irq_domain_status = irq_domain_init(boot_info);
   timer_status = driver_class_last_status("timer");
@@ -436,7 +436,7 @@ void kmain(const boot_info_t *boot_info) {
 
 #if MONOLITH_TIMER_SELFTEST
   if (timer_status == STATUS_OK) {
-    BOOT_U64 spins = timer_selftest_spins_for_arch(boot_info->arch_id);
+    u64 spins = timer_selftest_spins_for_arch(boot_info->arch_id);
     if (timer_progress_selftest(spins)) {
       kprintf("timer self-test: PASS (hz=%llu ticks=%llu)\n", timer_hz(), timer_ticks());
     } else {
@@ -463,14 +463,14 @@ void kmain(const boot_info_t *boot_info) {
   {
     void *ptrs[8];
     kmalloc_stats_t st;
-    BOOT_U32 i;
+    u32 i;
 
     kmalloc_stats(&st);
     kprintf("kmalloc dbg: begin used=%llu free=%llu allocs=%llu frees=%llu\n", st.bytes_used, st.bytes_free,
             st.alloc_count, st.free_count);
 
     for (i = 0; i < 8U; ++i) {
-      ptrs[i] = kmalloc(64 + (BOOT_U64)i * 16ULL);
+      ptrs[i] = kmalloc(64 + (u64)i * 16ULL);
       kprintf("kmalloc dbg: alloc[%u]=%p\n", i, ptrs[i]);
     }
     kmalloc_stats(&st);

@@ -118,8 +118,8 @@ kprintf("page_alloc_init=%s\n", status_str(st));
   - `STATUS_INVALID_ARG` for bad inputs.
 - Use when: `kmain` initializes CPU substrate before higher-level services.
 
-### `BOOT_U64 arch_cpu_id(void)`
-### `BOOT_U64 arch_cpu_count_hint(void)`
+### `u64 arch_cpu_id(void)`
+### `u64 arch_cpu_count_hint(void)`
 - Purpose: query boot CPU ID and an architecture-local CPU count hint.
 - Returns:
   - numeric CPU id or count hint (may be `1` if unknown).
@@ -131,12 +131,12 @@ kprintf("page_alloc_init=%s\n", status_str(st));
 - Purpose: low-level wait/halt/reset primitives.
 - Use when: spin-wait loops, idle loops, or reboot path.
 
-### `BOOT_U64 arch_cycle_counter(void)`
+### `u64 arch_cycle_counter(void)`
 - Purpose: read an architecture cycle counter (best-effort monotonic source).
 - Returns: cycle count.
 
-### `status_t arch_cpu_set_local_base(BOOT_U64 base)`
-### `BOOT_U64 arch_cpu_get_local_base(void)`
+### `status_t arch_cpu_set_local_base(u64 base)`
+### `u64 arch_cpu_get_local_base(void)`
 - Purpose: set/get architecture register used for CPU-local base.
 - Parameters:
   - `base`: per-CPU base address to publish.
@@ -149,7 +149,7 @@ kprintf("page_alloc_init=%s\n", status_str(st));
 ### `void arch_barrier_read(void)`
 ### `void arch_barrier_write(void)`
 ### `void arch_tlb_sync_local(void)`
-### `void arch_icache_sync_range(BOOT_U64 addr, BOOT_U64 size)`
+### `void arch_icache_sync_range(u64 addr, u64 size)`
 - Purpose: architecture ordering and cache/TLB synchronization operations.
 - Parameters:
   - `addr`, `size`: target range for i-cache sync (backend may sync globally).
@@ -171,8 +171,8 @@ kprintf("page_alloc_init=%s\n", status_str(st));
   - `boot_info`: handoff data.
 - Returns: status.
 
-### `status_t interrupts_register_handler(BOOT_U64 vector, interrupt_handler_t handler, void *ctx)`
-### `status_t interrupts_register_handler_owned(BOOT_U64 vector, interrupt_handler_t handler, void *ctx, const char *owner)`
+### `status_t interrupts_register_handler(u64 vector, interrupt_handler_t handler, void *ctx)`
+### `status_t interrupts_register_handler_owned(u64 vector, interrupt_handler_t handler, void *ctx, const char *owner)`
 - Purpose: register interrupt vector handlers.
 - Parameters:
   - `vector`: interrupt vector index (`< INTERRUPT_MAX_VECTORS`).
@@ -187,8 +187,8 @@ static void tick_handler(const interrupt_frame_t *f, void *ctx) { (void)f; (void
 interrupts_register_handler_owned(32, tick_handler, 0, "timer");
 ```
 
-### `status_t interrupts_unregister_handler(BOOT_U64 vector, const char *owner)`
-### `const char *interrupts_handler_owner(BOOT_U64 vector)`
+### `status_t interrupts_unregister_handler(u64 vector, const char *owner)`
+### `const char *interrupts_handler_owner(u64 vector)`
 - Purpose: remove/query vector ownership.
 - Parameters:
   - `vector`: vector index.
@@ -217,12 +217,12 @@ interrupts_register_handler_owned(32, tick_handler, 0, "timer");
 ### `const char *irq_controller_name(void)`
 - Purpose: query active controller name.
 
-### `status_t irq_controller_enable(BOOT_U64 irq)`
-### `status_t irq_controller_disable(BOOT_U64 irq)`
-### `void irq_controller_ack(BOOT_U64 irq)`
-### `void irq_controller_eoi(BOOT_U64 irq)`
-### `status_t irq_controller_map(BOOT_U64 irq, BOOT_U64 *out_vector)`
-### `status_t irq_controller_vector_to_irq(BOOT_U64 vector, BOOT_U64 *out_irq)`
+### `status_t irq_controller_enable(u64 irq)`
+### `status_t irq_controller_disable(u64 irq)`
+### `void irq_controller_ack(u64 irq)`
+### `void irq_controller_eoi(u64 irq)`
+### `status_t irq_controller_map(u64 irq, u64 *out_vector)`
+### `status_t irq_controller_vector_to_irq(u64 vector, u64 *out_irq)`
 - Purpose: generic IRQ operations routed to backend controller.
 - Parameters:
   - `irq`: hardware IRQ number.
@@ -235,10 +235,10 @@ interrupts_register_handler_owned(32, tick_handler, 0, "timer");
 ### `status_t irq_domain_init(const boot_info_t *boot_info)`
 - Purpose: initialize generic IRQ allocation domain state.
 
-### `status_t irq_alloc_line(BOOT_U64 device_id, BOOT_U64 hwirq, irq_desc_t *out)`
+### `status_t irq_alloc_line(u64 device_id, u64 hwirq, irq_desc_t *out)`
 - Purpose: allocate one line IRQ descriptor and map hardware IRQ to vector.
 
-### `status_t irq_alloc_msi(BOOT_U64 device_id, BOOT_U64 nvec, irq_desc_t *out_vec)`
+### `status_t irq_alloc_msi(u64 device_id, u64 nvec, irq_desc_t *out_vec)`
 - Purpose: request MSI/MSI-X vectors through a generic contract.
 - Remarks: returns reserved MSI descriptors immediately; backend-specific message programming remains separate.
 
@@ -246,7 +246,7 @@ interrupts_register_handler_owned(32, tick_handler, 0, "timer");
 ### `status_t irq_set_affinity(const irq_desc_t *irq, cpu_mask_t mask)`
 - Purpose: generic trigger/polarity and affinity control hooks.
 
-### `BOOT_U64 irq_domain_alloc_count(void)`
+### `u64 irq_domain_alloc_count(void)`
 - Purpose: return number of active IRQ allocations in the generic domain table.
 
 ## Observability (`trace.h`)
@@ -254,7 +254,7 @@ interrupts_register_handler_owned(32, tick_handler, 0, "timer");
 ### `status_t trace_init(const boot_info_t *boot_info)`
 - Purpose: initialize trace ring state for early boot diagnostics.
 
-### `void trace_emit(trace_class_t cls, BOOT_U64 a0, BOOT_U64 a1, BOOT_U64 a2)`
+### `void trace_emit(trace_class_t cls, u64 a0, u64 a1, u64 a2)`
 - Purpose: append one timestamped trace event to ring buffer.
 
 ### `status_t trace_dump(trace_sink_t sink)`
@@ -280,7 +280,7 @@ interrupts_register_handler_owned(32, tick_handler, 0, "timer");
 ### `status_t sched_add(task_t *task)`
 - Purpose: add one runnable task to the scheduler run queue.
 
-### `void sched_on_exit(task_t *task, BOOT_U64 code)`
+### `void sched_on_exit(task_t *task, u64 code)`
 - Purpose: notify active scheduler backend that a task exited.
 
 ### `void sched_tick(void)`
@@ -295,23 +295,23 @@ interrupts_register_handler_owned(32, tick_handler, 0, "timer");
 ### `status_t hw_resource_init(const boot_info_t *boot_info)`
 - Purpose: initialize normalized hardware resource query layer.
 
-### `status_t hw_resource_attach(BOOT_U64 device_id, const hw_resource_t *list, BOOT_U64 count)`
+### `status_t hw_resource_attach(u64 device_id, const hw_resource_t *list, u64 count)`
 - Purpose: replace a device resource list using normalized `hw_resource_t` records.
 
-### `status_t hw_resource_get(BOOT_U64 device_id, hw_resource_type_t type, BOOT_U64 index, hw_resource_t *out)`
+### `status_t hw_resource_get(u64 device_id, hw_resource_type_t type, u64 index, hw_resource_t *out)`
 - Purpose: fetch one resource from a device by resource type and index.
 
-### `BOOT_U64 hw_resource_count(BOOT_U64 device_id, hw_resource_type_t type)`
+### `u64 hw_resource_count(u64 device_id, hw_resource_type_t type)`
 - Purpose: count resources for a device (or all when type is `HW_RESOURCE_NONE`).
 
-### `status_t hw_resource_view(BOOT_U64 device_id, device_resource_view_t *out)`
+### `status_t hw_resource_view(u64 device_id, device_resource_view_t *out)`
 - Purpose: read compact per-device resource metadata for diagnostics.
 
 ## Timer and Timebase (`arch_timer.h`, `timer.h`, `timebase.h`)
 
-### `status_t arch_timer_init(const boot_info_t *boot_info, BOOT_U64 *out_hz, BOOT_U64 *out_irq_vector)`
-### `void arch_timer_ack(BOOT_U64 vector)`
-### `BOOT_U64 arch_timer_clocksource_hz(const boot_info_t *boot_info)`
+### `status_t arch_timer_init(const boot_info_t *boot_info, u64 *out_hz, u64 *out_irq_vector)`
+### `void arch_timer_ack(u64 vector)`
+### `u64 arch_timer_clocksource_hz(const boot_info_t *boot_info)`
 - Purpose: architecture timer backend initialization and acknowledgment.
 - Parameters:
   - `boot_info`: handoff data.
@@ -321,16 +321,16 @@ interrupts_register_handler_owned(32, tick_handler, 0, "timer");
 - Returns: status or discovered frequency.
 
 ### `status_t timer_init(const boot_info_t *boot_info)`
-### `BOOT_U64 timer_ticks(void)`
-### `BOOT_U64 timer_hz(void)`
+### `u64 timer_ticks(void)`
+### `u64 timer_hz(void)`
 - Purpose: compatibility timer facade backed by timebase system.
 
 ### `status_t time_init(const boot_info_t *boot_info)`
-### `BOOT_U64 time_now_ns(void)`
-### `BOOT_U64 time_ticks(void)`
-### `BOOT_U64 time_hz(void)`
-### `BOOT_U64 time_cycles_to_ns(BOOT_U64 cycles)`
-### `BOOT_U64 time_ns_to_cycles(BOOT_U64 ns)`
+### `u64 time_now_ns(void)`
+### `u64 time_ticks(void)`
+### `u64 time_hz(void)`
+### `u64 time_cycles_to_ns(u64 cycles)`
+### `u64 time_ns_to_cycles(u64 ns)`
 ### `status_t time_quality(time_quality_t *out)`
 ### `const clocksource_t *time_clocksource(void)`
 ### `const clockevent_t *time_clockevent(void)`
@@ -360,7 +360,7 @@ if (status_is_ok(st)) {
   - `boot_info`: mutable handoff for backend result publication.
 - Returns: status.
 
-### `status_t mm_map(mm_virt_addr_t va, mm_phys_addr_t pa, BOOT_U64 size, BOOT_U64 prot_flags)`
+### `status_t mm_map(mm_virt_addr_t va, mm_phys_addr_t pa, u64 size, u64 prot_flags)`
 - Purpose: map `size` bytes from virtual `va` to physical `pa` using backend page granule.
 - Parameters:
   - `va`: virtual base.
@@ -374,11 +374,11 @@ if (status_is_ok(st)) {
 mm_map(0xffff800000200000ULL, 0x00200000ULL, mm_page_size(), MMU_PROT_READ | MMU_PROT_WRITE);
 ```
 
-### `status_t mm_unmap(mm_virt_addr_t va, BOOT_U64 size)`
-### `status_t mm_protect(mm_virt_addr_t va, BOOT_U64 size, BOOT_U64 prot_flags)`
-### `status_t mm_translate(mm_virt_addr_t va, mm_phys_addr_t *out_pa, BOOT_U64 *out_flags)`
-### `status_t mm_sync_tlb(mm_virt_addr_t va, BOOT_U64 size)`
-### `BOOT_U64 mm_page_size(void)`
+### `status_t mm_unmap(mm_virt_addr_t va, u64 size)`
+### `status_t mm_protect(mm_virt_addr_t va, u64 size, u64 prot_flags)`
+### `status_t mm_translate(mm_virt_addr_t va, mm_phys_addr_t *out_pa, u64 *out_flags)`
+### `status_t mm_sync_tlb(mm_virt_addr_t va, u64 size)`
+### `u64 mm_page_size(void)`
 - Purpose: generic unmap/protect/translate/TLB sync/page-size query.
 - Parameters:
   - `va`, `size`: target range.
@@ -391,16 +391,16 @@ mm_map(0xffff800000200000ULL, 0x00200000ULL, mm_page_size(), MMU_PROT_READ | MMU
 ### `status_t dma_init(const boot_info_t *boot_info)`
 - Purpose: initialize DMA mapping subsystem state.
 
-### `status_t dma_map(BOOT_U64 device_id, void *cpu_ptr, BOOT_U64 len, dma_dir_t dir, dma_addr_t *out)`
-### `status_t dma_unmap(BOOT_U64 device_id, dma_addr_t addr, BOOT_U64 len, dma_dir_t dir)`
+### `status_t dma_map(u64 device_id, void *cpu_ptr, u64 len, dma_dir_t dir, dma_addr_t *out)`
+### `status_t dma_unmap(u64 device_id, dma_addr_t addr, u64 len, dma_dir_t dir)`
 - Purpose: map/unmap CPU buffers for device DMA transactions.
 
-### `status_t dma_sync_for_device(BOOT_U64 device_id, dma_addr_t addr, BOOT_U64 len, dma_dir_t dir)`
-### `status_t dma_sync_for_cpu(BOOT_U64 device_id, dma_addr_t addr, BOOT_U64 len, dma_dir_t dir)`
+### `status_t dma_sync_for_device(u64 device_id, dma_addr_t addr, u64 len, dma_dir_t dir)`
+### `status_t dma_sync_for_cpu(u64 device_id, dma_addr_t addr, u64 len, dma_dir_t dir)`
 - Purpose: synchronize DMA buffers for non-coherent paths.
 
-### `status_t dma_set_constraints(BOOT_U64 device_id, const dma_constraints_t *constraints)`
-### `status_t dma_get_constraints(BOOT_U64 device_id, dma_constraints_t *out_constraints)`
+### `status_t dma_set_constraints(u64 device_id, const dma_constraints_t *constraints)`
+### `status_t dma_get_constraints(u64 device_id, dma_constraints_t *out_constraints)`
 - Purpose: configure/query per-device DMA addressing constraints.
 
 ## IOMMU API (`iommu.h`)
@@ -409,12 +409,12 @@ mm_map(0xffff800000200000ULL, 0x00200000ULL, mm_page_size(), MMU_PROT_READ | MMU
 - Purpose: initialize optional IOMMU subsystem state.
 
 ### `status_t iommu_domain_create(iommu_domain_t *out_domain)`
-### `status_t iommu_attach(iommu_domain_t domain, BOOT_U64 device_id)`
-### `status_t iommu_detach(iommu_domain_t domain, BOOT_U64 device_id)`
+### `status_t iommu_attach(iommu_domain_t domain, u64 device_id)`
+### `status_t iommu_detach(iommu_domain_t domain, u64 device_id)`
 - Purpose: create/attach/detach DMA translation domains for devices.
 
-### `status_t iommu_map(iommu_domain_t domain, iova_t iova, phys_addr_t pa, BOOT_U64 len, iommu_perm_t perm)`
-### `status_t iommu_unmap(iommu_domain_t domain, iova_t iova, BOOT_U64 len)`
+### `status_t iommu_map(iommu_domain_t domain, iova_t iova, phys_addr_t pa, u64 len, iommu_perm_t perm)`
+### `status_t iommu_unmap(iommu_domain_t domain, iova_t iova, u64 len)`
 - Purpose: manage IOVA mappings for a domain.
 
 ### `status_t iommu_set_passthrough(iommu_domain_t domain, int enabled)`
@@ -424,8 +424,8 @@ mm_map(0xffff800000200000ULL, 0x00200000ULL, mm_page_size(), MMU_PROT_READ | MMU
 
 ### `status_t clock_enable(clock_id_t clk)`
 ### `status_t clock_disable(clock_id_t clk)`
-### `status_t clock_set_rate(clock_id_t clk, BOOT_U64 hz)`
-### `status_t clock_get_rate(clock_id_t clk, BOOT_U64 *out_hz)`
+### `status_t clock_set_rate(clock_id_t clk, u64 hz)`
+### `status_t clock_get_rate(clock_id_t clk, u64 *out_hz)`
 - Purpose: generic clock control and rate query helpers.
 
 ### `status_t reset_assert(reset_id_t rst)`
@@ -435,7 +435,7 @@ mm_map(0xffff800000200000ULL, 0x00200000ULL, mm_page_size(), MMU_PROT_READ | MMU
 
 ### `status_t power_domain_on(power_domain_id_t pd)`
 ### `status_t power_domain_off(power_domain_id_t pd)`
-### `status_t power_domain_status(power_domain_id_t pd, BOOT_U64 *out_on)`
+### `status_t power_domain_status(power_domain_id_t pd, u64 *out_on)`
 - Purpose: generic power-domain state operations.
 
 ## CPU Capabilities and Context (`cpu_caps.h`, `cpu_context.h`)
@@ -472,12 +472,12 @@ mm_map(0xffff800000200000ULL, 0x00200000ULL, mm_page_size(), MMU_PROT_READ | MMU
 - Purpose: bounded retry helper with architecture-friendly relax between attempts.
 
 ### Architecture MM backend entry points
-- `BOOT_U64 arch_mm_page_size(void)`
-- `status_t arch_mm_map_page(mm_virt_addr_t va, mm_phys_addr_t pa, BOOT_U64 prot_flags)`
+- `u64 arch_mm_page_size(void)`
+- `status_t arch_mm_map_page(mm_virt_addr_t va, mm_phys_addr_t pa, u64 prot_flags)`
 - `status_t arch_mm_unmap_page(mm_virt_addr_t va)`
-- `status_t arch_mm_protect_page(mm_virt_addr_t va, BOOT_U64 prot_flags)`
-- `status_t arch_mm_translate_page(mm_virt_addr_t va, mm_phys_addr_t *out_pa, BOOT_U64 *out_flags)`
-- `status_t arch_mm_sync_tlb(mm_virt_addr_t va, BOOT_U64 size)`
+- `status_t arch_mm_protect_page(mm_virt_addr_t va, u64 prot_flags)`
+- `status_t arch_mm_translate_page(mm_virt_addr_t va, mm_phys_addr_t *out_pa, u64 *out_flags)`
+- `status_t arch_mm_sync_tlb(mm_virt_addr_t va, u64 size)`
 
 These are implemented per architecture and consumed by generic `mm_*` APIs.
 
@@ -489,8 +489,8 @@ These are implemented per architecture and consumed by generic `mm_*` APIs.
   - `boot_info`: mutable boot data used for region scanning.
 - Returns: status.
 
-### `BOOT_U64 alloc_page(void)`
-### `void free_page(BOOT_U64 phys_addr)`
+### `u64 alloc_page(void)`
+### `void free_page(u64 phys_addr)`
 ### `void page_alloc_stats(page_alloc_stats_t *out_stats)`
 - Purpose: allocate/free single physical pages and query allocator stats.
 - Parameters:
@@ -500,14 +500,14 @@ These are implemented per architecture and consumed by generic `mm_*` APIs.
   - `alloc_page`: physical address or `0` on exhaustion.
 - Example:
 ```c
-BOOT_U64 p = alloc_page();
+u64 p = alloc_page();
 if (p != 0) {
   free_page(p);
 }
 ```
 
 ### `status_t kmalloc_init(boot_info_t *boot_info)`
-### `void *kmalloc(BOOT_U64 size)`
+### `void *kmalloc(u64 size)`
 ### `void kfree(void *ptr)`
 ### `void kmalloc_stats(kmalloc_stats_t *out_stats)`
 ### `int kmalloc_self_test(void)`
@@ -532,10 +532,10 @@ if (buf != 0) {
 ## Per-CPU Runtime and SMP (`percpu.h`, `arch_smp.h`, `smp.h`)
 
 ### `status_t percpu_init_boot_cpu(const boot_info_t *boot_info)`
-### `status_t percpu_register_current_cpu(BOOT_U64 cpu_id)`
+### `status_t percpu_register_current_cpu(u64 cpu_id)`
 ### `percpu_t *percpu_current(void)`
-### `percpu_t *percpu_by_id(BOOT_U64 cpu_id)`
-### `BOOT_U64 percpu_online_count(void)`
+### `percpu_t *percpu_by_id(u64 cpu_id)`
+### `u64 percpu_online_count(void)`
 - Purpose: initialize/register and query per-CPU records.
 - Parameters:
   - `boot_info`: boot handoff for initial CPU identity.
@@ -543,10 +543,10 @@ if (buf != 0) {
 - Returns: status, pointer, or count.
 - Use when: per-CPU ownership and CPU-local state are needed.
 
-### `status_t arch_smp_bootstrap(const boot_info_t *boot_info, BOOT_U64 *out_possible_cpus, BOOT_U64 *out_started_cpus)`
-- `status_t arch_smp_cpu_start(BOOT_U64 cpu_id)`
-- `status_t arch_smp_ipi_send(BOOT_U64 cpu_id, BOOT_U64 kind)`
-- `status_t arch_smp_tlb_shootdown(BOOT_U64 mask, BOOT_U64 va, BOOT_U64 len)`
+### `status_t arch_smp_bootstrap(const boot_info_t *boot_info, u64 *out_possible_cpus, u64 *out_started_cpus)`
+- `status_t arch_smp_cpu_start(u64 cpu_id)`
+- `status_t arch_smp_ipi_send(u64 cpu_id, u64 kind)`
+- `status_t arch_smp_tlb_shootdown(u64 mask, u64 va, u64 len)`
 - Purpose: architecture backend for secondary CPU bring-up.
 - Parameters:
   - `boot_info`: handoff pointer.
@@ -556,10 +556,10 @@ if (buf != 0) {
   - `STATUS_OK` on baseline completion, or failure.
 
 ### `status_t smp_init(const boot_info_t *boot_info)`
-### `status_t smp_cpu_start(BOOT_U64 cpu_id)`
-### `BOOT_U64 smp_cpu_count_online(void)`
-### `BOOT_U64 smp_cpu_count_possible(void)`
-### `void smp_secondary_entry(BOOT_U64 cpu_id)`
+### `status_t smp_cpu_start(u64 cpu_id)`
+### `u64 smp_cpu_count_online(void)`
+### `u64 smp_cpu_count_possible(void)`
+### `void smp_secondary_entry(u64 cpu_id)`
 - Purpose: generic SMP orchestration and secondary entry.
 - Parameters:
   - `boot_info`: handoff pointer.
@@ -567,8 +567,8 @@ if (buf != 0) {
 - Returns: status or counts.
 - Remarks: current secondary policy is register-online then park.
 
-### `status_t ipi_send(BOOT_U64 cpu_id, ipi_kind_t kind)`
-### `status_t tlb_shootdown(cpu_mask_t mask, virt_addr_t va, BOOT_U64 len)`
+### `status_t ipi_send(u64 cpu_id, ipi_kind_t kind)`
+### `status_t tlb_shootdown(cpu_mask_t mask, virt_addr_t va, u64 len)`
 - Purpose: generic SMP cross-CPU signal and translation-shootdown contracts.
 - Remarks: local CPU operations are active now; remote operations return `STATUS_NOT_SUPPORTED` until full backend support is enabled.
 
@@ -576,7 +576,7 @@ if (buf != 0) {
 
 ### `status_t hw_discovery_init(const boot_info_t *boot_info)`
 ### `const hw_desc_t *hw_desc_get(void)`
-### `BOOT_U64 hw_desc_cpu_count_hint(void)`
+### `u64 hw_desc_cpu_count_hint(void)`
 - Purpose: normalize ACPI/DTB/fallback hardware data into `hw_desc_t`.
 - Parameters:
   - `boot_info`: handoff context with ACPI/DTB pointers.
@@ -602,23 +602,23 @@ if (d != 0) {
 ### `void device_bus_reset(void)`
 - Purpose: clear all buses/devices and reset bus graph state.
 
-### `status_t device_bus_register_bus(const bus_t *bus_template, BOOT_U64 *out_bus_id)`
-### `status_t device_bus_register_device(const device_t *dev_template, BOOT_U64 *out_device_id)`
-### `status_t device_bus_remove_device(BOOT_U64 device_id)`
+### `status_t device_bus_register_bus(const bus_t *bus_template, u64 *out_bus_id)`
+### `status_t device_bus_register_device(const device_t *dev_template, u64 *out_device_id)`
+### `status_t device_bus_remove_device(u64 device_id)`
 ### `status_t device_bus_register_hotplug(device_hotplug_fn_t on_add, device_hotplug_fn_t on_remove, void *ctx)`
 - Purpose: append bus or device nodes to graph.
 - Parameters:
   - `bus_template` / `dev_template`: source descriptor.
   - `out_bus_id` / `out_device_id`: optional output assigned ID.
 
-### `const bus_t *device_bus_get_bus(BOOT_U64 bus_id)`
-### `const device_t *device_bus_get_device(BOOT_U64 device_id)`
-### `BOOT_U64 device_bus_count(void)`
-### `const device_t *device_bus_device_at(BOOT_U64 index)`
+### `const bus_t *device_bus_get_bus(u64 bus_id)`
+### `const device_t *device_bus_get_device(u64 device_id)`
+### `u64 device_bus_count(void)`
+### `const device_t *device_bus_device_at(u64 index)`
 - Purpose: query bus/device entries.
 
-### `BOOT_U64 device_bus_find_first_by_class(device_class_t class_id)`
-### `BOOT_U64 device_bus_find_next_by_class(device_class_t class_id, BOOT_U64 after_id)`
+### `u64 device_bus_find_first_by_class(device_class_t class_id)`
+### `u64 device_bus_find_next_by_class(device_class_t class_id, u64 after_id)`
 - Purpose: iterate devices by class.
 
 ### `void device_bus_dump(void)`
@@ -633,7 +633,7 @@ if (d != 0) {
 - Returns:
   - `STATUS_OK` when enumeration pass completes (device count may be zero on architectures without active scanner backend).
 
-### `BOOT_U64 pci_device_count(void)`
+### `u64 pci_device_count(void)`
 - Purpose: report number of PCI functions discovered in last enumeration pass.
 
 ## USB (`usb.h`)
@@ -646,8 +646,8 @@ if (d != 0) {
   - `STATUS_OK` when one or more hosts are discovered.
   - `STATUS_DEFERRED` when no USB hosts are currently discovered.
 
-### `BOOT_U64 usb_host_count(void)`
-### `BOOT_U64 usb_device_count(void)`
+### `u64 usb_host_count(void)`
+### `u64 usb_device_count(void)`
 - Purpose: return counts from last USB enumeration pass.
 
 ## Device Domains (`device_domains.h`)
@@ -658,17 +658,17 @@ if (d != 0) {
   - `boot_info`: handoff context.
 - Returns: `STATUS_OK` when at least one domain device is created, else `STATUS_DEFERRED`.
 
-### `BOOT_U64 block_device_count(void)`
-### `BOOT_U64 input_device_count(void)`
-### `BOOT_U64 display_device_count(void)`
+### `u64 block_device_count(void)`
+### `u64 input_device_count(void)`
+### `u64 display_device_count(void)`
 - Purpose: report baseline domain counts from latest pass.
 
 ## Device Reporting (`device_report.h`)
 
-### `BOOT_U64 device_report_count(void)`
+### `u64 device_report_count(void)`
 - Purpose: return total number of device graph nodes currently reportable.
 
-### `status_t device_report_get(BOOT_U64 index, device_report_entry_t *out_entry)`
+### `status_t device_report_get(u64 index, device_report_entry_t *out_entry)`
 - Purpose: fetch one report entry by index.
 - Parameters:
   - `index`: index in current device graph order.
@@ -706,7 +706,7 @@ if (d != 0) {
   - `STATUS_OK` when trap entry backend is initialized.
   - `STATUS_INVALID_ARG` on null/mismatched architecture handoff.
 
-### `status_t arch_syscall_get_vector(BOOT_U64 *out_vector)`
+### `status_t arch_syscall_get_vector(u64 *out_vector)`
 - Purpose: return the architecture syscall dispatch vector used by generic interrupt dispatch.
 
 ### `status_t arch_syscall_trigger(void)`
@@ -715,13 +715,13 @@ if (d != 0) {
 ### `status_t arch_syscall_decode(const void *trap_frame, syscall_abi_frame_t *out)`
 - Purpose: decode syscall operation and arguments from architecture trap ABI frame.
 
-### `status_t arch_syscall_encode_ret(void *trap_frame, BOOT_U64 value)`
+### `status_t arch_syscall_encode_ret(void *trap_frame, u64 value)`
 - Purpose: write syscall return value back into architecture trap ABI frame.
 
 ### `status_t syscall_init(const boot_info_t *boot_info)`
 - Purpose: initialize generic syscall transport dispatcher and register substrate reserved handlers.
 
-### `status_t syscall_register(BOOT_U64 op, syscall_handler_t handler, const char *owner)`
+### `status_t syscall_register(u64 op, syscall_handler_t handler, const char *owner)`
 - Purpose: register one operation handler into syscall dispatch table.
 
 ### `status_t syscall_dispatch(const syscall_request_t *req, syscall_response_t *resp)`
@@ -733,7 +733,7 @@ if (d != 0) {
 ### `status_t syscall_invoke_trap(..., syscall_response_t *resp)`
 - Purpose: issue syscall through architecture trap-entry path for end-to-end validation.
 
-### `BOOT_U64 syscall_abi_info_word(void)`
+### `u64 syscall_abi_info_word(void)`
 - Purpose: read packed ABI/version/feature info word.
 
 ### `int syscall_trap_entry_ready(void)`
@@ -761,7 +761,7 @@ if (d != 0) {
   - `STATUS_OK` when frame updated.
   - `STATUS_NOT_SUPPORTED` when backend does not use frame path.
 
-### `__attribute__((noreturn)) void arch_user_mode_enter(arch_user_entry_t entry, void *arg, BOOT_U64 user_sp)`
+### `__attribute__((noreturn)) void arch_user_mode_enter(arch_user_entry_t entry, void *arg, u64 user_sp)`
 - Purpose: architecture-defined transition into user context.
 - Parameters:
   - `entry`: user entry function/program counter.
@@ -771,13 +771,13 @@ if (d != 0) {
 
 ## User Task Bootstrap (`user_task.h`)
 
-### `status_t user_stack_alloc(BOOT_U64 size, BOOT_U64 *out_base)`
+### `status_t user_stack_alloc(u64 size, u64 *out_base)`
 - Purpose: allocate contiguous page-backed memory for a user stack region.
 - Parameters:
   - `size`: requested byte size; must be page aligned.
   - `out_base`: output base address.
 
-### `status_t user_window_map(BOOT_U64 base, BOOT_U64 size, BOOT_U64 prot)`
+### `status_t user_window_map(u64 base, u64 size, u64 prot)`
 - Purpose: apply user-window protection and synchronize TLB for launch window setup.
 
 ### `status_t user_task_bootstrap_prepare(const boot_info_t *boot_info, user_task_bootstrap_t *out_ctx)`
@@ -788,13 +788,13 @@ if (d != 0) {
 
 ## User Access (`uaccess.h`)
 
-### `status_t uaccess_set_user_window(BOOT_U64 base, BOOT_U64 size)`
+### `status_t uaccess_set_user_window(u64 base, u64 size)`
 - Purpose: configure active user pointer window used by checked-copy APIs.
 
-### `status_t copy_from_user_checked(void *dst, BOOT_U64 user_src, BOOT_U64 len)`
+### `status_t copy_from_user_checked(void *dst, u64 user_src, u64 len)`
 - Purpose: copy bytes from user address after range validation.
 
-### `status_t copy_to_user_checked(BOOT_U64 user_dst, const void *src, BOOT_U64 len)`
+### `status_t copy_to_user_checked(u64 user_dst, const void *src, u64 len)`
 - Purpose: copy bytes to user address after range validation.
 
 ## Network Domain (`net.h`)
@@ -807,10 +807,10 @@ if (d != 0) {
   - `STATUS_OK` when at least one network device is discovered.
   - `STATUS_DEFERRED` when no network devices are available or gate is disabled.
 
-### `BOOT_U64 net_device_count(void)`
+### `u64 net_device_count(void)`
 - Purpose: return number of network-domain devices from the latest pass.
 
-### `status_t net_device_info_at(BOOT_U64 index, net_device_info_t *out_info)`
+### `status_t net_device_info_at(u64 index, net_device_info_t *out_info)`
 - Purpose: return one stable network descriptor for OS bring-up code.
 - Parameters:
   - `index`: zero-based network entry index.
@@ -830,10 +830,10 @@ if (d != 0) {
   - `STATUS_OK` when at least one audio device is discovered.
   - `STATUS_DEFERRED` when no audio devices are available or gate is disabled.
 
-### `BOOT_U64 audio_device_count(void)`
+### `u64 audio_device_count(void)`
 - Purpose: return number of audio-domain devices from the latest pass.
 
-### `status_t audio_device_info_at(BOOT_U64 index, audio_device_info_t *out_info)`
+### `status_t audio_device_info_at(u64 index, audio_device_info_t *out_info)`
 - Purpose: return one stable audio descriptor for early OS initialization.
 - Parameters:
   - `index`: zero-based audio entry index.

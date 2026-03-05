@@ -46,7 +46,7 @@ Divergence notes:
 
 ## SMP Backend
 
-### `status_t arch_smp_bootstrap(const boot_info_t *boot_info, BOOT_U64 *out_possible_cpus, BOOT_U64 *out_started_cpus)`
+### `status_t arch_smp_bootstrap(const boot_info_t *boot_info, u64 *out_possible_cpus, u64 *out_started_cpus)`
 - File: `arch/x86_64/cpu/smp.c`
 - Purpose: SMP discovery/bring-up through UEFI MP Services.
 - Parameters:
@@ -59,7 +59,7 @@ Divergence notes:
   - error status on hard failure.
 - Example:
 ```c
-BOOT_U64 possible = 1, started = 0;
+u64 possible = 1, started = 0;
 status_t st = arch_smp_bootstrap(info, &possible, &started);
 ```
 
@@ -113,9 +113,9 @@ Divergence notes:
 
 ## Timer Backend
 
-### `status_t arch_timer_init(const boot_info_t *boot_info, BOOT_U64 *out_hz, BOOT_U64 *out_irq_vector)`
-### `void arch_timer_ack(BOOT_U64 vector)`
-### `BOOT_U64 arch_timer_clocksource_hz(const boot_info_t *boot_info)`
+### `status_t arch_timer_init(const boot_info_t *boot_info, u64 *out_hz, u64 *out_irq_vector)`
+### `void arch_timer_ack(u64 vector)`
+### `u64 arch_timer_clocksource_hz(const boot_info_t *boot_info)`
 - File: `arch/x86_64/timer/timer.c`
 - Purpose: PIT periodic timer setup and IRQ ack path.
 - Divergence:
@@ -127,7 +127,7 @@ Divergence notes:
 - File: `arch/x86_64/syscall/syscall.c`
 - Purpose: x86_64 syscall trap-entry backend hook for transport ABI.
 
-### `status_t arch_syscall_get_vector(BOOT_U64 *out_vector)`
+### `status_t arch_syscall_get_vector(u64 *out_vector)`
 - File: `arch/x86_64/syscall/syscall.c`
 - Purpose: provide syscall vector (`0x80`) to generic syscall layer.
 
@@ -136,7 +136,7 @@ Divergence notes:
 - Purpose: execute `int $0x80` trap to enter generic syscall dispatch handler.
 
 ### `status_t arch_syscall_decode(const void *trap_frame, syscall_abi_frame_t *out)`
-### `status_t arch_syscall_encode_ret(void *trap_frame, BOOT_U64 value)`
+### `status_t arch_syscall_encode_ret(void *trap_frame, u64 value)`
 - File: `arch/x86_64/syscall/syscall.c`
 - Purpose: x86_64 syscall ABI helper hooks used by the generic syscall trap path.
 
@@ -144,7 +144,7 @@ Divergence notes:
 
 ### `status_t arch_user_mode_set_kernel_stack(void *kernel_stack_top)`
 ### `status_t arch_user_mode_prepare_frame(arch_user_frame_t *frame)`
-### `__attribute__((noreturn)) void arch_user_mode_enter(arch_user_entry_t entry, void *arg, BOOT_U64 user_sp)`
+### `__attribute__((noreturn)) void arch_user_mode_enter(arch_user_entry_t entry, void *arg, u64 user_sp)`
 - File: `arch/x86_64/user/user_mode.c`
 - Purpose: x86_64 backend implementation point for the architecture-neutral user-mode contract.
 - Current status:

@@ -19,12 +19,12 @@
 #define ARM64_IDENTITY_BYTES (ARM64_IDENTITY_GIB * 1024ULL * 1024ULL * 1024ULL)
 #define ARM64_BLOCK_ADDR_MASK 0x0000FFFFFFE00000ULL
 
-extern BOOT_U64 g_l0[512];
-extern BOOT_U64 g_l1[512];
-extern BOOT_U64 g_l2[ARM64_IDENTITY_GIB][512];
+extern u64 g_l0[512];
+extern u64 g_l1[512];
+extern u64 g_l2[ARM64_IDENTITY_GIB][512];
 
-static BOOT_U64 block_attr_from_prot(BOOT_U64 prot_flags) {
-  BOOT_U64 attr = ARM64_BLK_VALID | ARM64_BLK_AF;
+static u64 block_attr_from_prot(u64 prot_flags) {
+  u64 attr = ARM64_BLK_VALID | ARM64_BLK_AF;
 
   if ((prot_flags & MMU_PROT_DEVICE) != 0) {
     attr |= ARM64_BLK_SH_OUTER;
@@ -49,9 +49,9 @@ static BOOT_U64 block_attr_from_prot(BOOT_U64 prot_flags) {
   return attr;
 }
 
-static BOOT_U64 prot_from_block_attr(BOOT_U64 entry) {
-  BOOT_U64 flags = MMU_PROT_READ;
-  BOOT_U64 attr_idx = (entry >> ARM64_BLK_ATTRIDX_SHIFT) & 0x7ULL;
+static u64 prot_from_block_attr(u64 entry) {
+  u64 flags = MMU_PROT_READ;
+  u64 attr_idx = (entry >> ARM64_BLK_ATTRIDX_SHIFT) & 0x7ULL;
 
   if ((entry & ARM64_BLK_AP_RO) == 0) {
     flags |= MMU_PROT_WRITE;
@@ -71,13 +71,13 @@ static BOOT_U64 prot_from_block_attr(BOOT_U64 entry) {
   return flags;
 }
 
-static BOOT_U64 read_ttbr0_el1(void) {
-  BOOT_U64 v;
+static u64 read_ttbr0_el1(void) {
+  u64 v;
   __asm__ volatile("mrs %0, ttbr0_el1" : "=r"(v));
   return v;
 }
 
-static void write_ttbr0_el1(BOOT_U64 v) {
+static void write_ttbr0_el1(u64 v) {
   __asm__ volatile("msr ttbr0_el1, %0\n\t"
                    "isb\n\t"
                    :
@@ -85,12 +85,12 @@ static void write_ttbr0_el1(BOOT_U64 v) {
                    : "memory");
 }
 
-BOOT_U64 arch_mm_page_size(void) { return ARM64_L2_SPAN; }
+u64 arch_mm_page_size(void) { return ARM64_L2_SPAN; }
 
-status_t arch_mm_map_page(mm_virt_addr_t va, mm_phys_addr_t pa, BOOT_U64 prot_flags) {
-  BOOT_U64 l1_index;
-  BOOT_U64 l2_index;
-  BOOT_U64 entry;
+status_t arch_mm_map_page(mm_virt_addr_t va, mm_phys_addr_t pa, u64 prot_flags) {
+  u64 l1_index;
+  u64 l2_index;
+  u64 entry;
 
   if ((va & (ARM64_L2_SPAN - 1ULL)) != 0 || (pa & (ARM64_L2_SPAN - 1ULL)) != 0) {
     return STATUS_INVALID_ARG;
@@ -110,8 +110,8 @@ status_t arch_mm_map_page(mm_virt_addr_t va, mm_phys_addr_t pa, BOOT_U64 prot_fl
 }
 
 status_t arch_mm_unmap_page(mm_virt_addr_t va) {
-  BOOT_U64 l1_index;
-  BOOT_U64 l2_index;
+  u64 l1_index;
+  u64 l2_index;
 
   if ((va & (ARM64_L2_SPAN - 1ULL)) != 0) {
     return STATUS_INVALID_ARG;
@@ -129,11 +129,11 @@ status_t arch_mm_unmap_page(mm_virt_addr_t va) {
   return STATUS_OK;
 }
 
-status_t arch_mm_protect_page(mm_virt_addr_t va, BOOT_U64 prot_flags) {
-  BOOT_U64 l1_index;
-  BOOT_U64 l2_index;
-  BOOT_U64 old_entry;
-  BOOT_U64 new_entry;
+status_t arch_mm_protect_page(mm_virt_addr_t va, u64 prot_flags) {
+  u64 l1_index;
+  u64 l2_index;
+  u64 old_entry;
+  u64 new_entry;
 
   if ((va & (ARM64_L2_SPAN - 1ULL)) != 0) {
     return STATUS_INVALID_ARG;
@@ -154,10 +154,10 @@ status_t arch_mm_protect_page(mm_virt_addr_t va, BOOT_U64 prot_flags) {
   return STATUS_OK;
 }
 
-status_t arch_mm_translate_page(mm_virt_addr_t va, mm_phys_addr_t *out_pa, BOOT_U64 *out_flags) {
-  BOOT_U64 l1_index;
-  BOOT_U64 l2_index;
-  BOOT_U64 entry;
+status_t arch_mm_translate_page(mm_virt_addr_t va, mm_phys_addr_t *out_pa, u64 *out_flags) {
+  u64 l1_index;
+  u64 l2_index;
+  u64 entry;
 
   if ((va & (ARM64_L2_SPAN - 1ULL)) != 0 || out_pa == (mm_phys_addr_t *)0) {
     return STATUS_INVALID_ARG;
@@ -174,14 +174,14 @@ status_t arch_mm_translate_page(mm_virt_addr_t va, mm_phys_addr_t *out_pa, BOOT_
   }
 
   *out_pa = entry & ARM64_BLOCK_ADDR_MASK;
-  if (out_flags != (BOOT_U64 *)0) {
+  if (out_flags != (u64 *)0) {
     *out_flags = prot_from_block_attr(entry);
   }
   return STATUS_OK;
 }
 
-status_t arch_mm_sync_tlb(mm_virt_addr_t va, BOOT_U64 size) {
-  BOOT_U64 ttbr0 = read_ttbr0_el1();
+status_t arch_mm_sync_tlb(mm_virt_addr_t va, u64 size) {
+  u64 ttbr0 = read_ttbr0_el1();
   (void)va;
   (void)size;
   __asm__ volatile("dsb ishst" : : : "memory");

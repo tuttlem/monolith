@@ -14,11 +14,11 @@
 #define RISCV64_IDENTITY_BYTES (RISCV64_IDENTITY_GIB * RISCV64_GIB)
 #define RISCV64_PPN_MASK ((1ULL << 44) - 1ULL)
 
-extern BOOT_U64 g_root[512];
+extern u64 g_root[512];
 
-static BOOT_U64 pte_from_prot(mm_phys_addr_t pa, BOOT_U64 prot_flags) {
-  BOOT_U64 ppn = (pa >> 12) & RISCV64_PPN_MASK;
-  BOOT_U64 pte = (ppn << 10) | RISCV64_PTE_V | RISCV64_PTE_A;
+static u64 pte_from_prot(mm_phys_addr_t pa, u64 prot_flags) {
+  u64 ppn = (pa >> 12) & RISCV64_PPN_MASK;
+  u64 pte = (ppn << 10) | RISCV64_PTE_V | RISCV64_PTE_A;
 
   if ((prot_flags & MMU_PROT_WRITE) != 0) {
     pte |= RISCV64_PTE_W | RISCV64_PTE_D;
@@ -38,8 +38,8 @@ static BOOT_U64 pte_from_prot(mm_phys_addr_t pa, BOOT_U64 prot_flags) {
   return pte;
 }
 
-static BOOT_U64 prot_from_pte(BOOT_U64 pte) {
-  BOOT_U64 flags = 0;
+static u64 prot_from_pte(u64 pte) {
+  u64 flags = 0;
 
   if ((pte & RISCV64_PTE_R) != 0) {
     flags |= MMU_PROT_READ;
@@ -61,10 +61,10 @@ static BOOT_U64 prot_from_pte(BOOT_U64 pte) {
 
 static void sfence_vma_all(void) { __asm__ volatile("sfence.vma x0, x0" : : : "memory"); }
 
-BOOT_U64 arch_mm_page_size(void) { return RISCV64_GIB; }
+u64 arch_mm_page_size(void) { return RISCV64_GIB; }
 
-status_t arch_mm_map_page(mm_virt_addr_t va, mm_phys_addr_t pa, BOOT_U64 prot_flags) {
-  BOOT_U64 idx;
+status_t arch_mm_map_page(mm_virt_addr_t va, mm_phys_addr_t pa, u64 prot_flags) {
+  u64 idx;
 
   if ((va & (RISCV64_GIB - 1ULL)) != 0 || (pa & (RISCV64_GIB - 1ULL)) != 0) {
     return STATUS_INVALID_ARG;
@@ -79,7 +79,7 @@ status_t arch_mm_map_page(mm_virt_addr_t va, mm_phys_addr_t pa, BOOT_U64 prot_fl
 }
 
 status_t arch_mm_unmap_page(mm_virt_addr_t va) {
-  BOOT_U64 idx;
+  u64 idx;
 
   if ((va & (RISCV64_GIB - 1ULL)) != 0) {
     return STATUS_INVALID_ARG;
@@ -96,9 +96,9 @@ status_t arch_mm_unmap_page(mm_virt_addr_t va) {
   return STATUS_OK;
 }
 
-status_t arch_mm_protect_page(mm_virt_addr_t va, BOOT_U64 prot_flags) {
-  BOOT_U64 idx;
-  BOOT_U64 old_pte;
+status_t arch_mm_protect_page(mm_virt_addr_t va, u64 prot_flags) {
+  u64 idx;
+  u64 old_pte;
   mm_phys_addr_t pa;
 
   if ((va & (RISCV64_GIB - 1ULL)) != 0) {
@@ -119,9 +119,9 @@ status_t arch_mm_protect_page(mm_virt_addr_t va, BOOT_U64 prot_flags) {
   return STATUS_OK;
 }
 
-status_t arch_mm_translate_page(mm_virt_addr_t va, mm_phys_addr_t *out_pa, BOOT_U64 *out_flags) {
-  BOOT_U64 idx;
-  BOOT_U64 pte;
+status_t arch_mm_translate_page(mm_virt_addr_t va, mm_phys_addr_t *out_pa, u64 *out_flags) {
+  u64 idx;
+  u64 pte;
 
   if ((va & (RISCV64_GIB - 1ULL)) != 0 || out_pa == (mm_phys_addr_t *)0) {
     return STATUS_INVALID_ARG;
@@ -137,13 +137,13 @@ status_t arch_mm_translate_page(mm_virt_addr_t va, mm_phys_addr_t *out_pa, BOOT_
   }
 
   *out_pa = ((pte >> 10) & RISCV64_PPN_MASK) << 12;
-  if (out_flags != (BOOT_U64 *)0) {
+  if (out_flags != (u64 *)0) {
     *out_flags = prot_from_pte(pte);
   }
   return STATUS_OK;
 }
 
-status_t arch_mm_sync_tlb(mm_virt_addr_t va, BOOT_U64 size) {
+status_t arch_mm_sync_tlb(mm_virt_addr_t va, u64 size) {
   (void)va;
   (void)size;
   sfence_vma_all();

@@ -13,10 +13,10 @@
 
 typedef struct {
   const char *class_name;
-  BOOT_U64 index;
+  u64 index;
   const boot_info_t *boot_info;
   const hw_desc_t *hw;
-  BOOT_U64 device_id;
+  u64 device_id;
   const void *desc;
 } device_node_t;
 
@@ -27,12 +27,12 @@ typedef struct {
 
 static const boot_info_t *g_boot_info;
 static const driver_t *g_drivers[DRIVER_MAX_COUNT];
-static BOOT_U64 g_driver_count;
+static u64 g_driver_count;
 static class_status_t g_class_status[CLASS_MAX_COUNT];
 
-static BOOT_U64 g_irq_driver_initialized;
-static BOOT_U64 g_timer_driver_initialized;
-static BOOT_U64 g_console_driver_initialized;
+static u64 g_irq_driver_initialized;
+static u64 g_timer_driver_initialized;
+static u64 g_console_driver_initialized;
 
 static int str_eq(const char *a, const char *b) {
   if (a == (const char *)0 || b == (const char *)0) {
@@ -60,7 +60,7 @@ static void class_status_reset(void) {
 }
 
 static void class_status_set(const char *class_name, status_t status) {
-  BOOT_U64 i;
+  u64 i;
 
   for (i = 0; i < CLASS_MAX_COUNT; ++i) {
     if (str_eq(g_class_status[i].class_name, class_name)) {
@@ -71,7 +71,7 @@ static void class_status_set(const char *class_name, status_t status) {
 }
 
 status_t driver_class_last_status(const char *class_name) {
-  BOOT_U64 i;
+  u64 i;
 
   for (i = 0; i < CLASS_MAX_COUNT; ++i) {
     if (str_eq(g_class_status[i].class_name, class_name)) {
@@ -90,7 +90,7 @@ status_t driver_set_boot_info(const boot_info_t *boot_info) {
 }
 
 void driver_registry_reset(void) {
-  BOOT_U64 i;
+  u64 i;
 
   g_driver_count = 0;
   for (i = 0; i < DRIVER_MAX_COUNT; ++i) {
@@ -142,7 +142,7 @@ static status_t run_driver_on_node(const driver_t *drv, const device_node_t *nod
 }
 
 static status_t probe_class(const char *class_name, const hw_desc_t *hw) {
-  BOOT_U64 i;
+  u64 i;
   device_class_t want = DEVICE_CLASS_UNKNOWN;
   status_t class_st = STATUS_DEFERRED;
 
@@ -163,7 +163,7 @@ static status_t probe_class(const char *class_name, const hw_desc_t *hw) {
 
   for (i = 0; i < device_bus_count(); ++i) {
     const device_t *dev = device_bus_device_at(i);
-    BOOT_U64 j;
+    u64 j;
 
     if (dev == (const device_t *)0 || dev->class_id != want) {
       continue;
@@ -200,14 +200,14 @@ static status_t probe_class(const char *class_name, const hw_desc_t *hw) {
 
 status_t driver_probe_all(const hw_desc_t *hw) {
   static const char *const init_order[] = {CLASS_IRQC, CLASS_TIMER, CLASS_CONSOLE, CLASS_EARLY};
-  BOOT_U64 i;
+  u64 i;
   status_t st = STATUS_OK;
 
   if (hw == (const hw_desc_t *)0 || g_boot_info == (const boot_info_t *)0) {
     return STATUS_INVALID_ARG;
   }
 
-  for (i = 0; i < (BOOT_U64)(sizeof(init_order) / sizeof(init_order[0])); ++i) {
+  for (i = 0; i < (u64)(sizeof(init_order) / sizeof(init_order[0])); ++i) {
     status_t class_st = probe_class(init_order[i], hw);
     if (class_st != STATUS_OK && class_st != STATUS_DEFERRED) {
       st = class_st;

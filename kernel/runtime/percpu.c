@@ -2,9 +2,9 @@
 #include "arch_cpu.h"
 
 static percpu_t g_percpu[PERCPU_MAX_CPUS];
-static BOOT_U64 g_percpu_online_count = 0;
-static BOOT_U64 g_percpu_initialized = 0;
-static volatile BOOT_U64 g_percpu_lock = 0;
+static u64 g_percpu_online_count = 0;
+static u64 g_percpu_initialized = 0;
+static volatile u64 g_percpu_lock = 0;
 
 static void percpu_lock(void) {
   while (__atomic_exchange_n(&g_percpu_lock, 1ULL, __ATOMIC_ACQUIRE) != 0ULL) {
@@ -15,10 +15,10 @@ static void percpu_lock(void) {
 static void percpu_unlock(void) { __atomic_store_n(&g_percpu_lock, 0ULL, __ATOMIC_RELEASE); }
 
 status_t percpu_init_boot_cpu(const boot_info_t *boot_info) {
-  BOOT_U64 cpu_id;
+  u64 cpu_id;
   percpu_t *cpu0;
   status_t st;
-  BOOT_U32 i;
+  u32 i;
 
   if (boot_info == (const boot_info_t *)0) {
     return STATUS_INVALID_ARG;
@@ -43,7 +43,7 @@ status_t percpu_init_boot_cpu(const boot_info_t *boot_info) {
   cpu0->cpu_id = cpu_id;
   cpu0->online = 1ULL;
 
-  st = arch_cpu_set_local_base((BOOT_U64)(BOOT_UPTR)cpu0);
+  st = arch_cpu_set_local_base((u64)(uptr)cpu0);
   if (st != STATUS_OK) {
     return st;
   }
@@ -53,10 +53,10 @@ status_t percpu_init_boot_cpu(const boot_info_t *boot_info) {
   return STATUS_OK;
 }
 
-status_t percpu_register_current_cpu(BOOT_U64 cpu_id) {
-  BOOT_U64 i;
-  BOOT_U64 slot_index = 0;
-  BOOT_U64 free_found = 0;
+status_t percpu_register_current_cpu(u64 cpu_id) {
+  u64 i;
+  u64 slot_index = 0;
+  u64 free_found = 0;
   percpu_t *slot;
   status_t st;
 
@@ -69,7 +69,7 @@ status_t percpu_register_current_cpu(BOOT_U64 cpu_id) {
   for (i = 0; i < g_percpu_online_count; ++i) {
     if (g_percpu[i].online != 0 && g_percpu[i].cpu_id == cpu_id) {
       percpu_unlock();
-      st = arch_cpu_set_local_base((BOOT_U64)(BOOT_UPTR)&g_percpu[i]);
+      st = arch_cpu_set_local_base((u64)(uptr)&g_percpu[i]);
       if (st != STATUS_OK) {
         return st;
       }
@@ -98,7 +98,7 @@ status_t percpu_register_current_cpu(BOOT_U64 cpu_id) {
   slot->current_task = (void *)0;
   slot->arch_local = (void *)0;
 
-  st = arch_cpu_set_local_base((BOOT_U64)(BOOT_UPTR)slot);
+  st = arch_cpu_set_local_base((u64)(uptr)slot);
   if (st != STATUS_OK) {
     slot->online = 0;
     percpu_unlock();
@@ -113,7 +113,7 @@ status_t percpu_register_current_cpu(BOOT_U64 cpu_id) {
 }
 
 percpu_t *percpu_current(void) {
-  BOOT_U64 base;
+  u64 base;
 
   if (g_percpu_initialized == 0) {
     return (percpu_t *)0;
@@ -123,11 +123,11 @@ percpu_t *percpu_current(void) {
   if (base == 0ULL) {
     return (percpu_t *)0;
   }
-  return (percpu_t *)(BOOT_UPTR)base;
+  return (percpu_t *)(uptr)base;
 }
 
-percpu_t *percpu_by_id(BOOT_U64 cpu_id) {
-  BOOT_U64 i;
+percpu_t *percpu_by_id(u64 cpu_id) {
+  u64 i;
 
   if (g_percpu_initialized == 0) {
     return (percpu_t *)0;
@@ -141,9 +141,9 @@ percpu_t *percpu_by_id(BOOT_U64 cpu_id) {
   return (percpu_t *)0;
 }
 
-BOOT_U64 percpu_online_count(void) {
-  BOOT_U64 i;
-  BOOT_U64 count = 0;
+u64 percpu_online_count(void) {
+  u64 i;
+  u64 count = 0;
 
   if (g_percpu_initialized == 0) {
     return 0ULL;

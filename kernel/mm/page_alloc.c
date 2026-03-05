@@ -7,33 +7,33 @@
 #define MAX_RECYCLED_PAGES 256U
 
 typedef struct {
-  BOOT_U64 base;
-  BOOT_U64 page_count;
+  u64 base;
+  u64 page_count;
 } page_range_t;
 
 static struct {
-  BOOT_U64 initialized;
-  BOOT_U64 available;
-  BOOT_U64 total_pages;
-  BOOT_U64 free_pages;
-  BOOT_U32 range_count;
-  BOOT_U32 current_range;
-  BOOT_U64 current_offset_pages;
-  BOOT_U32 recycled_count;
-  BOOT_U64 recycled[MAX_RECYCLED_PAGES];
+  u64 initialized;
+  u64 available;
+  u64 total_pages;
+  u64 free_pages;
+  u32 range_count;
+  u32 current_range;
+  u64 current_offset_pages;
+  u32 recycled_count;
+  u64 recycled[MAX_RECYCLED_PAGES];
   page_range_t ranges[MAX_USABLE_RANGES];
 } g_page_alloc;
 
-static BOOT_U64 align_up(BOOT_U64 value, BOOT_U64 align) {
+static u64 align_up(u64 value, u64 align) {
   return (value + (align - 1ULL)) & ~(align - 1ULL);
 }
 
-static BOOT_U64 align_down(BOOT_U64 value, BOOT_U64 align) {
+static u64 align_down(u64 value, u64 align) {
   return value & ~(align - 1ULL);
 }
 
 static void clear_state(void) {
-  BOOT_U32 i;
+  u32 i;
   g_page_alloc.initialized = 1;
   g_page_alloc.available = 0;
   g_page_alloc.total_pages = 0;
@@ -51,11 +51,11 @@ static void clear_state(void) {
   }
 }
 
-static void add_usable_range(BOOT_U64 base, BOOT_U64 size, BOOT_U64 floor, BOOT_U64 bias) {
-  BOOT_U64 start;
-  BOOT_U64 end;
-  BOOT_U64 page_count;
-  BOOT_U32 idx;
+static void add_usable_range(u64 base, u64 size, u64 floor, u64 bias) {
+  u64 start;
+  u64 end;
+  u64 page_count;
+  u32 idx;
 
   if (g_page_alloc.range_count >= MAX_USABLE_RANGES || size < PAGE_SIZE) {
     return;
@@ -90,9 +90,9 @@ static void add_usable_range(BOOT_U64 base, BOOT_U64 size, BOOT_U64 floor, BOOT_
 }
 
 status_t page_alloc_init(boot_info_t *boot_info) {
-  BOOT_U32 i;
-  BOOT_U64 floor = ONE_MIB;
-  BOOT_U64 bias = 0;
+  u32 i;
+  u64 floor = ONE_MIB;
+  u64 bias = 0;
 
   clear_state();
 
@@ -123,9 +123,9 @@ status_t page_alloc_init(boot_info_t *boot_info) {
   return STATUS_NO_MEMORY;
 }
 
-BOOT_U64 alloc_page(void) {
+u64 alloc_page(void) {
   page_range_t *range;
-  BOOT_U64 addr;
+  u64 addr;
 
   if (g_page_alloc.initialized == 0 || g_page_alloc.available == 0) {
     return 0;
@@ -152,7 +152,7 @@ BOOT_U64 alloc_page(void) {
   return 0;
 }
 
-void free_page(BOOT_U64 phys_addr) {
+void free_page(u64 phys_addr) {
   if (g_page_alloc.initialized == 0 || g_page_alloc.available == 0) {
     return;
   }

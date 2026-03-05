@@ -13,10 +13,10 @@ This layer provides an architecture-neutral view of device resources on top of t
 Header: `kernel/include/hw_resource.h`
 
 - `status_t hw_resource_init(const boot_info_t *boot_info)`
-- `status_t hw_resource_attach(BOOT_U64 device_id, const hw_resource_t *list, BOOT_U64 count)`
-- `status_t hw_resource_get(BOOT_U64 device_id, hw_resource_type_t type, BOOT_U64 index, hw_resource_t *out)`
-- `BOOT_U64 hw_resource_count(BOOT_U64 device_id, hw_resource_type_t type)`
-- `status_t hw_resource_view(BOOT_U64 device_id, device_resource_view_t *out)`
+- `status_t hw_resource_attach(u64 device_id, const hw_resource_t *list, u64 count)`
+- `status_t hw_resource_get(u64 device_id, hw_resource_type_t type, u64 index, hw_resource_t *out)`
+- `u64 hw_resource_count(u64 device_id, hw_resource_type_t type)`
+- `status_t hw_resource_view(u64 device_id, device_resource_view_t *out)`
 
 ## Notes
 

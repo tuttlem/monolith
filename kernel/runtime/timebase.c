@@ -8,12 +8,12 @@
 #include "trace.h"
 
 typedef struct {
-  BOOT_U64 initialized;
-  BOOT_U64 hz;
-  BOOT_U64 irq_vector;
-  volatile BOOT_U64 ticks;
-  BOOT_U64 cycle_base;
-  BOOT_U64 ns_last;
+  u64 initialized;
+  u64 hz;
+  u64 irq_vector;
+  volatile u64 ticks;
+  u64 cycle_base;
+  u64 ns_last;
   time_quality_t quality;
   clocksource_t clocksource;
   clockevent_t clockevent;
@@ -21,12 +21,12 @@ typedef struct {
 
 static time_state_t g_time;
 
-static BOOT_U64 saturating_muldiv_u64(BOOT_U64 value, BOOT_U64 mul, BOOT_U64 div) {
-  BOOT_U64 q;
-  BOOT_U64 r;
-  BOOT_U64 hi;
-  BOOT_U64 lo;
-  BOOT_U64 max = ~0ULL;
+static u64 saturating_muldiv_u64(u64 value, u64 mul, u64 div) {
+  u64 q;
+  u64 r;
+  u64 hi;
+  u64 lo;
+  u64 max = ~0ULL;
 
   if (div == 0ULL) {
     return max;
@@ -56,8 +56,8 @@ static void time_quality_set_defaults(void) {
   g_time.quality.cross_cpu_passed = 1ULL;
 }
 
-static void refresh_ticks_from_ns(BOOT_U64 ns) {
-  BOOT_U64 derived;
+static void refresh_ticks_from_ns(u64 ns) {
+  u64 derived;
   if (g_time.hz == 0ULL) {
     return;
   }
@@ -67,19 +67,19 @@ static void refresh_ticks_from_ns(BOOT_U64 ns) {
   }
 }
 
-static status_t clockevent_set_periodic_compat(BOOT_U64 hz) {
+static status_t clockevent_set_periodic_compat(u64 hz) {
   if (hz == g_time.hz) {
     return STATUS_OK;
   }
   return STATUS_NOT_SUPPORTED;
 }
 
-static status_t clockevent_set_oneshot_compat(BOOT_U64 delta_ns) {
+static status_t clockevent_set_oneshot_compat(u64 delta_ns) {
   (void)delta_ns;
   return STATUS_NOT_SUPPORTED;
 }
 
-static void clockevent_ack_compat(BOOT_U64 vector) { arch_timer_ack(vector); }
+static void clockevent_ack_compat(u64 vector) { arch_timer_ack(vector); }
 
 static void time_irq_handler(const interrupt_frame_t *frame, void *ctx) {
   percpu_t *cpu;
@@ -97,16 +97,16 @@ static void time_irq_handler(const interrupt_frame_t *frame, void *ctx) {
   if (g_time.hz != 0ULL && (g_time.ticks % g_time.hz) == 0ULL) {
     trace_emit(TRACE_CLASS_TIMER, g_time.ticks, g_time.hz, frame->vector);
   }
-  if (g_time.clockevent.ack != (void (*)(BOOT_U64))0) {
+  if (g_time.clockevent.ack != (void (*)(u64))0) {
     g_time.clockevent.ack(frame->vector);
   }
 }
 
 status_t time_init(const boot_info_t *boot_info) {
-  BOOT_U64 hz = 0;
-  BOOT_U64 vector = 0;
-  BOOT_U64 irq = 0;
-  BOOT_U64 cycle_hz = 0;
+  u64 hz = 0;
+  u64 vector = 0;
+  u64 irq = 0;
+  u64 cycle_hz = 0;
   status_t st;
   const hw_desc_t *hw;
 
@@ -128,11 +128,11 @@ status_t time_init(const boot_info_t *boot_info) {
   time_quality_set_defaults();
   g_time.clocksource.name = "none";
   g_time.clocksource.freq_hz = 0;
-  g_time.clocksource.read_cycles = (BOOT_U64(*)(void))0;
+  g_time.clocksource.read_cycles = (u64(*)(void))0;
   g_time.clockevent.name = "none";
-  g_time.clockevent.set_periodic = (status_t(*)(BOOT_U64))0;
-  g_time.clockevent.set_oneshot_ns = (status_t(*)(BOOT_U64))0;
-  g_time.clockevent.ack = (void (*)(BOOT_U64))0;
+  g_time.clockevent.set_periodic = (status_t(*)(u64))0;
+  g_time.clockevent.set_oneshot_ns = (status_t(*)(u64))0;
+  g_time.clockevent.ack = (void (*)(u64))0;
 
   st = arch_timer_init(boot_info, &hz, &vector);
   if (st == STATUS_DEFERRED) {
@@ -180,7 +180,7 @@ status_t time_init(const boot_info_t *boot_info) {
   } else {
     g_time.clocksource.name = "tick-fallback";
     g_time.clocksource.freq_hz = hz;
-    g_time.clocksource.read_cycles = (BOOT_U64(*)(void))0;
+    g_time.clocksource.read_cycles = (u64(*)(void))0;
     g_time.cycle_base = 0;
     g_time.quality.calibrated_hz = hz;
     g_time.quality.stable = 0ULL;
@@ -205,18 +205,18 @@ status_t time_init(const boot_info_t *boot_info) {
   return STATUS_OK;
 }
 
-BOOT_U64 time_now_ns(void) {
-  BOOT_U64 ns;
-  BOOT_U64 ticks;
-  BOOT_U64 hz;
+u64 time_now_ns(void) {
+  u64 ns;
+  u64 ticks;
+  u64 hz;
 
   if (g_time.initialized == 0) {
     return 0ULL;
   }
 
-  if (g_time.clocksource.read_cycles != (BOOT_U64(*)(void))0 && g_time.clocksource.freq_hz != 0ULL) {
-    BOOT_U64 cycles = g_time.clocksource.read_cycles();
-    BOOT_U64 delta = cycles - g_time.cycle_base;
+  if (g_time.clocksource.read_cycles != (u64(*)(void))0 && g_time.clocksource.freq_hz != 0ULL) {
+    u64 cycles = g_time.clocksource.read_cycles();
+    u64 delta = cycles - g_time.cycle_base;
     ns = saturating_muldiv_u64(delta, 1000000000ULL, g_time.clocksource.freq_hz);
   } else {
     ticks = g_time.ticks;
@@ -237,21 +237,21 @@ BOOT_U64 time_now_ns(void) {
   return ns;
 }
 
-BOOT_U64 time_ticks(void) {
+u64 time_ticks(void) {
   (void)time_now_ns();
   return g_time.ticks;
 }
 
-BOOT_U64 time_hz(void) { return g_time.hz; }
+u64 time_hz(void) { return g_time.hz; }
 
-BOOT_U64 time_cycles_to_ns(BOOT_U64 cycles) {
+u64 time_cycles_to_ns(u64 cycles) {
   if (g_time.clocksource.freq_hz == 0ULL) {
     return 0ULL;
   }
   return saturating_muldiv_u64(cycles, 1000000000ULL, g_time.clocksource.freq_hz);
 }
 
-BOOT_U64 time_ns_to_cycles(BOOT_U64 ns) {
+u64 time_ns_to_cycles(u64 ns) {
   if (g_time.clocksource.freq_hz == 0ULL) {
     return 0ULL;
   }

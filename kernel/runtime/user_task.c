@@ -3,18 +3,18 @@
 
 #define USER_BOOTSTRAP_DEFAULT_BASE 0x40000000ULL
 
-static status_t alloc_contiguous_pages(BOOT_U64 pages, BOOT_U64 *out_base) {
-  BOOT_U64 i;
-  BOOT_U64 first = 0ULL;
-  BOOT_U64 prev = 0ULL;
-  BOOT_U64 page_size = mm_page_size();
+static status_t alloc_contiguous_pages(u64 pages, u64 *out_base) {
+  u64 i;
+  u64 first = 0ULL;
+  u64 prev = 0ULL;
+  u64 page_size = mm_page_size();
 
-  if (pages == 0ULL || out_base == (BOOT_U64 *)0) {
+  if (pages == 0ULL || out_base == (u64 *)0) {
     return STATUS_INVALID_ARG;
   }
 
   for (i = 0; i < pages; ++i) {
-    BOOT_U64 page = alloc_page();
+    u64 page = alloc_page();
     if (page == 0ULL) {
       return STATUS_NO_MEMORY;
     }
@@ -38,11 +38,11 @@ static status_t alloc_contiguous_pages(BOOT_U64 pages, BOOT_U64 *out_base) {
   return STATUS_OK;
 }
 
-status_t user_stack_alloc(BOOT_U64 size, BOOT_U64 *out_base) {
-  BOOT_U64 page_size = mm_page_size();
-  BOOT_U64 pages;
+status_t user_stack_alloc(u64 size, u64 *out_base) {
+  u64 page_size = mm_page_size();
+  u64 pages;
 
-  if (size == 0ULL || out_base == (BOOT_U64 *)0) {
+  if (size == 0ULL || out_base == (u64 *)0) {
     return STATUS_INVALID_ARG;
   }
   if ((size & (page_size - 1ULL)) != 0ULL) {
@@ -53,7 +53,7 @@ status_t user_stack_alloc(BOOT_U64 size, BOOT_U64 *out_base) {
   return alloc_contiguous_pages(pages, out_base);
 }
 
-status_t user_window_map(BOOT_U64 base, BOOT_U64 size, BOOT_U64 prot) {
+status_t user_window_map(u64 base, u64 size, u64 prot) {
   status_t st;
 
   st = mm_protect(base, size, prot);
@@ -64,10 +64,10 @@ status_t user_window_map(BOOT_U64 base, BOOT_U64 size, BOOT_U64 prot) {
 }
 
 status_t user_task_bootstrap_prepare(const boot_info_t *boot_info, user_task_bootstrap_t *out_ctx) {
-  BOOT_U64 page_size = mm_page_size();
+  u64 page_size = mm_page_size();
   status_t st;
-  BOOT_U64 stack_base;
-  BOOT_U64 user_base;
+  u64 stack_base;
+  u64 user_base;
 
   if (boot_info == (const boot_info_t *)0 || out_ctx == (user_task_bootstrap_t *)0) {
     return STATUS_INVALID_ARG;
@@ -89,6 +89,6 @@ status_t user_task_bootstrap_prepare(const boot_info_t *boot_info, user_task_boo
   out_ctx->user_size = page_size;
   out_ctx->user_ip = user_base;
   out_ctx->user_sp = stack_base + page_size - 16ULL;
-  out_ctx->kernel_stack_top = (void *)(BOOT_UPTR)boot_info->entry_sp;
+  out_ctx->kernel_stack_top = (void *)(uptr)boot_info->entry_sp;
   return STATUS_OK;
 }

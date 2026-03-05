@@ -5,12 +5,12 @@
 
 #define NET_MAX_DEVICES 32U
 
-static BOOT_U64 g_net_count;
+static u64 g_net_count;
 static net_device_info_t g_net_devices[NET_MAX_DEVICES];
 static driver_ring_t g_net_probe_ring;
 
 status_t net_enumerate(const boot_info_t *boot_info) {
-  BOOT_U64 i;
+  u64 i;
   status_t st = STATUS_DEFERRED;
 
   if (boot_info == (const boot_info_t *)0) {
@@ -27,8 +27,8 @@ status_t net_enumerate(const boot_info_t *boot_info) {
   for (i = 0; i < device_bus_count(); ++i) {
     const device_t *src = device_bus_device_at(i);
     device_t d;
-    BOOT_U64 r;
-    BOOT_U64 ring_slot;
+    u64 r;
+    u64 ring_slot;
 
     if (src == (const device_t *)0 || src->class_id != DEVICE_CLASS_PCI_DEVICE || src->class_code != 0x02ULL) {
       continue;
@@ -58,7 +58,7 @@ status_t net_enumerate(const boot_info_t *boot_info) {
     }
 
     {
-      BOOT_U64 new_id = DEVICE_BUS_ID_NONE;
+      u64 new_id = DEVICE_BUS_ID_NONE;
       if (device_bus_register_device(&d, &new_id) == STATUS_OK) {
       if (!driver_ring_push(&g_net_probe_ring, &ring_slot)) {
         continue;
@@ -80,7 +80,7 @@ status_t net_enumerate(const boot_info_t *boot_info) {
       }
       g_net_count += 1ULL;
       st = STATUS_OK;
-      (void)driver_ring_pop(&g_net_probe_ring, (BOOT_U64 *)0);
+      (void)driver_ring_pop(&g_net_probe_ring, (u64 *)0);
     }
     }
   }
@@ -89,9 +89,9 @@ status_t net_enumerate(const boot_info_t *boot_info) {
   return st;
 }
 
-BOOT_U64 net_device_count(void) { return g_net_count; }
+u64 net_device_count(void) { return g_net_count; }
 
-status_t net_device_info_at(BOOT_U64 index, net_device_info_t *out_info) {
+status_t net_device_info_at(u64 index, net_device_info_t *out_info) {
   if (out_info == (net_device_info_t *)0) {
     return STATUS_INVALID_ARG;
   }
@@ -115,8 +115,8 @@ status_t net_device_info_at(BOOT_U64 index, net_device_info_t *out_info) {
 }
 
 void net_dump_diagnostics(void) {
-  BOOT_U64 i;
-  BOOT_U64 capped = g_net_count;
+  u64 i;
+  u64 capped = g_net_count;
   if (capped > NET_MAX_DEVICES) {
     capped = NET_MAX_DEVICES;
   }

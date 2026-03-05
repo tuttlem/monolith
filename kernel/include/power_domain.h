@@ -3,10 +3,10 @@
 
 #include "kernel.h"
 
-typedef BOOT_U64 power_domain_id_t;
+typedef u64 power_domain_id_t;
 
 status_t power_domain_on(power_domain_id_t pd);
 status_t power_domain_off(power_domain_id_t pd);
-status_t power_domain_status(power_domain_id_t pd, BOOT_U64 *out_on);
+status_t power_domain_status(power_domain_id_t pd, u64 *out_on);
 
 #endif

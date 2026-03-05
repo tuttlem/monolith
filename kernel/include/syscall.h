@@ -19,36 +19,36 @@
 #define SYSCALL_ABI_FEATURE_TRAP_ENTRY (1ULL << 0)
 
 typedef struct {
-  BOOT_U64 abi_version;
-  BOOT_U64 op;
-  BOOT_U64 args[6];
-  BOOT_U64 arch_id;
-  BOOT_U64 flags;
+  u64 abi_version;
+  u64 op;
+  u64 args[6];
+  u64 arch_id;
+  u64 flags;
 } syscall_request_t;
 
 typedef struct {
   status_t status;
-  BOOT_U64 value;
+  u64 value;
 } syscall_response_t;
 
 typedef status_t (*syscall_handler_t)(const syscall_request_t *req, syscall_response_t *resp);
 
 void syscall_reset(void);
 status_t syscall_init(const boot_info_t *boot_info);
-status_t syscall_register(BOOT_U64 op, syscall_handler_t handler, const char *owner);
+status_t syscall_register(u64 op, syscall_handler_t handler, const char *owner);
 status_t syscall_dispatch(const syscall_request_t *req, syscall_response_t *resp);
-status_t syscall_invoke_kernel(BOOT_U64 op, BOOT_U64 arg0, BOOT_U64 arg1, BOOT_U64 arg2, BOOT_U64 arg3, BOOT_U64 arg4,
-                               BOOT_U64 arg5, syscall_response_t *resp);
-status_t syscall_invoke_trap(BOOT_U64 op, BOOT_U64 arg0, BOOT_U64 arg1, BOOT_U64 arg2, BOOT_U64 arg3, BOOT_U64 arg4,
-                             BOOT_U64 arg5, syscall_response_t *resp);
-const char *syscall_owner(BOOT_U64 op);
-const char *syscall_op_name(BOOT_U64 op);
-BOOT_U64 syscall_abi_info_word(void);
+status_t syscall_invoke_kernel(u64 op, u64 arg0, u64 arg1, u64 arg2, u64 arg3, u64 arg4,
+                               u64 arg5, syscall_response_t *resp);
+status_t syscall_invoke_trap(u64 op, u64 arg0, u64 arg1, u64 arg2, u64 arg3, u64 arg4,
+                             u64 arg5, syscall_response_t *resp);
+const char *syscall_owner(u64 op);
+const char *syscall_op_name(u64 op);
+u64 syscall_abi_info_word(void);
 int syscall_trap_entry_ready(void);
 int syscall_trap_mailbox_active(void);
 status_t syscall_trap_mailbox_consume(void);
-status_t syscall_handle_user_trap(BOOT_U64 op, BOOT_U64 arg0, BOOT_U64 arg1, BOOT_U64 arg2, BOOT_U64 arg3,
-                                  BOOT_U64 arg4, BOOT_U64 arg5, BOOT_U64 *out_ret);
+status_t syscall_handle_user_trap(u64 op, u64 arg0, u64 arg1, u64 arg2, u64 arg3,
+                                  u64 arg4, u64 arg5, u64 *out_ret);
 void syscall_dump_table(void);
 
 #endif

@@ -7,8 +7,8 @@ Add architecture-neutral mapping primitives before introducing advanced VM polic
 ## API Surface (Target)
 
 ```c
-typedef BOOT_U64 mm_phys_addr_t;
-typedef BOOT_U64 mm_virt_addr_t;
+typedef u64 mm_phys_addr_t;
+typedef u64 mm_virt_addr_t;
 
 typedef enum {
   MMU_PROT_READ  = 1 << 0,
@@ -19,11 +19,11 @@ typedef enum {
   MMU_PROT_GLOBAL = 1 << 5,
 } mmu_prot_t;
 
-status_t mm_map(mm_virt_addr_t va, mm_phys_addr_t pa, BOOT_U64 size, BOOT_U64 prot_flags);
-status_t mm_unmap(mm_virt_addr_t va, BOOT_U64 size);
-status_t mm_protect(mm_virt_addr_t va, BOOT_U64 size, BOOT_U64 prot_flags);
-status_t mm_translate(mm_virt_addr_t va, mm_phys_addr_t *out_pa, BOOT_U64 *out_flags);
-status_t mm_sync_tlb(mm_virt_addr_t va, BOOT_U64 size);
+status_t mm_map(mm_virt_addr_t va, mm_phys_addr_t pa, u64 size, u64 prot_flags);
+status_t mm_unmap(mm_virt_addr_t va, u64 size);
+status_t mm_protect(mm_virt_addr_t va, u64 size, u64 prot_flags);
+status_t mm_translate(mm_virt_addr_t va, mm_phys_addr_t *out_pa, u64 *out_flags);
+status_t mm_sync_tlb(mm_virt_addr_t va, u64 size);
 ```
 
 ## Design Requirements

@@ -2,27 +2,27 @@
 #include "dma.h"
 #include "iommu.h"
 
-static int is_aligned(BOOT_U64 value, BOOT_U64 alignment) {
+static int is_aligned(u64 value, u64 alignment) {
   if (alignment == 0) {
     return 0;
   }
   return (value & (alignment - 1ULL)) == 0ULL;
 }
 
-BOOT_U64 mm_page_size(void) {
-  BOOT_U64 page_size = arch_mm_page_size();
+u64 mm_page_size(void) {
+  u64 page_size = arch_mm_page_size();
   if (page_size == 0) {
     return 4096ULL;
   }
   return page_size;
 }
 
-status_t mm_sync_tlb(mm_virt_addr_t va, BOOT_U64 size) { return arch_mm_sync_tlb(va, size); }
+status_t mm_sync_tlb(mm_virt_addr_t va, u64 size) { return arch_mm_sync_tlb(va, size); }
 
-status_t mm_map(mm_virt_addr_t va, mm_phys_addr_t pa, BOOT_U64 size, BOOT_U64 prot_flags) {
-  BOOT_U64 page_size = mm_page_size();
-  BOOT_U64 pages;
-  BOOT_U64 i;
+status_t mm_map(mm_virt_addr_t va, mm_phys_addr_t pa, u64 size, u64 prot_flags) {
+  u64 page_size = mm_page_size();
+  u64 pages;
+  u64 i;
   status_t st;
 
   if (size == 0) {
@@ -50,10 +50,10 @@ status_t mm_map(mm_virt_addr_t va, mm_phys_addr_t pa, BOOT_U64 size, BOOT_U64 pr
   return arch_mm_sync_tlb(va, size);
 }
 
-status_t mm_unmap(mm_virt_addr_t va, BOOT_U64 size) {
-  BOOT_U64 page_size = mm_page_size();
-  BOOT_U64 pages;
-  BOOT_U64 i;
+status_t mm_unmap(mm_virt_addr_t va, u64 size) {
+  u64 page_size = mm_page_size();
+  u64 pages;
+  u64 i;
   status_t st;
 
   if (size == 0) {
@@ -77,10 +77,10 @@ status_t mm_unmap(mm_virt_addr_t va, BOOT_U64 size) {
   return arch_mm_sync_tlb(va, size);
 }
 
-status_t mm_protect(mm_virt_addr_t va, BOOT_U64 size, BOOT_U64 prot_flags) {
-  BOOT_U64 page_size = mm_page_size();
-  BOOT_U64 pages;
-  BOOT_U64 i;
+status_t mm_protect(mm_virt_addr_t va, u64 size, u64 prot_flags) {
+  u64 page_size = mm_page_size();
+  u64 pages;
+  u64 i;
   status_t st;
 
   if (size == 0) {
@@ -104,12 +104,12 @@ status_t mm_protect(mm_virt_addr_t va, BOOT_U64 size, BOOT_U64 prot_flags) {
   return arch_mm_sync_tlb(va, size);
 }
 
-status_t mm_translate(mm_virt_addr_t va, mm_phys_addr_t *out_pa, BOOT_U64 *out_flags) {
-  BOOT_U64 page_size = mm_page_size();
+status_t mm_translate(mm_virt_addr_t va, mm_phys_addr_t *out_pa, u64 *out_flags) {
+  u64 page_size = mm_page_size();
   mm_virt_addr_t page_va;
-  BOOT_U64 offset;
+  u64 offset;
   mm_phys_addr_t base_pa;
-  BOOT_U64 flags;
+  u64 flags;
   status_t st;
 
   if (out_pa == (mm_phys_addr_t *)0) {
@@ -124,14 +124,14 @@ status_t mm_translate(mm_virt_addr_t va, mm_phys_addr_t *out_pa, BOOT_U64 *out_f
   }
 
   *out_pa = base_pa + offset;
-  if (out_flags != (BOOT_U64 *)0) {
+  if (out_flags != (u64 *)0) {
     *out_flags = flags;
   }
   return STATUS_OK;
 }
 
 static struct {
-  BOOT_U64 initialized;
+  u64 initialized;
   dma_constraints_t default_constraints;
 } g_dma;
 
@@ -146,8 +146,8 @@ status_t dma_init(const boot_info_t *boot_info) {
   return STATUS_OK;
 }
 
-status_t dma_map(BOOT_U64 device_id, void *cpu_ptr, BOOT_U64 len, dma_dir_t dir, dma_addr_t *out) {
-  BOOT_U64 addr;
+status_t dma_map(u64 device_id, void *cpu_ptr, u64 len, dma_dir_t dir, dma_addr_t *out) {
+  u64 addr;
   (void)device_id;
   (void)dir;
   if (!g_dma.initialized) {
@@ -156,7 +156,7 @@ status_t dma_map(BOOT_U64 device_id, void *cpu_ptr, BOOT_U64 len, dma_dir_t dir,
   if (cpu_ptr == (void *)0 || out == (dma_addr_t *)0 || len == 0ULL) {
     return STATUS_INVALID_ARG;
   }
-  addr = (BOOT_U64)(BOOT_UPTR)cpu_ptr;
+  addr = (u64)(uptr)cpu_ptr;
   if (addr > g_dma.default_constraints.max_addr) {
     return STATUS_NO_MEMORY;
   }
@@ -164,7 +164,7 @@ status_t dma_map(BOOT_U64 device_id, void *cpu_ptr, BOOT_U64 len, dma_dir_t dir,
   return STATUS_OK;
 }
 
-status_t dma_unmap(BOOT_U64 device_id, dma_addr_t addr, BOOT_U64 len, dma_dir_t dir) {
+status_t dma_unmap(u64 device_id, dma_addr_t addr, u64 len, dma_dir_t dir) {
   (void)device_id;
   (void)addr;
   (void)len;
@@ -175,7 +175,7 @@ status_t dma_unmap(BOOT_U64 device_id, dma_addr_t addr, BOOT_U64 len, dma_dir_t 
   return STATUS_OK;
 }
 
-status_t dma_sync_for_device(BOOT_U64 device_id, dma_addr_t addr, BOOT_U64 len, dma_dir_t dir) {
+status_t dma_sync_for_device(u64 device_id, dma_addr_t addr, u64 len, dma_dir_t dir) {
   (void)device_id;
   (void)addr;
   (void)len;
@@ -186,7 +186,7 @@ status_t dma_sync_for_device(BOOT_U64 device_id, dma_addr_t addr, BOOT_U64 len, 
   return STATUS_OK;
 }
 
-status_t dma_sync_for_cpu(BOOT_U64 device_id, dma_addr_t addr, BOOT_U64 len, dma_dir_t dir) {
+status_t dma_sync_for_cpu(u64 device_id, dma_addr_t addr, u64 len, dma_dir_t dir) {
   (void)device_id;
   (void)addr;
   (void)len;
@@ -197,7 +197,7 @@ status_t dma_sync_for_cpu(BOOT_U64 device_id, dma_addr_t addr, BOOT_U64 len, dma
   return STATUS_OK;
 }
 
-status_t dma_set_constraints(BOOT_U64 device_id, const dma_constraints_t *constraints) {
+status_t dma_set_constraints(u64 device_id, const dma_constraints_t *constraints) {
   (void)device_id;
   if (!g_dma.initialized) {
     return STATUS_DEFERRED;
@@ -214,7 +214,7 @@ status_t dma_set_constraints(BOOT_U64 device_id, const dma_constraints_t *constr
   return STATUS_OK;
 }
 
-status_t dma_get_constraints(BOOT_U64 device_id, dma_constraints_t *out_constraints) {
+status_t dma_get_constraints(u64 device_id, dma_constraints_t *out_constraints) {
   (void)device_id;
   if (!g_dma.initialized) {
     return STATUS_DEFERRED;
@@ -232,27 +232,27 @@ status_t dma_get_constraints(BOOT_U64 device_id, dma_constraints_t *out_constrai
 #define IOMMU_MAX_MAPS 256U
 
 typedef struct {
-  BOOT_U64 active;
-  BOOT_U64 passthrough;
+  u64 active;
+  u64 passthrough;
 } iommu_domain_state_t;
 
 typedef struct {
-  BOOT_U64 active;
+  u64 active;
   iommu_domain_t domain;
   iova_t iova;
   phys_addr_t pa;
-  BOOT_U64 len;
+  u64 len;
   iommu_perm_t perm;
 } iommu_map_entry_t;
 
 static struct {
-  BOOT_U64 initialized;
+  u64 initialized;
   iommu_domain_state_t domains[IOMMU_MAX_DOMAINS];
   iommu_map_entry_t maps[IOMMU_MAX_MAPS];
 } g_iommu;
 
 status_t iommu_init(const boot_info_t *boot_info) {
-  BOOT_U64 i;
+  u64 i;
   if (boot_info == (const boot_info_t *)0) {
     return STATUS_INVALID_ARG;
   }
@@ -273,7 +273,7 @@ status_t iommu_init(const boot_info_t *boot_info) {
 }
 
 status_t iommu_domain_create(iommu_domain_t *out_domain) {
-  BOOT_U64 i;
+  u64 i;
   if (!g_iommu.initialized) {
     return STATUS_DEFERRED;
   }
@@ -291,7 +291,7 @@ status_t iommu_domain_create(iommu_domain_t *out_domain) {
   return STATUS_NO_MEMORY;
 }
 
-status_t iommu_attach(iommu_domain_t domain, BOOT_U64 device_id) {
+status_t iommu_attach(iommu_domain_t domain, u64 device_id) {
   (void)device_id;
   if (!g_iommu.initialized) {
     return STATUS_DEFERRED;
@@ -302,7 +302,7 @@ status_t iommu_attach(iommu_domain_t domain, BOOT_U64 device_id) {
   return STATUS_OK;
 }
 
-status_t iommu_detach(iommu_domain_t domain, BOOT_U64 device_id) {
+status_t iommu_detach(iommu_domain_t domain, u64 device_id) {
   (void)device_id;
   if (!g_iommu.initialized) {
     return STATUS_DEFERRED;
@@ -313,8 +313,8 @@ status_t iommu_detach(iommu_domain_t domain, BOOT_U64 device_id) {
   return STATUS_OK;
 }
 
-status_t iommu_map(iommu_domain_t domain, iova_t iova, phys_addr_t pa, BOOT_U64 len, iommu_perm_t perm) {
-  BOOT_U64 i;
+status_t iommu_map(iommu_domain_t domain, iova_t iova, phys_addr_t pa, u64 len, iommu_perm_t perm) {
+  u64 i;
   if (!g_iommu.initialized) {
     return STATUS_DEFERRED;
   }
@@ -346,8 +346,8 @@ status_t iommu_map(iommu_domain_t domain, iova_t iova, phys_addr_t pa, BOOT_U64 
   return STATUS_NO_MEMORY;
 }
 
-status_t iommu_unmap(iommu_domain_t domain, iova_t iova, BOOT_U64 len) {
-  BOOT_U64 i;
+status_t iommu_unmap(iommu_domain_t domain, iova_t iova, u64 len) {
+  u64 i;
   if (!g_iommu.initialized) {
     return STATUS_DEFERRED;
   }

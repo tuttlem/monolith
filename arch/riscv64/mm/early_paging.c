@@ -15,31 +15,31 @@
 #define RISCV64_GIB (1024ULL * 1024ULL * 1024ULL)
 #define RISCV64_IDENTITY_GIB 4ULL
 
-BOOT_U64 g_root[512] __attribute__((aligned(4096)));
+u64 g_root[512] __attribute__((aligned(4096)));
 
-static BOOT_U64 read_satp(void) {
-  BOOT_U64 v;
+static u64 read_satp(void) {
+  u64 v;
   __asm__ volatile("csrr %0, satp" : "=r"(v));
   return v;
 }
 
-static void write_satp(BOOT_U64 v) { __asm__ volatile("csrw satp, %0" : : "r"(v) : "memory"); }
+static void write_satp(u64 v) { __asm__ volatile("csrw satp, %0" : : "r"(v) : "memory"); }
 
 static void sfence_vma_all(void) { __asm__ volatile("sfence.vma x0, x0" : : : "memory"); }
 
-static void zero_u64(BOOT_U64 *p, BOOT_U64 count) {
-  BOOT_U64 i;
+static void zero_u64(u64 *p, u64 count) {
+  u64 i;
   for (i = 0; i < count; ++i) {
     p[i] = 0;
   }
 }
 
 int riscv64_early_paging_takeover(riscv64_early_paging_result_t *result) {
-  BOOT_U64 i;
-  BOOT_U64 old_satp;
-  BOOT_U64 new_satp;
-  BOOT_U64 root_ppn;
-  BOOT_U64 mode;
+  u64 i;
+  u64 old_satp;
+  u64 new_satp;
+  u64 root_ppn;
+  u64 mode;
 
   if (result == (riscv64_early_paging_result_t *)0) {
     return 0;
@@ -48,9 +48,9 @@ int riscv64_early_paging_takeover(riscv64_early_paging_result_t *result) {
   zero_u64(g_root, 512ULL);
 
   for (i = 0; i < RISCV64_IDENTITY_GIB; ++i) {
-    BOOT_U64 phys = i * RISCV64_GIB;
-    BOOT_U64 ppn = phys >> 12;
-    BOOT_U64 leaf = (ppn << 10) | RISCV64_PTE_V | RISCV64_PTE_R | RISCV64_PTE_W | RISCV64_PTE_X | RISCV64_PTE_A |
+    u64 phys = i * RISCV64_GIB;
+    u64 ppn = phys >> 12;
+    u64 leaf = (ppn << 10) | RISCV64_PTE_V | RISCV64_PTE_R | RISCV64_PTE_W | RISCV64_PTE_X | RISCV64_PTE_A |
                     RISCV64_PTE_D;
     g_root[i] = leaf;
   }
@@ -61,7 +61,7 @@ int riscv64_early_paging_takeover(riscv64_early_paging_result_t *result) {
     mode = RISCV64_SATP_MODE_SV39;
   }
 
-  root_ppn = ((BOOT_U64)(BOOT_UPTR)&g_root[0]) >> 12;
+  root_ppn = ((u64)(uptr)&g_root[0]) >> 12;
   new_satp = (mode << RISCV64_SATP_MODE_SHIFT) | (root_ppn & RISCV64_SATP_PPN_MASK);
 
   write_satp(new_satp);

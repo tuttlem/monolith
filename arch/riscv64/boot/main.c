@@ -3,16 +3,16 @@
 typedef unsigned char u8;
 
 typedef struct {
-  BOOT_U32 magic;
-  BOOT_U32 totalsize;
-  BOOT_U32 off_dt_struct;
-  BOOT_U32 off_dt_strings;
-  BOOT_U32 off_mem_rsvmap;
-  BOOT_U32 version;
-  BOOT_U32 last_comp_version;
-  BOOT_U32 boot_cpuid_phys;
-  BOOT_U32 size_dt_strings;
-  BOOT_U32 size_dt_struct;
+  u32 magic;
+  u32 totalsize;
+  u32 off_dt_struct;
+  u32 off_dt_strings;
+  u32 off_mem_rsvmap;
+  u32 version;
+  u32 last_comp_version;
+  u32 boot_cpuid_phys;
+  u32 size_dt_strings;
+  u32 size_dt_struct;
 } fdt_header_t;
 
 #define RISCV64_UART_BASE 0x10000000ULL
@@ -27,31 +27,31 @@ typedef struct {
 #define FDT_END 9U
 #define RISCV64_QEMU_DTB_FALLBACK 0x9fe00000ULL
 
-static BOOT_U64 read_sp(void) {
-  BOOT_U64 sp;
+static u64 read_sp(void) {
+  u64 sp;
   __asm__ volatile("mv %0, sp" : "=r"(sp));
   return sp;
 }
 
-static BOOT_U64 read_pc(void) {
-  BOOT_U64 pc;
+static u64 read_pc(void) {
+  u64 pc;
   __asm__ volatile("auipc %0, 0" : "=r"(pc));
   return pc;
 }
 
-static BOOT_U64 read_satp(void) {
-  BOOT_U64 satp;
+static u64 read_satp(void) {
+  u64 satp;
   __asm__ volatile("csrr %0, satp" : "=r"(satp));
   return satp;
 }
 
-static BOOT_U32 be32_at(const u8 *p) {
-  return ((BOOT_U32)p[0] << 24) | ((BOOT_U32)p[1] << 16) | ((BOOT_U32)p[2] << 8) | (BOOT_U32)p[3];
+static u32 be32_at(const u8 *p) {
+  return ((u32)p[0] << 24) | ((u32)p[1] << 16) | ((u32)p[2] << 8) | (u32)p[3];
 }
 
-static BOOT_U64 be64_at(const u8 *p) {
-  BOOT_U64 hi = (BOOT_U64)be32_at(p);
-  BOOT_U64 lo = (BOOT_U64)be32_at(p + 4);
+static u64 be64_at(const u8 *p) {
+  u64 hi = (u64)be32_at(p);
+  u64 lo = (u64)be32_at(p + 4);
   return (hi << 32) | lo;
 }
 
@@ -75,19 +75,19 @@ static int str_starts_with(const char *s, const char *prefix) {
   return 1;
 }
 
-static BOOT_U32 align4(BOOT_U32 v) { return (v + 3U) & ~3U; }
+static u32 align4(u32 v) { return (v + 3U) & ~3U; }
 
-static BOOT_U64 resolve_dtb_ptr(BOOT_U64 dtb_ptr) {
+static u64 resolve_dtb_ptr(u64 dtb_ptr) {
   const fdt_header_t *hdr;
 
   if (dtb_ptr != 0) {
-    hdr = (const fdt_header_t *)(BOOT_UPTR)dtb_ptr;
+    hdr = (const fdt_header_t *)(uptr)dtb_ptr;
     if (be32_at((const u8 *)&hdr->magic) == FDT_MAGIC) {
       return dtb_ptr;
     }
   }
 
-  hdr = (const fdt_header_t *)(BOOT_UPTR)RISCV64_QEMU_DTB_FALLBACK;
+  hdr = (const fdt_header_t *)(uptr)RISCV64_QEMU_DTB_FALLBACK;
   if (be32_at((const u8 *)&hdr->magic) == FDT_MAGIC) {
     return RISCV64_QEMU_DTB_FALLBACK;
   }
@@ -95,20 +95,20 @@ static BOOT_U64 resolve_dtb_ptr(BOOT_U64 dtb_ptr) {
   return 0;
 }
 
-static int parse_fdt_memory(const void *dtb, BOOT_U64 *out_base, BOOT_U64 *out_size) {
+static int parse_fdt_memory(const void *dtb, u64 *out_base, u64 *out_size) {
   const fdt_header_t *hdr;
   const u8 *blob = (const u8 *)dtb;
   const u8 *struct_base;
   const u8 *struct_end;
   const char *strings_base;
-  BOOT_U32 off_struct;
-  BOOT_U32 size_struct;
-  BOOT_U32 off_strings;
-  BOOT_U32 depth = 0;
-  BOOT_U32 memory_depth = 0;
+  u32 off_struct;
+  u32 size_struct;
+  u32 off_strings;
+  u32 depth = 0;
+  u32 memory_depth = 0;
   const u8 *p;
 
-  if (dtb == (const void *)0 || out_base == (BOOT_U64 *)0 || out_size == (BOOT_U64 *)0) {
+  if (dtb == (const void *)0 || out_base == (u64 *)0 || out_size == (u64 *)0) {
     return 0;
   }
 
@@ -127,7 +127,7 @@ static int parse_fdt_memory(const void *dtb, BOOT_U64 *out_base, BOOT_U64 *out_s
   p = struct_base;
 
   while (p + 4 <= struct_end) {
-    BOOT_U32 token = be32_at(p);
+    u32 token = be32_at(p);
     p += 4;
 
     if (token == FDT_BEGIN_NODE) {
@@ -139,7 +139,7 @@ static int parse_fdt_memory(const void *dtb, BOOT_U64 *out_base, BOOT_U64 *out_s
         return 0;
       }
       ++p;
-      p = struct_base + align4((BOOT_U32)(p - struct_base));
+      p = struct_base + align4((u32)(p - struct_base));
       ++depth;
       if (depth == 2U && (str_eq(name, "memory") || str_starts_with(name, "memory@"))) {
         memory_depth = depth;
@@ -159,8 +159,8 @@ static int parse_fdt_memory(const void *dtb, BOOT_U64 *out_base, BOOT_U64 *out_s
     }
 
     if (token == FDT_PROP) {
-      BOOT_U32 len;
-      BOOT_U32 nameoff;
+      u32 len;
+      u32 nameoff;
       const char *prop_name;
 
       if (p + 8 > struct_end) {
@@ -179,8 +179,8 @@ static int parse_fdt_memory(const void *dtb, BOOT_U64 *out_base, BOOT_U64 *out_s
           return 1;
         }
         if (len >= 8U) {
-          *out_base = (BOOT_U64)be32_at(p);
-          *out_size = (BOOT_U64)be32_at(p + 4);
+          *out_base = (u64)be32_at(p);
+          *out_size = (u64)be32_at(p + 4);
           return 1;
         }
       }
@@ -203,8 +203,8 @@ static int parse_fdt_memory(const void *dtb, BOOT_U64 *out_base, BOOT_U64 *out_s
   return 0;
 }
 
-static void add_memory_region(boot_info_t *boot_info, BOOT_U64 base, BOOT_U64 size, BOOT_U32 kind) {
-  BOOT_U32 idx;
+static void add_memory_region(boot_info_t *boot_info, u64 base, u64 size, u32 kind) {
+  u32 idx;
 
   if (size == 0 || boot_info->memory_region_count >= boot_info->memory_region_capacity) {
     return;
@@ -217,18 +217,18 @@ static void add_memory_region(boot_info_t *boot_info, BOOT_U64 base, BOOT_U64 si
   boot_info->memory_regions[idx].reserved = 0;
 }
 
-void arch_main(BOOT_U64 hart_id, BOOT_U64 dtb_ptr) {
+void arch_main(u64 hart_id, u64 dtb_ptr) {
   boot_info_t boot_info;
   boot_info_ext_riscv64_t riscv_ext;
-  BOOT_U64 satp;
-  BOOT_U64 ram_base = RISCV64_RAM_BASE_FALLBACK;
-  BOOT_U64 ram_size = RISCV64_RAM_SIZE_FALLBACK;
-  BOOT_U64 effective_dtb_ptr;
+  u64 satp;
+  u64 ram_base = RISCV64_RAM_BASE_FALLBACK;
+  u64 ram_size = RISCV64_RAM_SIZE_FALLBACK;
+  u64 effective_dtb_ptr;
 
   effective_dtb_ptr = resolve_dtb_ptr(dtb_ptr);
 
   satp = read_satp();
-  if (parse_fdt_memory((const void *)(BOOT_UPTR)effective_dtb_ptr, &ram_base, &ram_size)) {
+  if (parse_fdt_memory((const void *)(uptr)effective_dtb_ptr, &ram_base, &ram_size)) {
     /* DTB memory range overrides fallback values. */
   }
 
@@ -275,8 +275,8 @@ void arch_main(BOOT_U64 hart_id, BOOT_U64 dtb_ptr) {
   riscv_ext.mem_old_root = satp;
   riscv_ext.mem_new_root = satp;
   riscv_ext.mem_mapped_bytes = 0;
-  boot_info.arch_data_ptr = (BOOT_U64)&riscv_ext;
-  boot_info.arch_data_size = (BOOT_U64)sizeof(riscv_ext);
+  boot_info.arch_data_ptr = (u64)&riscv_ext;
+  boot_info.arch_data_size = (u64)sizeof(riscv_ext);
   boot_info.framebuffer_base = 0;
   boot_info.framebuffer_width = 0;
   boot_info.framebuffer_height = 0;

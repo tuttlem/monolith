@@ -2,13 +2,20 @@
 
 This page documents the key structures, typedefs, and enum/flag sets used by the kernel substrate.
 
-## Scalar Types (`boot_info.h`)
+## Scalar Types
 
-### `BOOT_U64`, `BOOT_U32`, `BOOT_UPTR`
-- Purpose: ABI-stable integer/pointer-width types used in boot and architecture-neutral contracts.
+### Kernel common types (`types.h`)
+- `u8`, `u16`, `u32`, `u64`
+- `s8`, `s16`, `s32`, `s64`
+- `uptr`, `sptr`, `usize`, `isize`
+- Purpose: shared scalar aliases for kernel/runtime/arch internal APIs.
+
+### Boot ABI boundary types (`boot_info.h`)
+- `BOOT_U64`, `BOOT_U32`, `BOOT_UPTR`
+- Purpose: ABI-stable handoff types used in `boot_info_t` and boot extension payloads.
 - Notes:
+  - `BOOT_*` is now reserved for boot ABI structures only.
   - `BOOT_UPTR` tracks pointer width at compile time.
-  - Keep these types at all public boundaries to avoid ABI drift across architectures.
 
 ## Boot ABI Constants (`boot_info.h`)
 

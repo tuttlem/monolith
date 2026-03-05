@@ -4,23 +4,23 @@
 #include "device_bus.h"
 
 typedef struct {
-  BOOT_U64 device_id;
-  BOOT_U64 parent_id;
-  BOOT_U64 vendor_id;
-  BOOT_U64 pci_device_id;
-  BOOT_U64 class_code;
-  BOOT_U64 subclass_code;
-  BOOT_U64 prog_if;
-  BOOT_U64 resource_count;
-  BOOT_U64 has_output;
-  BOOT_U64 has_input;
-  BOOT_U64 min_sample_rate_hz;
-  BOOT_U64 max_sample_rate_hz;
+  u64 device_id;
+  u64 parent_id;
+  u64 vendor_id;
+  u64 pci_device_id;
+  u64 class_code;
+  u64 subclass_code;
+  u64 prog_if;
+  u64 resource_count;
+  u64 has_output;
+  u64 has_input;
+  u64 min_sample_rate_hz;
+  u64 max_sample_rate_hz;
 } audio_device_info_t;
 
 status_t audio_enumerate(const boot_info_t *boot_info);
-BOOT_U64 audio_device_count(void);
-status_t audio_device_info_at(BOOT_U64 index, audio_device_info_t *out_info);
+u64 audio_device_count(void);
+status_t audio_device_info_at(u64 index, audio_device_info_t *out_info);
 void audio_dump_diagnostics(void);
 
 #endif

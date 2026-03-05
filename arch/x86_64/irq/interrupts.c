@@ -17,7 +17,7 @@ typedef struct {
 
 typedef struct {
   unsigned short limit;
-  BOOT_U64 base;
+  u64 base;
 } __attribute__((packed)) x86_64_idtr_t;
 
 static x86_64_idt_entry_t g_idt[256];
@@ -31,8 +31,8 @@ static unsigned short read_cs(void) {
 
 static void lidt(const x86_64_idtr_t *idtr) { __asm__ volatile("lidt (%0)" : : "r"(idtr) : "memory"); }
 
-static void set_gate_with_attr(BOOT_U64 vector, void (*handler)(void), unsigned short cs, unsigned char type_attr) {
-  BOOT_U64 addr = (BOOT_U64)(BOOT_UPTR)handler;
+static void set_gate_with_attr(u64 vector, void (*handler)(void), unsigned short cs, unsigned char type_attr) {
+  u64 addr = (u64)(uptr)handler;
   x86_64_idt_entry_t *e;
 
   if (vector >= 256ULL) {
@@ -49,41 +49,41 @@ static void set_gate_with_attr(BOOT_U64 vector, void (*handler)(void), unsigned 
   e->reserved = 0;
 }
 
-static void set_gate(BOOT_U64 vector, void (*handler)(void), unsigned short cs) {
+static void set_gate(u64 vector, void (*handler)(void), unsigned short cs) {
   set_gate_with_attr(vector, handler, cs, 0x8E);
 }
 
 typedef struct {
-  BOOT_U64 r15;
-  BOOT_U64 r14;
-  BOOT_U64 r13;
-  BOOT_U64 r12;
-  BOOT_U64 r11;
-  BOOT_U64 r10;
-  BOOT_U64 r9;
-  BOOT_U64 r8;
-  BOOT_U64 rbp;
-  BOOT_U64 rdi;
-  BOOT_U64 rsi;
-  BOOT_U64 rdx;
-  BOOT_U64 rcx;
-  BOOT_U64 rbx;
-  BOOT_U64 rax;
+  u64 r15;
+  u64 r14;
+  u64 r13;
+  u64 r12;
+  u64 r11;
+  u64 r10;
+  u64 r9;
+  u64 r8;
+  u64 rbp;
+  u64 rdi;
+  u64 rsi;
+  u64 rdx;
+  u64 rcx;
+  u64 rbx;
+  u64 rax;
 } x86_64_trap_regs_t;
 
-__attribute__((used)) static void x86_64_irq_dispatch_common(BOOT_U64 vector);
+__attribute__((used)) static void x86_64_irq_dispatch_common(u64 vector);
 
 __attribute__((used)) static void x86_64_syscall_from_trap(x86_64_trap_regs_t *regs) {
-  BOOT_U64 ret = 0ULL;
-  BOOT_U64 *iret;
-  BOOT_U64 cs;
+  u64 ret = 0ULL;
+  u64 *iret;
+  u64 cs;
   status_t st;
 
   if (regs == (x86_64_trap_regs_t *)0) {
     return;
   }
 
-  iret = (BOOT_U64 *)(regs + 1);
+  iret = (u64 *)(regs + 1);
   cs = iret[1];
   if ((cs & 3ULL) != 3ULL) {
     x86_64_irq_dispatch_common(128ULL);
@@ -92,18 +92,18 @@ __attribute__((used)) static void x86_64_syscall_from_trap(x86_64_trap_regs_t *r
 
   st = syscall_handle_user_trap(regs->rax, regs->rdi, regs->rsi, regs->rdx, regs->r10, regs->r8, regs->r9, &ret);
   if (st != STATUS_OK && ret == 0ULL) {
-    ret = (BOOT_U64)st;
+    ret = (u64)st;
   }
   regs->rax = ret;
 }
 
-static BOOT_U64 x86_64_read_cr2(void) {
-  BOOT_U64 cr2;
+static u64 x86_64_read_cr2(void) {
+  u64 cr2;
   __asm__ volatile("movq %%cr2, %0" : "=r"(cr2));
   return cr2;
 }
 
-static int x86_64_exception_has_error_code(BOOT_U64 vector) {
+static int x86_64_exception_has_error_code(u64 vector) {
   switch (vector) {
   case 8ULL:
   case 10ULL:
@@ -121,18 +121,18 @@ static int x86_64_exception_has_error_code(BOOT_U64 vector) {
   }
 }
 
-__attribute__((used)) static void x86_64_exception_fatal(BOOT_U64 vector, BOOT_U64 raw_stack) {
+__attribute__((used)) static void x86_64_exception_fatal(u64 vector, u64 raw_stack) {
   interrupt_frame_t frame;
-  BOOT_U64 *stack = (BOOT_U64 *)(BOOT_UPTR)raw_stack;
+  u64 *stack = (u64 *)(uptr)raw_stack;
   int has_err = x86_64_exception_has_error_code(vector);
-  BOOT_U64 cs = (stack == (BOOT_U64 *)0) ? 0ULL : stack[has_err ? 2U : 1U];
+  u64 cs = (stack == (u64 *)0) ? 0ULL : stack[has_err ? 2U : 1U];
   int from_user = ((cs & 3ULL) == 3ULL) ? 1 : 0;
   frame.arch_id = BOOT_INFO_ARCH_X86_64;
   frame.vector = vector;
-  frame.error_code = (stack == (BOOT_U64 *)0 || !has_err) ? 0ULL : stack[0];
-  frame.ip = (stack == (BOOT_U64 *)0) ? 0ULL : stack[has_err ? 1U : 0U];
-  frame.flags = (stack == (BOOT_U64 *)0) ? 0ULL : stack[has_err ? 3U : 2U];
-  frame.sp = (stack == (BOOT_U64 *)0) ? 0ULL : stack[has_err ? 4U : 3U];
+  frame.error_code = (stack == (u64 *)0 || !has_err) ? 0ULL : stack[0];
+  frame.ip = (stack == (u64 *)0) ? 0ULL : stack[has_err ? 1U : 0U];
+  frame.flags = (stack == (u64 *)0) ? 0ULL : stack[has_err ? 3U : 2U];
+  frame.sp = (stack == (u64 *)0) ? 0ULL : stack[has_err ? 4U : 3U];
   frame.fault_addr = x86_64_read_cr2();
   (void)from_user;
 
@@ -186,7 +186,7 @@ X86_64_EXCEPTION_STUB(29)
 X86_64_EXCEPTION_STUB(30)
 X86_64_EXCEPTION_STUB(31)
 
-__attribute__((used)) static void x86_64_irq_dispatch_common(BOOT_U64 vector) {
+__attribute__((used)) static void x86_64_irq_dispatch_common(u64 vector) {
   interrupt_frame_t frame;
   frame.arch_id = BOOT_INFO_ARCH_X86_64;
   frame.vector = vector;
@@ -321,7 +321,7 @@ static void (*const g_exceptions[32])(void) = {
     x86_64_exc_30, x86_64_exc_31};
 
 void x86_64_interrupts_rebind_code_selector(void) {
-  BOOT_U64 i;
+  u64 i;
   unsigned short cs = read_cs();
 
   for (i = 0; i < 256ULL; ++i) {
@@ -333,7 +333,7 @@ void x86_64_interrupts_rebind_code_selector(void) {
 
 status_t arch_interrupts_init(const boot_info_t *boot_info) {
   unsigned short cs;
-  BOOT_U64 i;
+  u64 i;
 
   if (boot_info == (const boot_info_t *)0 || boot_info->arch_id != BOOT_INFO_ARCH_X86_64) {
     return STATUS_INVALID_ARG;
@@ -350,7 +350,7 @@ status_t arch_interrupts_init(const boot_info_t *boot_info) {
   set_gate_with_attr(128ULL, x86_64_irq_stub_128, cs, 0xEE);
 
   g_idtr.limit = (unsigned short)(sizeof(g_idt) - 1U);
-  g_idtr.base = (BOOT_U64)(BOOT_UPTR)&g_idt[0];
+  g_idtr.base = (u64)(uptr)&g_idt[0];
   lidt(&g_idtr);
   __asm__ volatile("cli" : : : "memory");
   return x86_64_pic_controller_init(boot_info);

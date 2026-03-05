@@ -1,15 +1,15 @@
 #include "uaccess.h"
 
-static BOOT_U64 g_user_base;
-static BOOT_U64 g_user_size;
-static BOOT_U64 g_user_window_active;
+static u64 g_user_base;
+static u64 g_user_size;
+static u64 g_user_window_active;
 
 #if defined(__riscv)
 #define RISCV64_SSTATUS_SUM (1ULL << 18)
 
-static BOOT_U64 uaccess_sum_enter(void) {
-  BOOT_U64 old_sstatus;
-  BOOT_U64 mask = RISCV64_SSTATUS_SUM;
+static u64 uaccess_sum_enter(void) {
+  u64 old_sstatus;
+  u64 mask = RISCV64_SSTATUS_SUM;
   __asm__ volatile("csrr %0, sstatus\n\t"
                    "csrs sstatus, %1"
                    : "=&r"(old_sstatus)
@@ -18,17 +18,17 @@ static BOOT_U64 uaccess_sum_enter(void) {
   return old_sstatus;
 }
 
-static void uaccess_sum_exit(BOOT_U64 old_sstatus) {
-  BOOT_U64 mask = RISCV64_SSTATUS_SUM;
+static void uaccess_sum_exit(u64 old_sstatus) {
+  u64 mask = RISCV64_SSTATUS_SUM;
   if ((old_sstatus & RISCV64_SSTATUS_SUM) == 0ULL) {
     __asm__ volatile("csrc sstatus, %0" : : "r"(mask) : "memory");
   }
 }
 #endif
 
-static int user_range_ok(BOOT_U64 p, BOOT_U64 n) {
-  BOOT_U64 end;
-  BOOT_U64 limit;
+static int user_range_ok(u64 p, u64 n) {
+  u64 end;
+  u64 limit;
 
   if (g_user_window_active == 0ULL) {
     return 0;
@@ -53,7 +53,7 @@ static int user_range_ok(BOOT_U64 p, BOOT_U64 n) {
   return 1;
 }
 
-status_t uaccess_set_user_window(BOOT_U64 base, BOOT_U64 size) {
+status_t uaccess_set_user_window(u64 base, u64 size) {
   if (size == 0ULL) {
     g_user_window_active = 0ULL;
     g_user_base = 0ULL;
@@ -69,12 +69,12 @@ status_t uaccess_set_user_window(BOOT_U64 base, BOOT_U64 size) {
   return STATUS_OK;
 }
 
-status_t copy_from_user_checked(void *dst, BOOT_U64 user_src, BOOT_U64 len) {
-  BOOT_U64 i;
+status_t copy_from_user_checked(void *dst, u64 user_src, u64 len) {
+  u64 i;
   const unsigned char *src;
   unsigned char *d;
 #if defined(__riscv)
-  BOOT_U64 old_sstatus = 0ULL;
+  u64 old_sstatus = 0ULL;
 #endif
 
   if (dst == (void *)0) {
@@ -84,7 +84,7 @@ status_t copy_from_user_checked(void *dst, BOOT_U64 user_src, BOOT_U64 len) {
     return STATUS_FAULT;
   }
 
-  src = (const unsigned char *)(BOOT_UPTR)user_src;
+  src = (const unsigned char *)(uptr)user_src;
   d = (unsigned char *)dst;
 #if defined(__riscv)
   old_sstatus = uaccess_sum_enter();
@@ -98,12 +98,12 @@ status_t copy_from_user_checked(void *dst, BOOT_U64 user_src, BOOT_U64 len) {
   return STATUS_OK;
 }
 
-status_t copy_to_user_checked(BOOT_U64 user_dst, const void *src, BOOT_U64 len) {
-  BOOT_U64 i;
+status_t copy_to_user_checked(u64 user_dst, const void *src, u64 len) {
+  u64 i;
   unsigned char *dst;
   const unsigned char *s;
 #if defined(__riscv)
-  BOOT_U64 old_sstatus = 0ULL;
+  u64 old_sstatus = 0ULL;
 #endif
 
   if (src == (const void *)0) {
@@ -113,7 +113,7 @@ status_t copy_to_user_checked(BOOT_U64 user_dst, const void *src, BOOT_U64 len) 
     return STATUS_FAULT;
   }
 
-  dst = (unsigned char *)(BOOT_UPTR)user_dst;
+  dst = (unsigned char *)(uptr)user_dst;
   s = (const unsigned char *)src;
 #if defined(__riscv)
   old_sstatus = uaccess_sum_enter();

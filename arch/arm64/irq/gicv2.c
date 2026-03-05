@@ -13,47 +13,47 @@
 #define ARM64_GICC_IAR 0x00CU
 #define ARM64_GICC_EOIR 0x010U
 
-static BOOT_U32 g_last_iar = 1023U;
+static u32 g_last_iar = 1023U;
 
-static BOOT_U32 arm64_mmio_read32(BOOT_U64 addr) {
-  return *(volatile BOOT_U32 *)(BOOT_UPTR)addr;
+static u32 arm64_mmio_read32(u64 addr) {
+  return *(volatile u32 *)(uptr)addr;
 }
 
-static void arm64_mmio_write32(BOOT_U64 addr, BOOT_U32 value) {
-  *(volatile BOOT_U32 *)(BOOT_UPTR)addr = value;
+static void arm64_mmio_write32(u64 addr, u32 value) {
+  *(volatile u32 *)(uptr)addr = value;
 }
 
-static status_t gic_enable_irq(BOOT_U64 irq) {
-  BOOT_U64 reg = irq / 32ULL;
-  BOOT_U32 bit = (BOOT_U32)(1U << (irq % 32ULL));
-  arm64_mmio_write32(ARM64_GICD_BASE + ARM64_GICD_ISENABLER0 + (BOOT_U32)(reg * 4ULL), bit);
+static status_t gic_enable_irq(u64 irq) {
+  u64 reg = irq / 32ULL;
+  u32 bit = (u32)(1U << (irq % 32ULL));
+  arm64_mmio_write32(ARM64_GICD_BASE + ARM64_GICD_ISENABLER0 + (u32)(reg * 4ULL), bit);
   return STATUS_OK;
 }
 
-static status_t gic_disable_irq(BOOT_U64 irq) {
-  BOOT_U64 reg = irq / 32ULL;
-  BOOT_U32 bit = (BOOT_U32)(1U << (irq % 32ULL));
-  arm64_mmio_write32(ARM64_GICD_BASE + ARM64_GICD_ICENABLER0 + (BOOT_U32)(reg * 4ULL), bit);
+static status_t gic_disable_irq(u64 irq) {
+  u64 reg = irq / 32ULL;
+  u32 bit = (u32)(1U << (irq % 32ULL));
+  arm64_mmio_write32(ARM64_GICD_BASE + ARM64_GICD_ICENABLER0 + (u32)(reg * 4ULL), bit);
   return STATUS_OK;
 }
 
-static void gic_ack_irq(BOOT_U64 irq) { (void)irq; }
+static void gic_ack_irq(u64 irq) { (void)irq; }
 
-static void gic_eoi_irq(BOOT_U64 irq) {
+static void gic_eoi_irq(u64 irq) {
   (void)irq;
   arm64_mmio_write32(ARM64_GICC_BASE + ARM64_GICC_EOIR, g_last_iar);
 }
 
-static status_t gic_map_irq(BOOT_U64 irq, BOOT_U64 *out_vector) {
-  if (out_vector == (BOOT_U64 *)0 || irq >= (INTERRUPT_MAX_VECTORS - 32ULL)) {
+static status_t gic_map_irq(u64 irq, u64 *out_vector) {
+  if (out_vector == (u64 *)0 || irq >= (INTERRUPT_MAX_VECTORS - 32ULL)) {
     return STATUS_INVALID_ARG;
   }
   *out_vector = 32ULL + irq;
   return STATUS_OK;
 }
 
-static status_t gic_vector_to_irq(BOOT_U64 vector, BOOT_U64 *out_irq) {
-  if (out_irq == (BOOT_U64 *)0 || vector < 32ULL || vector >= INTERRUPT_MAX_VECTORS) {
+static status_t gic_vector_to_irq(u64 vector, u64 *out_irq) {
+  if (out_irq == (u64 *)0 || vector < 32ULL || vector >= INTERRUPT_MAX_VECTORS) {
     return STATUS_INVALID_ARG;
   }
   *out_irq = vector - 32ULL;
@@ -61,7 +61,7 @@ static status_t gic_vector_to_irq(BOOT_U64 vector, BOOT_U64 *out_irq) {
 }
 
 status_t arm64_gicv2_controller_init(const boot_info_t *boot_info) {
-  BOOT_U32 v;
+  u32 v;
   irq_controller_ops_t ops;
   status_t st;
 
@@ -88,11 +88,11 @@ status_t arm64_gicv2_controller_init(const boot_info_t *boot_info) {
   return st;
 }
 
-status_t arm64_gicv2_claim_irq(BOOT_U64 *out_irq) {
-  BOOT_U32 iar;
-  BOOT_U32 intid;
+status_t arm64_gicv2_claim_irq(u64 *out_irq) {
+  u32 iar;
+  u32 intid;
 
-  if (out_irq == (BOOT_U64 *)0) {
+  if (out_irq == (u64 *)0) {
     return STATUS_INVALID_ARG;
   }
 
@@ -102,8 +102,8 @@ status_t arm64_gicv2_claim_irq(BOOT_U64 *out_irq) {
   if (intid >= 1020U) {
     return STATUS_NOT_FOUND;
   }
-  *out_irq = (BOOT_U64)intid;
+  *out_irq = (u64)intid;
   return STATUS_OK;
 }
 
-void arm64_gicv2_eoi_irq(BOOT_U64 irq) { gic_eoi_irq(irq); }
+void arm64_gicv2_eoi_irq(u64 irq) { gic_eoi_irq(irq); }

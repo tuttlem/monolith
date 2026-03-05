@@ -14,20 +14,20 @@ Move from raw periodic tick to a generic time subsystem with monotonic time and 
 ```c
 typedef struct {
   const char *name;
-  BOOT_U64 freq_hz;
-  BOOT_U64 (*read_cycles)(void);
+  u64 freq_hz;
+  u64 (*read_cycles)(void);
 } clocksource_t;
 
 typedef struct {
   const char *name;
-  status_t (*set_periodic)(BOOT_U64 hz);
-  status_t (*set_oneshot_ns)(BOOT_U64 delta_ns);
+  status_t (*set_periodic)(u64 hz);
+  status_t (*set_oneshot_ns)(u64 delta_ns);
   void (*ack)(void);
 } clockevent_t;
 
 status_t time_init(const boot_info_t *boot_info);
-BOOT_U64 time_now_ns(void);
-BOOT_U64 time_ticks(void);
+u64 time_now_ns(void);
+u64 time_ticks(void);
 ```
 
 ## Requirements

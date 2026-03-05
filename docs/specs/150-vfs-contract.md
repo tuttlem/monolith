@@ -18,8 +18,8 @@ typedef struct file file_t;
 
 typedef struct {
   status_t (*open)(vnode_t *vn, file_t *out);
-  status_t (*read)(file_t *f, void *buf, BOOT_U64 len, BOOT_U64 *out_read);
-  status_t (*write)(file_t *f, const void *buf, BOOT_U64 len, BOOT_U64 *out_written);
+  status_t (*read)(file_t *f, void *buf, u64 len, u64 *out_read);
+  status_t (*write)(file_t *f, const void *buf, u64 len, u64 *out_written);
   status_t (*close)(file_t *f);
 } file_ops_t;
 ```

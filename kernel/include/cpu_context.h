@@ -4,10 +4,10 @@
 #include "kernel.h"
 
 typedef struct {
-  BOOT_U64 sp;
-  BOOT_U64 ip;
-  BOOT_U64 arg;
-  BOOT_U64 flags;
+  u64 sp;
+  u64 ip;
+  u64 arg;
+  u64 flags;
 } cpu_context_t;
 
 status_t cpu_context_init(cpu_context_t *ctx, void (*entry)(void *), void *arg, void *stack_top);

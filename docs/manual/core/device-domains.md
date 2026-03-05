@@ -7,9 +7,9 @@ This layer creates baseline domain-class devices from enumerated hardware so dow
 Header: `kernel/include/device_domains.h`
 
 - `status_t device_domains_enumerate(const boot_info_t *boot_info)`
-- `BOOT_U64 block_device_count(void)`
-- `BOOT_U64 input_device_count(void)`
-- `BOOT_U64 display_device_count(void)`
+- `u64 block_device_count(void)`
+- `u64 input_device_count(void)`
+- `u64 display_device_count(void)`
 
 ## Current Mapping Rules
 

@@ -7,8 +7,8 @@ The USB layer adds baseline host-controller discovery and root-hub placeholders 
 Header: `kernel/include/usb.h`
 
 - `status_t usb_enumerate(const boot_info_t *boot_info)`
-- `BOOT_U64 usb_host_count(void)`
-- `BOOT_U64 usb_device_count(void)`
+- `u64 usb_host_count(void)`
+- `u64 usb_device_count(void)`
 
 ## Current Behavior
 

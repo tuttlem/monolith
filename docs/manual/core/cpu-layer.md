@@ -23,10 +23,10 @@ Counters and memory ordering:
 - `arch_barrier_read(void)`
 - `arch_barrier_write(void)`
 - `arch_tlb_sync_local(void)`
-- `arch_icache_sync_range(BOOT_U64 addr, BOOT_U64 size)`
+- `arch_icache_sync_range(u64 addr, u64 size)`
 
 CPU-local base hooks (used by per-CPU runtime):
-- `arch_cpu_set_local_base(BOOT_U64 base)`
+- `arch_cpu_set_local_base(u64 base)`
 - `arch_cpu_get_local_base(void)`
 
 ## Backend Mapping

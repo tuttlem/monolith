@@ -13,8 +13,8 @@ The helper set does not define process policy, loader policy, or task hierarchy.
 
 ## APIs
 
-- `status_t user_stack_alloc(BOOT_U64 size, BOOT_U64 *out_base)`
-- `status_t user_window_map(BOOT_U64 base, BOOT_U64 size, BOOT_U64 prot)`
+- `status_t user_stack_alloc(u64 size, u64 *out_base)`
+- `status_t user_window_map(u64 base, u64 size, u64 prot)`
 - `status_t user_task_bootstrap_prepare(const boot_info_t *boot_info, user_task_bootstrap_t *out_ctx)`
 
 ## Canonical Usage

@@ -7,8 +7,8 @@ The audio baseline layer creates generic audio-domain devices from discovered bu
 Header: `kernel/include/audio.h`
 
 - `status_t audio_enumerate(const boot_info_t *boot_info)`
-- `BOOT_U64 audio_device_count(void)`
-- `status_t audio_device_info_at(BOOT_U64 index, audio_device_info_t *out_info)`
+- `u64 audio_device_count(void)`
+- `status_t audio_device_info_at(u64 index, audio_device_info_t *out_info)`
 - `void audio_dump_diagnostics(void)`
 
 ## `audio_device_info_t`
@@ -44,8 +44,8 @@ The descriptor provides OS writers a stable, early audio capability view.
 ```c
 status_t st = audio_enumerate(boot_info);
 if (st == STATUS_OK) {
-  BOOT_U64 n = audio_device_count();
-  BOOT_U64 i;
+  u64 n = audio_device_count();
+  u64 i;
   for (i = 0; i < n; ++i) {
     audio_device_info_t info;
     if (audio_device_info_at(i, &info) == STATUS_OK) {

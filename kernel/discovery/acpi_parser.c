@@ -7,7 +7,7 @@ typedef struct {
   unsigned char revision;
   unsigned int rsdt_address;
   unsigned int length;
-  BOOT_U64 xsdt_address;
+  u64 xsdt_address;
   unsigned char extended_checksum;
   unsigned char reserved[3];
 } __attribute__((packed)) rsdp_t;
@@ -66,13 +66,13 @@ typedef struct {
   unsigned int flags;
   unsigned int parking_protocol_version;
   unsigned int performance_interrupt_gsiv;
-  BOOT_U64 parked_address;
-  BOOT_U64 physical_base_address;
-  BOOT_U64 gicv;
-  BOOT_U64 gich;
+  u64 parked_address;
+  u64 physical_base_address;
+  u64 gicv;
+  u64 gich;
   unsigned int vgic_maintenance_interrupt;
-  BOOT_U64 gicr_base_address;
-  BOOT_U64 mpidr;
+  u64 gicr_base_address;
+  u64 mpidr;
   unsigned char processor_power_efficiency_class;
   unsigned char reserved2[3];
 } __attribute__((packed)) madt_gicc_t;
@@ -81,7 +81,7 @@ typedef struct {
   madt_entry_header_t h;
   unsigned short reserved;
   unsigned int gic_id;
-  BOOT_U64 physical_base_address;
+  u64 physical_base_address;
   unsigned int system_vector_base;
   unsigned char gic_version;
   unsigned char reserved2[3];
@@ -92,7 +92,7 @@ static int sig_eq4(const char *a, const char *b) {
 }
 
 static int sig_eq8(const char *a, const char *b) {
-  BOOT_U32 i;
+  u32 i;
   for (i = 0; i < 8U; ++i) {
     if (a[i] != b[i]) {
       return 0;
@@ -101,7 +101,7 @@ static int sig_eq8(const char *a, const char *b) {
   return 1;
 }
 
-static void add_cpu(hw_desc_t *desc, BOOT_U64 cpu_id) {
+static void add_cpu(hw_desc_t *desc, u64 cpu_id) {
   if (desc->cpu_count >= HW_DESC_MAX_CPUS) {
     return;
   }
@@ -110,7 +110,7 @@ static void add_cpu(hw_desc_t *desc, BOOT_U64 cpu_id) {
   desc->cpu_count += 1ULL;
 }
 
-static void add_irqc(hw_desc_t *desc, BOOT_U64 type, BOOT_U64 base, BOOT_U64 size, BOOT_U64 irq_base, BOOT_U64 irq_count) {
+static void add_irqc(hw_desc_t *desc, u64 type, u64 base, u64 size, u64 irq_base, u64 irq_count) {
   if (desc->irq_controller_count >= HW_DESC_MAX_IRQ_CONTROLLERS) {
     return;
   }
@@ -142,15 +142,15 @@ static void parse_madt(hw_desc_t *desc, const madt_t *madt) {
     if (h->type == 0 && h->length >= sizeof(madt_lapic_t)) {
       const madt_lapic_t *e = (const madt_lapic_t *)p;
       if ((e->flags & 1U) != 0U) {
-        add_cpu(desc, (BOOT_U64)e->apic_id);
+        add_cpu(desc, (u64)e->apic_id);
       }
     } else if (h->type == 1 && h->length >= sizeof(madt_ioapic_t)) {
       const madt_ioapic_t *e = (const madt_ioapic_t *)p;
-      add_irqc(desc, HW_IRQ_CONTROLLER_X86_IOAPIC, (BOOT_U64)e->ioapic_addr, 0x20ULL, (BOOT_U64)e->gsi_base, 24ULL);
+      add_irqc(desc, HW_IRQ_CONTROLLER_X86_IOAPIC, (u64)e->ioapic_addr, 0x20ULL, (u64)e->gsi_base, 24ULL);
     } else if (h->type == 9 && h->length >= sizeof(madt_x2apic_t)) {
       const madt_x2apic_t *e = (const madt_x2apic_t *)p;
       if ((e->flags & 1U) != 0U) {
-        add_cpu(desc, (BOOT_U64)e->x2apic_id);
+        add_cpu(desc, (u64)e->x2apic_id);
       }
     } else if (h->type == 11 && h->length >= sizeof(madt_gicc_t)) {
       const madt_gicc_t *e = (const madt_gicc_t *)p;
@@ -169,27 +169,27 @@ static void parse_madt(hw_desc_t *desc, const madt_t *madt) {
 void hw_discovery_parse_acpi(const boot_info_t *boot_info, hw_desc_t *desc) {
   const rsdp_t *rsdp;
   const acpi_sdt_header_t *root;
-  BOOT_U64 entries;
-  BOOT_U64 i;
+  u64 entries;
+  u64 i;
 
   if (boot_info == (const boot_info_t *)0 || desc == (hw_desc_t *)0 || boot_info->acpi_rsdp == 0) {
     return;
   }
 
-  rsdp = (const rsdp_t *)(BOOT_UPTR)boot_info->acpi_rsdp;
+  rsdp = (const rsdp_t *)(uptr)boot_info->acpi_rsdp;
   if (!sig_eq8(rsdp->signature, "RSD PTR ")) {
     return;
   }
 
   if (rsdp->revision >= 2U && rsdp->xsdt_address != 0) {
-    root = (const acpi_sdt_header_t *)(BOOT_UPTR)rsdp->xsdt_address;
+    root = (const acpi_sdt_header_t *)(uptr)rsdp->xsdt_address;
     if (root == (const acpi_sdt_header_t *)0 || root->length < sizeof(acpi_sdt_header_t)) {
       return;
     }
     entries = (root->length - sizeof(acpi_sdt_header_t)) / 8ULL;
     for (i = 0; i < entries; ++i) {
-      const BOOT_U64 *entry = (const BOOT_U64 *)((const unsigned char *)root + sizeof(acpi_sdt_header_t) + i * 8ULL);
-      const acpi_sdt_header_t *tbl = (const acpi_sdt_header_t *)(BOOT_UPTR)(*entry);
+      const u64 *entry = (const u64 *)((const unsigned char *)root + sizeof(acpi_sdt_header_t) + i * 8ULL);
+      const acpi_sdt_header_t *tbl = (const acpi_sdt_header_t *)(uptr)(*entry);
       if (tbl == (const acpi_sdt_header_t *)0 || tbl->length < sizeof(acpi_sdt_header_t)) {
         continue;
       }
@@ -207,14 +207,14 @@ void hw_discovery_parse_acpi(const boot_info_t *boot_info, hw_desc_t *desc) {
       }
     }
   } else if (rsdp->rsdt_address != 0U) {
-    root = (const acpi_sdt_header_t *)(BOOT_UPTR)((BOOT_U64)rsdp->rsdt_address);
+    root = (const acpi_sdt_header_t *)(uptr)((u64)rsdp->rsdt_address);
     if (root == (const acpi_sdt_header_t *)0 || root->length < sizeof(acpi_sdt_header_t)) {
       return;
     }
     entries = (root->length - sizeof(acpi_sdt_header_t)) / 4ULL;
     for (i = 0; i < entries; ++i) {
       const unsigned int *entry = (const unsigned int *)((const unsigned char *)root + sizeof(acpi_sdt_header_t) + i * 4ULL);
-      const acpi_sdt_header_t *tbl = (const acpi_sdt_header_t *)(BOOT_UPTR)((BOOT_U64)(*entry));
+      const acpi_sdt_header_t *tbl = (const acpi_sdt_header_t *)(uptr)((u64)(*entry));
       if (tbl == (const acpi_sdt_header_t *)0 || tbl->length < sizeof(acpi_sdt_header_t)) {
         continue;
       }

@@ -12,11 +12,11 @@ The time subsystem combines:
 ## Public API
 
 - `status_t time_init(const boot_info_t *boot_info)`
-- `BOOT_U64 time_now_ns(void)`
-- `BOOT_U64 time_ticks(void)`
-- `BOOT_U64 time_hz(void)`
-- `BOOT_U64 time_cycles_to_ns(BOOT_U64 cycles)`
-- `BOOT_U64 time_ns_to_cycles(BOOT_U64 ns)`
+- `u64 time_now_ns(void)`
+- `u64 time_ticks(void)`
+- `u64 time_hz(void)`
+- `u64 time_cycles_to_ns(u64 cycles)`
+- `u64 time_ns_to_cycles(u64 ns)`
 - `status_t time_quality(time_quality_t *out)`
 - `const clocksource_t *time_clocksource(void)`
 - `const clockevent_t *time_clockevent(void)`

@@ -1,6 +1,7 @@
 #ifndef KERNEL_KERNEL_H
 #define KERNEL_KERNEL_H
 
+#include "types.h"
 #include "boot_info.h"
 #include "status.h"
 

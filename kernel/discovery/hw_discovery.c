@@ -1,10 +1,10 @@
 #include "discovery_internal.h"
 
 static hw_desc_t g_hw_desc;
-static BOOT_U64 g_hw_desc_initialized = 0;
+static u64 g_hw_desc_initialized = 0;
 
 static void clear_desc(hw_desc_t *desc) {
-  BOOT_U64 i;
+  u64 i;
 
   desc->source_mask = 0;
   desc->cpu_count = 0;
@@ -42,7 +42,7 @@ static void clear_desc(hw_desc_t *desc) {
   }
 }
 
-static void add_fallback_cpu(hw_desc_t *desc, BOOT_U64 cpu_id) {
+static void add_fallback_cpu(hw_desc_t *desc, u64 cpu_id) {
   if (desc->cpu_count >= HW_DESC_MAX_CPUS) {
     return;
   }
@@ -51,7 +51,7 @@ static void add_fallback_cpu(hw_desc_t *desc, BOOT_U64 cpu_id) {
   desc->cpu_count += 1ULL;
 }
 
-static void add_fallback_irqc(hw_desc_t *desc, BOOT_U64 type) {
+static void add_fallback_irqc(hw_desc_t *desc, u64 type) {
   if (desc->irq_controller_count >= HW_DESC_MAX_IRQ_CONTROLLERS) {
     return;
   }
@@ -64,7 +64,7 @@ static void add_fallback_irqc(hw_desc_t *desc, BOOT_U64 type) {
 }
 
 status_t hw_discovery_init(const boot_info_t *boot_info) {
-  BOOT_U32 i;
+  u32 i;
 
   if (boot_info == (const boot_info_t *)0) {
     return STATUS_INVALID_ARG;
@@ -132,7 +132,7 @@ const hw_desc_t *hw_desc_get(void) {
   return &g_hw_desc;
 }
 
-BOOT_U64 hw_desc_cpu_count_hint(void) {
+u64 hw_desc_cpu_count_hint(void) {
   if (g_hw_desc_initialized == 0 || g_hw_desc.cpu_count == 0) {
     return 0ULL;
   }

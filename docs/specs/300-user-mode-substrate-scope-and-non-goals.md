@@ -32,9 +32,9 @@ Do not require Monolith to expose `launch_first_user_task` as core API; producti
 
 ```c
 status_t launch_first_user_task(const boot_info_t *bi, user_entry_fn entry) {
-  BOOT_U64 page_size = mm_page_size();
-  BOOT_U64 stack_page = user_stack_alloc_page(page_size);
-  BOOT_U64 user_sp = stack_page + page_size - 16ULL;
+  u64 page_size = mm_page_size();
+  u64 stack_page = user_stack_alloc_page(page_size);
+  u64 user_sp = stack_page + page_size - 16ULL;
 
   status_t st = mm_protect(USER_BASE, USER_SIZE, MMU_PROT_READ | MMU_PROT_WRITE | MMU_PROT_EXEC | MMU_PROT_USER);
   if (st != STATUS_OK) return st;

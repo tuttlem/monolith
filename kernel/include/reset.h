@@ -3,7 +3,7 @@
 
 #include "kernel.h"
 
-typedef BOOT_U64 reset_id_t;
+typedef u64 reset_id_t;
 
 status_t reset_assert(reset_id_t rst);
 status_t reset_deassert(reset_id_t rst);
